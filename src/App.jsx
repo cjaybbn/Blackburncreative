@@ -1122,6 +1122,9 @@ export default function CamdenPortfolio() {
                 <GlassButton onClick={() => document.getElementById("realcopy")?.scrollIntoView({ behavior: "smooth" })}>
                   View case study →
                 </GlassButton>
+                <GlassButton href="/camden-blackburn-resume.pdf" download>
+                  Download Resume ↓
+                </GlassButton>
               </motion.div>
               </Reveal>
             </motion.div>
@@ -1864,6 +1867,24 @@ export default function CamdenPortfolio() {
                 )}
               </div>
             ))}
+            <a
+              href="/camden-blackburn-resume.pdf"
+              download
+              style={{
+                display: "inline-block",
+                marginTop: 24,
+                fontFamily: FONT.mono,
+                fontSize: 13,
+                color: "#E05B5B",
+                textDecoration: "none",
+                textUnderlineOffset: 3,
+                transition: "text-decoration 0.2s",
+              }}
+              onMouseEnter={e => { e.target.style.textDecoration = "underline"; }}
+              onMouseLeave={e => { e.target.style.textDecoration = "none"; }}
+            >
+              Download Resume (PDF)
+            </a>
           </motion.div>
           </Reveal>
         </motion.div>

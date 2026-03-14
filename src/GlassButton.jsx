@@ -19,6 +19,7 @@ export default function GlassButton({
   href = "#",
   onClick,
   dark = false,  // set true when on dark backgrounds
+  download = false,
 }) {
   const ref = useRef(null);
   const [hover, setHover] = useState(false);
@@ -52,7 +53,8 @@ export default function GlassButton({
   const Tag = href && href !== "#" ? "a" : "div";
   const linkProps = Tag === "a" ? {
     href,
-    target: href.startsWith("mailto") ? undefined : "_blank",
+    ...(download && { download: true }),
+    target: (download || href.startsWith("mailto")) ? undefined : "_blank",
     rel: "noopener noreferrer",
   } : {};
 
