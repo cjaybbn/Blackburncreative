@@ -151,7 +151,7 @@ export default function HeroBackground() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: "25%",
+        height: "35%",
         background: "linear-gradient(to bottom, transparent 0%, #F4F1EC 100%)",
         pointerEvents: "none",
       }} />

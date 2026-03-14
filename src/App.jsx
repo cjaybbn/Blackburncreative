@@ -609,11 +609,85 @@ const MagneticGlassButton = memo(function MagneticGlassButton({ href, children }
   );
 });
 
-// ─── NAV ────────────────────────────────────────────────────────────────────
+// ─── NAV (frosted glass pill + dock magnification) ───────────────────────────
+const NavLink = ({ label, id, href, isActive, mouseX, navRef, scrollTo }) => {
+  const linkRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    if (mouseX === null || !navRef?.current || !linkRef.current) {
+      setScale(1);
+      return;
+    }
+    const navRect = navRef.current.getBoundingClientRect();
+    const linkRect = linkRef.current.getBoundingClientRect();
+    const linkCenter = linkRect.left + linkRect.width / 2 - navRect.left;
+    const distance = Math.abs(mouseX - linkCenter);
+    const maxDist = 120;
+    const newScale = distance > maxDist ? 1 : 1 + 0.12 * Math.pow(1 - distance / maxDist, 2);
+    setScale(newScale);
+  }, [mouseX, navRef]);
+
+  const innerStyle = {
+    fontFamily: FONT.mono,
+    fontSize: 11,
+    fontWeight: isActive ? 600 : 400,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    color: isActive ? "#E05B5B" : scale > 1.05 ? "#E05B5B" : "rgba(26, 24, 20, 0.5)",
+    padding: "8px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    transition: "color 0.2s ease, background 0.2s ease",
+    background: scale > 1.1 ? "rgba(224, 91, 91, 0.06)" : "transparent",
+    display: "inline-block",
+    whiteSpace: "nowrap",
+    textDecoration: "none",
+  };
+
+  return (
+    <span
+      ref={linkRef}
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "center bottom",
+        transition: "transform 0.28s ease-out",
+        display: "inline-block",
+      }}
+    >
+      {href ? (
+        <Link to={href} style={innerStyle}>
+          {label}
+        </Link>
+      ) : (
+        <span
+          onClick={() => scrollTo(id)}
+          style={innerStyle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === "Enter" && scrollTo(id)}
+        >
+          {label}
+          {isActive && (
+            <div style={{
+              width: 4, height: 4, borderRadius: "50%",
+              background: "#E05B5B",
+              margin: "4px auto 0",
+            }} />
+          )}
+        </span>
+      )}
+    </span>
+  );
+};
+
 const Nav = ({ activeSection }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [hoveredLink, setHoveredLink] = useState(null);
+  const [mouseX, setMouseX] = useState(null);
+  const navRef = useRef(null);
+  const logoRef = useRef(null);
+  const [logoScale, setLogoScale] = useState(1);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -623,8 +697,30 @@ const Nav = ({ activeSection }) => {
 
   const scrollTo = (id) => {
     setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (id && id !== "about") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const handleNavMouseMove = useCallback((e) => {
+    if (window.innerWidth <= 768) return;
+    if (!navRef.current) return;
+    const rect = navRef.current.getBoundingClientRect();
+    setMouseX(e.clientX - rect.left);
+  }, []);
+  const handleNavMouseLeave = useCallback(() => setMouseX(null), []);
+
+  useEffect(() => {
+    if (mouseX === null || !navRef?.current || !logoRef.current) {
+      setLogoScale(1);
+      return;
+    }
+    const navRect = navRef.current.getBoundingClientRect();
+    const logoRect = logoRef.current.getBoundingClientRect();
+    const logoCenter = logoRect.left + logoRect.width / 2 - navRect.left;
+    const distance = Math.abs(mouseX - logoCenter);
+    const maxDist = 120;
+    setLogoScale(distance > 120 ? 1 : 1 + 0.12 * Math.pow(1 - distance / maxDist, 2));
+  }, [mouseX]);
 
   const links = [
     { id: "about", label: "About" },
@@ -635,123 +731,116 @@ const Nav = ({ activeSection }) => {
     { id: "contact", label: "Contact" },
   ];
 
+  const pillStyle = {
+    position: "fixed",
+    top: 12,
+    left: "50%",
+    transform: "translateX(-50%)",
+    borderRadius: 50,
+    background: scrolled ? "rgba(255, 255, 255, 0.22)" : "rgba(255, 255, 255, 0.12)",
+    backdropFilter: "blur(24px) saturate(1.5)",
+    WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+    border: scrolled ? "1px solid rgba(255, 255, 255, 0.22)" : "1px solid rgba(255, 255, 255, 0.18)",
+    boxShadow: scrolled
+      ? "0 4px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.25)"
+      : "0 4px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+    padding: "8px 12px",
+    zIndex: 1000,
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    transition: "background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease",
+  };
+
   return (
     <>
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
-        background: scrolled ? "rgba(255, 255, 255, 0.92)" : "rgba(255, 255, 255, 0.85)",
-        backdropFilter: scrolled ? "blur(16px)" : "blur(12px)",
-        borderBottom: scrolled ? `1px solid ${C.rule}` : "1px solid transparent",
-        transition: "all 0.4s ease",
-      }}>
+      <nav
+        ref={navRef}
+        onMouseMove={handleNavMouseMove}
+        onMouseLeave={handleNavMouseLeave}
+        style={pillStyle}
+        className="nav-pill"
+      >
+        {/* Top edge glint */}
         <div style={{
-          maxWidth: 1200, margin: "0 auto", padding: "0 40px",
-          height: 64, display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <div onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-            <img src={logoImg} alt="Home" style={{ height: 32, width: "auto", display: "block" }} />
-          </div>
-
-          {/* Desktop nav */}
-          <div style={{ display: "flex", gap: 32, alignItems: "center" }}
-            className="desktop-nav">
-            {links.map(l => (
-              l.href ? (
-                <Link
-                  key={l.id}
-                  to={l.href}
-                  onMouseEnter={() => setHoveredLink(l.id)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                  style={{
-                    fontFamily: FONT.mono, fontSize: 11, letterSpacing: 1.5,
-                    textTransform: "uppercase", cursor: "pointer",
-                    color: hoveredLink === l.id ? C.accent : C.inkMuted,
-                    paddingBottom: 2,
-                    position: "relative",
-                    display: "inline-block",
-                    textDecoration: "none",
-                  }}
-                >
-                  {l.label}
-                  <motion.span
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 2,
-                      background: C.accent,
-                      transformOrigin: "left",
-                    }}
-                    initial={false}
-                    animate={{
-                      scaleX: hoveredLink === l.id ? 1 : 0,
-                      transition: { duration: 0.25, ease: "easeOut" },
-                    }}
-                  />
-                </Link>
-              ) : (
-                <motion.span
-                  key={l.id}
-                  onClick={() => scrollTo(l.id)}
-                  onMouseEnter={() => setHoveredLink(l.id)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                  style={{
-                    fontFamily: FONT.mono, fontSize: 11, letterSpacing: 1.5,
-                    textTransform: "uppercase", cursor: "pointer",
-                    color: hoveredLink === l.id || activeSection === l.id ? C.accent : C.inkMuted,
-                    paddingBottom: 2,
-                    position: "relative",
-                    display: "inline-block",
-                  }}
-                >
-                  {l.label}
-                  <motion.span
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 2,
-                      background: C.accent,
-                      transformOrigin: "left",
-                    }}
-                    initial={false}
-                    animate={{
-                      scaleX: hoveredLink === l.id || activeSection === l.id ? 1 : 0,
-                      transition: { duration: 0.25, ease: "easeOut" },
-                    }}
-                  />
-                </motion.span>
-              )
-            ))}
-          </div>
-
-          {/* Mobile hamburger */}
-          <div className="mobile-nav-toggle" onClick={() => setMenuOpen(!menuOpen)}
-            style={{ cursor: "pointer", padding: 8, display: "none" }}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            <div style={{
-              width: 22, height: 2, background: C.ink, marginBottom: 5,
-              transition: "transform 0.3s ease, opacity 0.3s ease",
-              transformOrigin: "center",
-              transform: menuOpen ? "rotate(45deg) translateY(7px)" : "none",
-            }} />
-            <div style={{
-              width: 22, height: 2, background: C.ink,
-              transition: "opacity 0.3s ease",
-              transformOrigin: "center",
-              opacity: menuOpen ? 0 : 1,
-            }} />
-            <div style={{
-              width: 22, height: 2, background: C.ink, marginTop: 5,
-              transition: "transform 0.3s ease",
-              transformOrigin: "center",
-              transform: menuOpen ? "rotate(-45deg) translateY(-7px)" : "none",
-            }} />
-          </div>
+          position: "absolute",
+          top: 0,
+          left: "15%",
+          right: "15%",
+          height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+          borderRadius: "50px 50px 0 0",
+          pointerEvents: "none",
+        }} />
+        {/* Logo (dock magnification) */}
+        <div
+          ref={logoRef}
+          onClick={() => scrollTo(null)}
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            transform: `scale(${logoScale})`,
+            transformOrigin: "center bottom",
+            transition: "transform 0.28s ease-out",
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === "Enter" && scrollTo(null)}
+        >
+          <img src={logoImg} alt="Home" style={{ height: 28, width: "auto", display: "block" }} />
+        </div>
+        <div className="nav-pill-divider" style={{
+          width: 1, height: 16, background: "rgba(0,0,0,0.08)", margin: "0 8px", flexShrink: 0,
+        }} />
+        {/* Desktop links */}
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
+          {links.map(l => (
+            <NavLink
+              key={l.id}
+              id={l.id}
+              label={l.label}
+              href={l.href}
+              isActive={activeSection === l.id}
+              mouseX={mouseX}
+              navRef={navRef}
+              scrollTo={scrollTo}
+            />
+          ))}
+        </div>
+        {/* Mobile hamburger — only visible on mobile via .mobile-nav-toggle */}
+        <div
+          className="mobile-nav-toggle"
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            width: 40,
+            height: 40,
+            cursor: "pointer",
+            display: "none",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: 5,
+          }}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+        >
+          <div style={{
+            width: 20, height: 2, background: C.ink,
+            transition: "transform 0.3s ease",
+            transformOrigin: "center",
+            transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
+          }} />
+          <div style={{
+            width: 20, height: 2, background: C.ink,
+            transition: "opacity 0.3s ease",
+            opacity: menuOpen ? 0 : 1,
+          }} />
+          <div style={{
+            width: 20, height: 2, background: C.ink,
+            transition: "transform 0.3s ease",
+            transformOrigin: "center",
+            transform: menuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
+          }} />
         </div>
       </nav>
 
@@ -871,10 +960,13 @@ export default function CamdenPortfolio() {
         html { scroll-behavior: smooth; scroll-padding-top: 80px; overflow-x: hidden; width: 100%; }
         body { overflow-x: hidden; width: 100%; }
         ::selection { background: rgba(150, 150, 150, 0.2); }
+        .mobile-nav-toggle { display: none !important; }
 
         @media (max-width: 768px) {
+          .nav-pill { left: 12px !important; right: 12px !important; transform: none !important; justify-content: space-between !important; }
+          .nav-pill-divider { display: none !important; }
           .desktop-nav { display: none !important; }
-          .mobile-nav-toggle { display: block !important; }
+          .mobile-nav-toggle { display: flex !important; }
           .hero-grid { grid-template-columns: 1fr !important; }
           .two-col { grid-template-columns: 1fr !important; }
           .three-col { grid-template-columns: 1fr !important; }
@@ -924,7 +1016,7 @@ export default function CamdenPortfolio() {
           position: "relative",
           overflow: "hidden",
           width: "100vw",
-          minHeight: "75vh",
+          minHeight: "100vh",
           padding: 0,
           margin: 0,
           border: "none",
@@ -944,8 +1036,8 @@ export default function CamdenPortfolio() {
             gridTemplateColumns: "1fr 1fr",
             alignItems: "center",
             gap: "60px",
-            minHeight: "85vh",
-            padding: "140px 40px 100px",
+            minHeight: "100vh",
+            padding: "80px 40px 60px",
             maxWidth: 1200,
             margin: "0 auto",
           }}
