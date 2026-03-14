@@ -70,7 +70,7 @@ const WORK_ITEMS = [
     category: "photography",
     title: "Automotive Detail",
     description: "Proffesional stylistic dark photography of new cars with natural lighting.",
-    image: "/work/photo-6.jpg",
+    image: "/work/Photo-6.jpg",
     aspectRatio: "21/9",
   },
   {
@@ -78,7 +78,7 @@ const WORK_ITEMS = [
     category: "photography",
     title: "Architectural Composition",
     description: "Candid captures — finding composition in everyday motion.",
-    image: "/work/photo-5.jpg",
+    image: "/work/Photo-5.jpg",
     aspectRatio: "3/4",
   },
   {
@@ -96,7 +96,7 @@ const WORK_ITEMS = [
     category: "brand",
     title: "RealCopy — Brand System",
     description: "Full brand identity for RealCopy including logo, color system, typography, and app icon design.",
-    image: "/work/Realcopy.png",
+    image: "/work/RealCopy.png",
     aspectRatio: "1/1",
     featured: true,
   },
