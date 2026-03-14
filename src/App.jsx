@@ -730,13 +730,27 @@ const Nav = ({ activeSection }) => {
 
           {/* Mobile hamburger */}
           <div className="mobile-nav-toggle" onClick={() => setMenuOpen(!menuOpen)}
-            style={{ cursor: "pointer", padding: 8, display: "none" }}>
-            <div style={{ width: 20, height: 2, background: C.ink, marginBottom: 5, transition: "all 0.3s",
-              transform: menuOpen ? "rotate(45deg) translate(2.5px, 2.5px)" : "none" }} />
-            <div style={{ width: 20, height: 2, background: C.ink, transition: "all 0.3s",
-              opacity: menuOpen ? 0 : 1 }} />
-            <div style={{ width: 20, height: 2, background: C.ink, marginTop: 5, transition: "all 0.3s",
-              transform: menuOpen ? "rotate(-45deg) translate(2.5px, -2.5px)" : "none" }} />
+            style={{ cursor: "pointer", padding: 8, display: "none" }}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            <div style={{
+              width: 22, height: 2, background: C.ink, marginBottom: 5,
+              transition: "transform 0.3s ease, opacity 0.3s ease",
+              transformOrigin: "center",
+              transform: menuOpen ? "rotate(45deg) translateY(7px)" : "none",
+            }} />
+            <div style={{
+              width: 22, height: 2, background: C.ink,
+              transition: "opacity 0.3s ease",
+              transformOrigin: "center",
+              opacity: menuOpen ? 0 : 1,
+            }} />
+            <div style={{
+              width: 22, height: 2, background: C.ink, marginTop: 5,
+              transition: "transform 0.3s ease",
+              transformOrigin: "center",
+              transform: menuOpen ? "rotate(-45deg) translateY(-7px)" : "none",
+            }} />
           </div>
         </div>
       </nav>
@@ -744,23 +758,37 @@ const Nav = ({ activeSection }) => {
       {/* Mobile menu */}
       {menuOpen && (
         <div style={{
-          position: "fixed", top: 64, left: 0, right: 0, bottom: 0, zIndex: 999,
-          background: "rgba(42, 6, 17, 0.1)", backdropFilter: "blur(20px)",
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 999,
+          background: "rgba(244, 241, 236, 0.98)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
           display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", gap: 32,
+          justifyContent: "center", gap: 32, paddingTop: 80,
         }}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Close menu"
+            style={{
+              position: "absolute", top: 20, right: 24,
+              width: 40, height: 40, padding: 0, border: "none",
+              background: "transparent", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#E05B5B",
+            }}
+          >
+            <span style={{ fontSize: 32, lineHeight: 1 }}>×</span>
+          </button>
           {links.map(l => (
             l.href ? (
               <Link key={l.id} to={l.href} onClick={() => setMenuOpen(false)} style={{
-                fontFamily: FONT.display, fontSize: 32, fontStyle: "italic",
-                color: C.ink, cursor: "pointer", textDecoration: "none",
+                fontFamily: FONT.display, fontSize: 28, fontStyle: "italic",
+                color: "#E05B5B", cursor: "pointer", textDecoration: "none",
               }}>
                 {l.label}
               </Link>
             ) : (
               <span key={l.id} onClick={() => { scrollTo(l.id); setMenuOpen(false); }} style={{
-                fontFamily: FONT.display, fontSize: 32, fontStyle: "italic",
-                color: C.ink, cursor: "pointer",
+                fontFamily: FONT.display, fontSize: 28, fontStyle: "italic",
+                color: "#E05B5B", cursor: "pointer",
               }}>
                 {l.label}
               </span>
@@ -835,12 +863,13 @@ export default function CamdenPortfolio() {
   }, []);
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink }}>
+    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, overflowX: "hidden", width: "100%", maxWidth: "100vw" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; overflow-x: hidden; width: 100%; }
+        body { overflow-x: hidden; width: 100%; }
         ::selection { background: rgba(150, 150, 150, 0.2); }
 
         @media (max-width: 768px) {
@@ -1501,7 +1530,7 @@ export default function CamdenPortfolio() {
         viewport={viewport}
         variants={sectionVariants}
         style={{
-          maxWidth: 1200, margin: "0 auto", padding: "100px 40px",
+          maxWidth: 1200, margin: "0 auto", padding: "100px 40px", overflowX: "hidden",
         }}
         className="section-padding"
       >
@@ -1550,7 +1579,7 @@ export default function CamdenPortfolio() {
           <motion.div variants={staggerItem}>
             <SectionLabel>Capabilities</SectionLabel>
           </motion.div>
-          <motion.div variants={staggerItem} style={{ overflow: "hidden" }}>
+          <motion.div variants={staggerItem} style={{ overflow: "hidden", maxWidth: "100%" }}>
             <SkillMarquee
               items={[
                 ...SITE_DATA.skills.find(s => s.category === "Product")?.items ?? [],
