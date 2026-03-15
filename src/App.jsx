@@ -952,12 +952,12 @@ export default function CamdenPortfolio() {
   }, []);
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, overflowX: "hidden", width: "100%", maxWidth: "100vw" }}>
+    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, width: "100%", maxWidth: "100vw" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; scroll-padding-top: 80px; overflow-x: hidden; width: 100%; }
+        html { scroll-padding-top: 80px; overflow-x: hidden; width: 100%; }
         body { overflow-x: hidden; width: 100%; }
         ::selection { background: rgba(150, 150, 150, 0.2); }
         .mobile-nav-toggle { display: none !important; }
@@ -1014,7 +1014,7 @@ export default function CamdenPortfolio() {
         variants={sectionVariants}
         style={{
           position: "relative",
-          overflow: "hidden",
+          overflowX: "hidden",
           width: "100vw",
           minHeight: "100vh",
           padding: 0,
@@ -1116,13 +1116,13 @@ export default function CamdenPortfolio() {
 
               <Reveal delay={0.5}>
               <motion.div variants={staggerItem} className="hero-buttons" style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start" }}>
-                <GlassButton href="mailto:Blackburncamden@gmail.com">
+                <GlassButton index={0} href="mailto:Blackburncamden@gmail.com">
                   Get in touch
                 </GlassButton>
-                <GlassButton onClick={() => document.getElementById("realcopy")?.scrollIntoView({ behavior: "smooth" })}>
+                <GlassButton index={1} animationDelay={0.15} onClick={() => document.getElementById("realcopy")?.scrollIntoView({ behavior: "smooth" })}>
                   View case study →
                 </GlassButton>
-                <GlassButton href="/camden-blackburn-resume.pdf" download>
+                <GlassButton index={2} href="/camden-blackburn-resume.pdf" download>
                   Download Resume ↓
                 </GlassButton>
               </motion.div>

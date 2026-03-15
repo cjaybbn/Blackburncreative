@@ -36,6 +36,10 @@ const C = {
   rule: "rgba(26, 24, 20, 0.1)",
 };
 
+// SVG feTurbulence noise for paper texture (data URL)
+const PAPER_NOISE =
+  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 // ─── YOUR WORK — UPDATE THESE WITH YOUR ACTUAL PIECES ─────────────────
 // Place images in public/work/ and reference as "/work/filename.jpg"
 const WORK_ITEMS = [
@@ -330,6 +334,16 @@ const GalleryItem = ({ item, index, onOpen }) => {
 // ─── LIGHTBOX ─────────────────────────────────────────────────────────
 const Lightbox = ({ item, onClose }) => {
   const [imageError, setImageError] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0.5, y: 0.5, hovered: false });
+  const [isFlipped, setIsFlipped] = useState(false);
+  const imageRef = useRef(null);
+  const tiltPendingRef = useRef(null);
+  const rafIdRef = useRef(null);
+  const isFlippedRef = useRef(false);
+
+  useEffect(() => {
+    isFlippedRef.current = isFlipped;
+  }, [isFlipped]);
 
   // Close on escape
   useEffect(() => {
@@ -338,7 +352,38 @@ const Lightbox = ({ item, onClose }) => {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // Reset flip when opening a different item
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [item?.id]);
+
+  // Tilt only when NOT flipped; throttle to once per frame to avoid stutter
+  const handleImageMouseMove = useCallback((e) => {
+    if (isFlippedRef.current || !imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    tiltPendingRef.current = { x, y, hovered: true };
+    if (rafIdRef.current != null) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (tiltPendingRef.current && !isFlippedRef.current) setTilt(tiltPendingRef.current);
+    });
+  }, []);
+
+  const handleImageMouseLeave = useCallback(() => {
+    rafIdRef.current && cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = null;
+    tiltPendingRef.current = null;
+    setTilt({ x: 0.5, y: 0.5, hovered: false });
+  }, []);
+
+  const tiltX = (tilt.y - 0.5) * -10;
+  const tiltY = (tilt.x - 0.5) * 10;
+
   if (!item) return null;
+
+  const isPhotography = item.category === "photography";
 
   return (
     <motion.div
@@ -395,25 +440,280 @@ const Lightbox = ({ item, onClose }) => {
         }}
         className="lightbox-inner"
       >
-        {/* Image */}
+        {/* Image: photography = full treatment (flip, tilt, corner); other = simple image */}
         <div style={{ flex: "1 1 60%", maxHeight: "80vh" }}>
           {imageError ? (
             <PlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
+          ) : isPhotography ? (
+            <div style={{ perspective: "1200px", width: "100%", position: "relative" }}>
+              <div
+                onClick={() => setIsFlipped(!isFlipped)}
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  cursor: "pointer",
+                  transformStyle: "preserve-3d",
+                  transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                  transition: "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: isFlipped ? "0 2px 12px rgba(0,0,0,0.25)" : "none",
+                }}
+              >
+                {/* FRONT: wrapper (ref + handlers, no transform) so hit area is stable; tilt on inner div only */}
+                <div
+                  ref={imageRef}
+                  onMouseMove={handleImageMouseMove}
+                  onMouseLeave={handleImageMouseLeave}
+                  style={{
+                    position: "relative",
+                    backfaceVisibility: "hidden",
+                    borderRadius: 8,
+                    overflow: "visible",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      borderRadius: 8,
+                      transformStyle: "preserve-3d",
+                      transform: !isFlipped && tilt.hovered
+                        ? `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.02)`
+                        : "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)",
+                      transition: "transform 0.1s ease-out",
+                      boxShadow: !isFlipped && tilt.hovered
+                        ? `${(tilt.x - 0.5) * -15}px ${(tilt.y - 0.5) * -15}px 30px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2)`
+                        : "0 5px 15px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    <motion.img
+                      src={item.image}
+                      alt={item.title}
+                      onError={() => setImageError(true)}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: 0.1 }}
+                      style={{
+                        width: "100%",
+                        maxHeight: "80vh",
+                        objectFit: "contain",
+                        borderRadius: 8,
+                        display: "block",
+                      }}
+                    />
+                    {/* Fingerprint smudge — suggests someone handled the photo */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 30,
+                        right: 40,
+                        width: 20,
+                        height: 25,
+                        background: "radial-gradient(ellipse, rgba(255,255,255,0.06) 0%, transparent 100%)",
+                        transform: "rotate(20deg)",
+                        opacity: 0.5,
+                        pointerEvents: "none",
+                      }}
+                    />
+                    {/* Sheen on tilt (only when front and hovered) */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: 8,
+                        pointerEvents: "none",
+                        zIndex: 1,
+                        background: !isFlipped && tilt.hovered
+                          ? `linear-gradient(${120 + tiltY * 4 + tiltX * 4}deg, transparent 30%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 55%, transparent 70%)`
+                          : !isFlipped
+                            ? "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%, rgba(255,255,255,0.03) 100%)"
+                            : "transparent",
+                        transition: "background 0.2s ease-out",
+                      }}
+                    />
+                    {/* Corner fold — only on hover; unfurls from corner; rounded to match photo; tap when visible */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        width: 44,
+                        height: 44,
+                        transformOrigin: "bottom right",
+                        transform: tilt.hovered ? "scale(1)" : "scale(0)",
+                        opacity: tilt.hovered ? 1 : 0,
+                        transition: "transform 0.35s ease-out, opacity 0.3s ease-out",
+                        pointerEvents: "none",
+                        zIndex: 2,
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(135deg, transparent 15%, rgba(255,255,255,0.14) 40%, rgba(255,255,255,0.08) 60%, rgba(255,255,255,0.03) 85%, transparent 100%)",
+                          boxShadow: "inset 1px 1px 2px rgba(255,255,255,0.08)",
+                          borderRadius: "0 0 8px 0",
+                          animation: tilt.hovered ? "cornerTap 5s ease-in-out infinite" : "none",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* BACK: aged photo back */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backfaceVisibility: "hidden",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    transform: "rotateY(180deg)",
+                    background: "#F2EDE4",
+                  }}
+                >
+                  {/* Layer 1 — yellowing edges */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      pointerEvents: "none",
+                      background: "radial-gradient(ellipse at center, transparent 50%, rgba(180, 160, 120, 0.15) 100%)",
+                    }}
+                  />
+                  {/* Layer 2 — noise/grain */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      pointerEvents: "none",
+                      backgroundImage: PAPER_NOISE,
+                      opacity: 0.08,
+                      mixBlendMode: "multiply",
+                    }}
+                  />
+                  {/* Layer 3 — stains/age marks */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      pointerEvents: "none",
+                      background: `
+                        radial-gradient(circle at 75% 25%, rgba(160, 140, 100, 0.12) 0%, transparent 8%),
+                        radial-gradient(circle at 20% 70%, rgba(170, 150, 110, 0.08) 0%, transparent 12%),
+                        radial-gradient(circle at 60% 80%, rgba(150, 135, 100, 0.06) 0%, transparent 6%)
+                      `,
+                    }}
+                  />
+                  {/* Layer 4 — crease line */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      top: "40%",
+                      height: 1,
+                      background: "rgba(160, 140, 110, 0.1)",
+                      transform: "rotate(-0.5deg)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  {/* Handwritten text */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "38%",
+                      left: "15%",
+                      right: "15%",
+                      fontFamily: "'Caveat', cursive",
+                      fontSize: 22,
+                      color: "rgba(60, 50, 40, 0.6)",
+                      lineHeight: 1.8,
+                      transform: "rotate(-2deg)",
+                    }}
+                  >
+                    <div style={{ transform: "rotate(-1.5deg)" }}>
+                      "{item.title}"
+                    </div>
+                    <div style={{ transform: "rotate(-2.2deg)", marginLeft: 4 }}>
+                      {item.backNote || item.description?.slice(0, 60) + (item.description?.length > 60 ? "…" : "")}
+                    </div>
+                    <div style={{ transform: "rotate(-1deg)", marginTop: 4 }}>
+                      Dec. 2023
+                    </div>
+                  </div>
+                  {/* Smudge near text */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "52%",
+                      left: "18%",
+                      width: 80,
+                      height: 50,
+                      background: "radial-gradient(ellipse 40px 25px at center, rgba(60, 50, 40, 0.04) 0%, transparent 100%)",
+                      transform: "rotate(15deg)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  {/* Photo lab stamp */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 24,
+                      right: 24,
+                      fontFamily: "'Courier New', monospace",
+                      fontSize: 9,
+                      letterSpacing: 1,
+                      textTransform: "uppercase",
+                      color: "rgba(100, 90, 70, 0.2)",
+                      transform: "rotate(-90deg)",
+                      transformOrigin: "bottom right",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    PRINT NO. 001
+                  </div>
+                  {/* Click to flip back hint */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 16,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      fontFamily: FONT.mono,
+                      fontSize: 10,
+                      color: "rgba(100, 90, 70, 0.3)",
+                    }}
+                  >
+                    click to flip back
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
-            <motion.img
-              src={item.image}
-              alt={item.title}
-              onError={() => setImageError(true)}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              style={{
-                width: "100%",
-                maxHeight: "80vh",
-                objectFit: "contain",
-                borderRadius: 12,
-              }}
-            />
+            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden" }}>
+              <motion.img
+                src={item.image}
+                alt={item.title}
+                onError={() => setImageError(true)}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                style={{
+                  width: "100%",
+                  maxHeight: "80vh",
+                  objectFit: "contain",
+                  borderRadius: 8,
+                  display: "block",
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -509,7 +809,7 @@ export default function WorkGallery() {
       color: C.ink,
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::selection { background: rgba(224, 91, 91, 0.2); }
         @media (max-width: 768px) {
@@ -520,6 +820,16 @@ export default function WorkGallery() {
         }
         @media (min-width: 769px) and (max-width: 1024px) {
           .masonry-grid { columns: 2 !important; }
+        }
+        @keyframes cornerTap {
+          0% { transform: scale(1) translate(0px, 0px); }
+          4% { transform: scale(1.15) translate(-2px, -2px); }
+          8% { transform: scale(1) translate(0px, 0px); }
+          12% { transform: scale(1.15) translate(-2px, -2px); }
+          16% { transform: scale(1) translate(0px, 0px); }
+          20% { transform: scale(1.12) translate(-1.5px, -1.5px); }
+          24% { transform: scale(1) translate(0px, 0px); }
+          100% { transform: scale(1) translate(0px, 0px); }
         }
       `}</style>
 
