@@ -88,6 +88,7 @@ export default function GlassButton({
       style={{
         position: "relative",
         display: "inline-flex",
+        overflow: "hidden",
         opacity: 0,
         animation: "buttonMaterialize 3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
         animationDelay: `${animationDelay}s`,

@@ -39,7 +39,8 @@ export default function HeroBackground() {
       position: "absolute",
       inset: 0,
       zIndex: 0,
-      overflow: "hidden",
+      overflowX: "hidden",
+      overflowY: "visible",
     }}>
       {/* Base — warm light cream */}
       <div style={{

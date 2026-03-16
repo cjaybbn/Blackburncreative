@@ -5,6 +5,7 @@ import { useSpring, animated } from "@react-spring/web";
 import logoImg from "./logo.png";
 import HeroBackground from "./HeroBackground";
 import GlassButton from "./GlassButton";
+import AIChatBubble from "./AIChatBubble";
 
 const springConfig = { mass: 1, tension: 170, friction: 26 };
 const MAGNETIC_RADIUS = 100;
@@ -737,6 +738,7 @@ const Nav = ({ activeSection }) => {
     left: "50%",
     transform: "translateX(-50%)",
     borderRadius: 50,
+    overflow: "hidden",
     background: scrolled ? "rgba(255, 255, 255, 0.22)" : "rgba(255, 255, 255, 0.12)",
     backdropFilter: "blur(24px) saturate(1.5)",
     WebkitBackdropFilter: "blur(24px) saturate(1.5)",
@@ -951,14 +953,47 @@ export default function CamdenPortfolio() {
     setHeadshotTilt({ x: 0, y: 0 });
   }, []);
 
+  // TEMPORARY: Debug scroll trap — find elements with overflow hidden that could block scroll momentum
+  useEffect(() => {
+    const all = document.querySelectorAll("*");
+    const problems = [];
+
+    all.forEach((el) => {
+      const style = window.getComputedStyle(el);
+      const overflow = style.overflow;
+      const overflowY = style.overflowY;
+      const position = style.position;
+      const height = style.height;
+
+      if (
+        (overflow === "hidden" || overflowY === "hidden") &&
+        el.offsetHeight > 200 &&
+        el.tagName !== "IMG" &&
+        el.tagName !== "CANVAS"
+      ) {
+        problems.push({
+          tag: el.tagName,
+          class: el.className?.substring?.(0, 50),
+          id: el.id,
+          overflow,
+          overflowY,
+          height: el.offsetHeight,
+          position,
+        });
+      }
+    });
+
+    console.log("=== SCROLL TRAP CANDIDATES ===");
+    console.table(problems);
+  }, []);
+
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, width: "100%", maxWidth: "100vw" }}>
+    <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, width: "100%" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-padding-top: 80px; overflow-x: hidden; width: 100%; }
-        body { overflow-x: hidden; width: 100%; }
+        html { scroll-padding-top: 80px; width: 100%; }
         ::selection { background: rgba(150, 150, 150, 0.2); }
         .mobile-nav-toggle { display: none !important; }
 
@@ -982,6 +1017,9 @@ export default function CamdenPortfolio() {
           .section-padding { padding-left: 24px !important; padding-right: 24px !important; }
           .hero-title { font-size: 48px !important; }
           .hero-tagline { font-size: 18px !important; }
+          .process-with-chat { grid-template-columns: 1fr !important; }
+          .process-chat-bubble-col { position: relative !important; top: auto !important; order: 2 !important; justify-content: flex-start !important; }
+          .ai-chat-bubble { max-width: 100% !important; }
         }
 
         @keyframes fadeUp {
@@ -1014,9 +1052,9 @@ export default function CamdenPortfolio() {
         variants={sectionVariants}
         style={{
           position: "relative",
-          overflowX: "hidden",
           width: "100vw",
           minHeight: "100vh",
+          overflow: "hidden",
           padding: 0,
           margin: 0,
           border: "none",
@@ -1625,7 +1663,7 @@ export default function CamdenPortfolio() {
         viewport={viewport}
         variants={sectionVariants}
         style={{
-          maxWidth: 1200, margin: "0 auto", padding: "100px 40px", overflowX: "hidden",
+          maxWidth: 1200, margin: "0 auto", padding: "100px 40px",
         }}
         className="section-padding"
       >
@@ -1634,28 +1672,55 @@ export default function CamdenPortfolio() {
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
-          className="two-col"
+          className="process-with-chat"
           style={{
-            display: "grid", gridTemplateColumns: "200px 1fr", gap: 40,
+            display: "grid",
+            gridTemplateColumns: "55% 45%",
+            gap: 40,
+            alignItems: "start",
           }}
         >
-          <Reveal direction="left">
+          <div
+            className="two-col"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "200px 1fr",
+              gap: 40,
+            }}
+          >
+            <Reveal direction="left">
+              <motion.div variants={staggerItem}>
+                <SectionLabel>{SITE_DATA.aiPhilosophy.title}</SectionLabel>
+              </motion.div>
+            </Reveal>
             <motion.div variants={staggerItem}>
-              <SectionLabel>{SITE_DATA.aiPhilosophy.title}</SectionLabel>
+              {SITE_DATA.aiPhilosophy.paragraphs.map((p, i) => (
+                <Reveal key={i} delay={0.1 * i} glowText>
+                  <p style={{
+                    fontFamily: FONT.body, fontSize: 16, lineHeight: 1.8,
+                    color: C.inkSoft, marginBottom: 24, maxWidth: 680,
+                  }}>
+                    {p}
+                  </p>
+                </Reveal>
+              ))}
             </motion.div>
-          </Reveal>
-          <motion.div variants={staggerItem}>
-            {SITE_DATA.aiPhilosophy.paragraphs.map((p, i) => (
-              <Reveal key={i} delay={0.1 * i} glowText>
-                <p style={{
-                  fontFamily: FONT.body, fontSize: 16, lineHeight: 1.8,
-                  color: C.inkSoft, marginBottom: 24, maxWidth: 680,
-                }}>
-                  {p}
-                </p>
-              </Reveal>
-            ))}
-          </motion.div>
+          </div>
+          <div
+            className="process-chat-bubble-col"
+            style={{
+              position: "sticky",
+              top: 120,
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              minHeight: 320,
+            }}
+          >
+            <Reveal direction="right" delay={0.2}>
+              <AIChatBubble />
+            </Reveal>
+          </div>
         </motion.div>
 
         <Divider spacing={80} />
@@ -1674,7 +1739,7 @@ export default function CamdenPortfolio() {
           <motion.div variants={staggerItem}>
             <SectionLabel>Capabilities</SectionLabel>
           </motion.div>
-          <motion.div variants={staggerItem} style={{ overflow: "hidden", maxWidth: "100%" }}>
+          <motion.div variants={staggerItem} style={{ maxWidth: "100%" }}>
             <SkillMarquee
               items={[
                 ...SITE_DATA.skills.find(s => s.category === "Product")?.items ?? [],

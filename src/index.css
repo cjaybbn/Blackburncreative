@@ -1,6 +1,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-padding-top: 80px; overflow-x: hidden; }
-body { -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+html { scroll-padding-top: 80px; }
+body { -webkit-font-smoothing: antialiased; }
 
 /* GlassButton: button materialize on load (3s, stronger initial blur) */
 @keyframes buttonMaterialize {
