@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@react-spring/web": "^10.0.3",
+    "@tinymomentum/liquid-glass-react": "^1.0.6",
     "framer-motion": "^12.36.0",
+    "liquid-glass": "^1.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",

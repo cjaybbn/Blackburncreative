@@ -15,7 +15,9 @@ export default function GlowCanvas({
   isHovered = false,
   seed = 0,
   startDelayMs = 1200,
+  borderRadius = 24,
 }) {
+  const radiusPx = typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius;
   const canvasRef = useRef(null);
   const offRef = useRef(null);
   const rafRef = useRef(null);
@@ -202,7 +204,7 @@ export default function GlowCanvas({
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        borderRadius: "24px",
+        borderRadius: radiusPx,
         zIndex: -1,
         pointerEvents: "none",
         opacity: 0,
@@ -214,7 +216,7 @@ export default function GlowCanvas({
         style={{
           width: "100%",
           height: "100%",
-          borderRadius: "24px",
+          borderRadius: radiusPx,
           filter: "blur(25px)",
           opacity: isHovered ? 1.0 : 0.75,
           transition: "opacity 0.4s ease",
