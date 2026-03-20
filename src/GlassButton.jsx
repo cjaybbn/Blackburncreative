@@ -173,6 +173,8 @@ export default function GlassButton({
       onMouseLeave={handleWrapperMouseLeave}
       style={{
         position: "relative",
+        padding: 40,
+        margin: -40,
         display: "inline-flex",
         overflow: "hidden",
         borderRadius: BORDER_RADIUS,

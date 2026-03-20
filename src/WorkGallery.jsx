@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import logoImg from "./logo.png";
+import SiteNav from "./Nav.jsx";
 
 /*
  * WorkGallery — Filtered portfolio gallery page
@@ -833,46 +834,7 @@ export default function WorkGallery() {
         }
       `}</style>
 
-      {/* ── Nav bar ── */}
-      <nav style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: "rgba(244, 241, 236, 0.92)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderBottom: `1px solid ${C.rule}`,
-      }}>
-        <div style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "0 40px",
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <img src={logoImg} alt="Home" style={{ height: 32, width: "auto", display: "block" }} />
-          </Link>
-          <a href="/" style={{
-            fontFamily: FONT.mono,
-            fontSize: 11,
-            letterSpacing: 1.5,
-            textTransform: "uppercase",
-            color: C.inkMuted,
-            textDecoration: "none",
-            transition: "color 0.2s",
-          }}
-            onMouseEnter={e => e.target.style.color = C.accent}
-            onMouseLeave={e => e.target.style.color = C.inkMuted}
-          >
-            ← Back to portfolio
-          </a>
-        </div>
-      </nav>
+      <SiteNav mode="page" pageLabel="Work" darkBackground={false} />
 
       {/* ── Header ── */}
       <header style={{
@@ -1054,6 +1016,36 @@ export default function WorkGallery() {
             No pieces in this category yet.
           </div>
         )}
+      </div>
+
+      {/* ── Lightpainting CTA ── */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px 70px", textAlign: "center" }}>
+        <Link
+          to="/lightpainting"
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 12,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: C.ink,
+            padding: "14px 28px",
+            borderRadius: 2,
+            textDecoration: "none",
+            border: `1px solid ${C.ruleStrong}`,
+            transition: "all 0.3s",
+            display: "inline-block",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.borderColor = C.accent;
+            e.target.style.color = C.accent;
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.borderColor = C.ruleStrong;
+            e.target.style.color = C.ink;
+          }}
+        >
+          View Lightpainting Gallery →
+        </Link>
       </div>
 
       {/* ── Footer ── */}

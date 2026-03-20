@@ -2,12 +2,10 @@ import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
-import { LiquidGlassContainer } from "@tinymomentum/liquid-glass-react";
-import "@tinymomentum/liquid-glass-react/dist/components/LiquidGlassBase.css";
-import logoImg from "./logo.png";
 import HeroBackground from "./HeroBackground";
 import GlassButton from "./GlassButton";
 import AIChatBubble from "./AIChatBubble";
+import SiteNav from "./Nav.jsx";
 
 const springConfig = { mass: 1, tension: 170, friction: 26 };
 const MAGNETIC_RADIUS = 100;
@@ -1111,7 +1109,7 @@ export default function CamdenPortfolio() {
         }
       `}</style>
 
-      <Nav activeSection={activeSection} />
+      <SiteNav activeSection={activeSection} mode="home" />
 
       {/* ═══ HERO ═══ */}
       <motion.section
@@ -1894,7 +1892,12 @@ export default function CamdenPortfolio() {
           <motion.div
             variants={staggerItem}
             style={{
-              marginTop: 40, textAlign: "center",
+              marginTop: 40,
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 14,
             }}
           >
             <Link to="/work"
@@ -1909,6 +1912,24 @@ export default function CamdenPortfolio() {
               onMouseLeave={e => { e.target.style.borderColor = C.ruleStrong; e.target.style.color = C.ink; }}
             >
               View full portfolio →
+            </Link>
+
+            <Link to="/lightpainting"
+              style={{
+                fontFamily: FONT.mono, fontSize: 12, letterSpacing: 1,
+                textTransform: "uppercase",
+                color: C.inkMuted,
+                padding: "14px 28px",
+                borderRadius: 2,
+                textDecoration: "none",
+                border: `1px solid ${C.ruleStrong}`,
+                transition: "all 0.3s",
+                display: "inline-block",
+              }}
+              onMouseEnter={e => { e.target.style.borderColor = C.accent; e.target.style.color = C.accent; }}
+              onMouseLeave={e => { e.target.style.borderColor = C.ruleStrong; e.target.style.color = C.inkMuted; }}
+            >
+              View Lightpainting Gallery →
             </Link>
           </motion.div>
         </motion.div>
