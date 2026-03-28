@@ -1,39 +1,16 @@
-import { useEffect, useState } from "react";
-
 /*
  * HeroBackground — Vibrant abstract gradient mesh
- * 
- * Colorful, organic flowing shapes that give the frosted glass 
- * buttons something rich to refract against — like the iOS 
+ *
+ * Colorful, organic flowing shapes that give the frosted glass
+ * buttons something rich to refract against — like the iOS
  * Control Center glass over a wallpaper.
  *
  * Palette derived from CB coral (#E05B5B) plus complementary tones.
+ * Orb drift is driven by CSS keyframe animations (orbDrift1-4 in index.css)
+ * to avoid continuous React state updates from a requestAnimationFrame loop.
  */
 
 export default function HeroBackground() {
-  const [time, setTime] = useState(0);
-
-  useEffect(() => {
-    let raf;
-    const start = Date.now();
-    const tick = () => {
-      setTime((Date.now() - start) / 1000);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  // Very slow organic drift
-  const d1x = Math.sin(time * 0.06) * 40;
-  const d1y = Math.cos(time * 0.04) * 30;
-  const d2x = Math.cos(time * 0.05) * 35;
-  const d2y = Math.sin(time * 0.07) * 25;
-  const d3x = Math.sin(time * 0.04) * 30;
-  const d3y = Math.cos(time * 0.06) * 35;
-  const d4x = Math.cos(time * 0.03) * 25;
-  const d4y = Math.sin(time * 0.05) * 20;
-
   return (
     <div style={{
       position: "absolute",
@@ -56,10 +33,11 @@ export default function HeroBackground() {
         height: "70%",
         top: "10%",
         right: "-5%",
-        transform: `translate(${d1x}px, ${d1y}px)`,
         background: "radial-gradient(ellipse at center, rgba(224, 91, 91, 0.55) 0%, rgba(224, 91, 91, 0.2) 40%, transparent 70%)",
         filter: "blur(60px)",
         pointerEvents: "none",
+        animation: "orbDrift1 84s ease-in-out infinite",
+        willChange: "transform",
       }} />
 
       {/* Orb 2 — Soft peach/apricot */}
@@ -69,10 +47,11 @@ export default function HeroBackground() {
         height: "60%",
         top: "25%",
         left: "-5%",
-        transform: `translate(${d2x}px, ${d2y}px)`,
         background: "radial-gradient(ellipse at center, rgba(245, 166, 120, 0.5) 0%, rgba(245, 166, 120, 0.15) 45%, transparent 70%)",
         filter: "blur(55px)",
         pointerEvents: "none",
+        animation: "orbDrift2 70s ease-in-out infinite",
+        willChange: "transform",
       }} />
 
       {/* Orb 3 — Dusty rose / mauve */}
@@ -82,10 +61,11 @@ export default function HeroBackground() {
         height: "55%",
         top: "5%",
         left: "25%",
-        transform: `translate(${d3x}px, ${d3y}px)`,
         background: "radial-gradient(ellipse at center, rgba(200, 130, 155, 0.45) 0%, rgba(200, 130, 155, 0.1) 45%, transparent 70%)",
         filter: "blur(50px)",
         pointerEvents: "none",
+        animation: "orbDrift3 92s ease-in-out infinite",
+        willChange: "transform",
       }} />
 
       {/* Orb 4 — Cool lavender (contrast) */}
@@ -95,13 +75,14 @@ export default function HeroBackground() {
         height: "45%",
         bottom: "5%",
         right: "15%",
-        transform: `translate(${d4x}px, ${d4y}px)`,
         background: "radial-gradient(ellipse at center, rgba(160, 140, 200, 0.3) 0%, rgba(160, 140, 200, 0.08) 45%, transparent 70%)",
         filter: "blur(45px)",
         pointerEvents: "none",
+        animation: "orbDrift4 104s ease-in-out infinite",
+        willChange: "transform",
       }} />
 
-      {/* Orb 5 — Warm highlight (top) */}
+      {/* Orb 5 — Warm highlight (top, static) */}
       <div style={{
         position: "absolute",
         width: "40%",
@@ -113,17 +94,18 @@ export default function HeroBackground() {
         pointerEvents: "none",
       }} />
 
-      {/* Orb 6 — Deep coral accent (bottom left) */}
+      {/* Orb 6 — Deep coral accent (bottom left, counter-drift) */}
       <div style={{
         position: "absolute",
         width: "30%",
         height: "40%",
         bottom: "10%",
         left: "-5%",
-        transform: `translate(${-d1x * 0.5}px, ${-d1y * 0.5}px)`,
         background: "radial-gradient(ellipse at center, rgba(200, 70, 70, 0.3) 0%, transparent 60%)",
         filter: "blur(50px)",
         pointerEvents: "none",
+        animation: "orbDrift1 84s ease-in-out infinite reverse",
+        willChange: "transform",
       }} />
 
       {/* Soft overall blur to blend everything smoothly */}

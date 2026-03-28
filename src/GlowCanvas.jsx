@@ -5,7 +5,7 @@ const PAD = 0;
 const SAMPLE_STEP = 3;
 const SCALE = 0.008;
 const BLUR = "25px";
-const DPR = 2;
+const DPR = 1;
 const HOVER_LERP_DURATION = 0.3;
 
 export default function GlowCanvas({
@@ -114,9 +114,7 @@ export default function GlowCanvas({
       }
 
       offCtx.putImageData(imageData, 0, 0);
-      ctx.filter = `blur(${BLUR})`;
       ctx.drawImage(offRef.current, 0, 0);
-      ctx.filter = "none";
   }, []);
 
   useEffect(() => {
@@ -221,6 +219,7 @@ export default function GlowCanvas({
           opacity: isHovered ? 1.0 : 0.75,
           transition: "opacity 0.4s ease",
           pointerEvents: "none",
+          willChange: "transform",
         }}
         aria-hidden
       />

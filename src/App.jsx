@@ -1051,16 +1051,50 @@ export default function CamdenPortfolio() {
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, width: "100%", maxWidth: "100vw", overflowX: "clip" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-padding-top: 80px; width: 100%; }
         ::selection { background: rgba(150, 150, 150, 0.2); }
         .mobile-nav-toggle { display: none !important; }
 
+        .nav-pill {
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+          transform: none !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+          overflow: visible !important;
+          padding: 10px 12px 14px !important;
+          box-sizing: border-box !important;
+        }
+        .nav-glass-wrap {
+          width: max-content !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+          flex: 0 1 auto !important;
+          min-width: 0 !important;
+          overflow: visible !important;
+        }
+        .nav-glass-wrap > * {
+          width: max-content !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+          box-sizing: border-box !important;
+          overflow: visible !important;
+        }
+        .nav-glass-wrap--page {
+          width: min(960px, calc(100vw - 24px)) !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+        }
+        .nav-glass-wrap--page > * {
+          width: 100% !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+        }
+
         @media (max-width: 768px) {
-          .nav-pill { left: 12px !important; right: 12px !important; width: calc(100vw - 24px) !important; max-width: calc(100vw - 24px) !important; transform: none !important; display: flex !important; justify-content: stretch !important; overflow: hidden !important; }
-          .nav-pill > div { width: 100% !important; max-width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
+          .nav-pill { padding: 10px 12px 16px !important; }
+          .nav-pill-inner-row { width: max-content !important; min-width: 0 !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
+          .nav-glass-wrap--page .nav-pill-inner-row { width: 100% !important; }
           .nav-pill-divider { display: none !important; }
           .desktop-nav { display: none !important; }
           .mobile-nav-toggle { display: flex !important; }
@@ -1257,7 +1291,7 @@ export default function CamdenPortfolio() {
                   width: "85%",
                   maxWidth: 420,
                   aspectRatio: "1/1",
-                  borderRadius: 20,
+                  borderRadius: headshotHovered ? "50%" : 20,
                   overflow: "hidden",
                   position: "relative",
                   border: headshotHovered ? "1px solid rgba(224, 91, 91, 0.2)" : "1px solid rgba(0, 0, 0, 0.06)",
@@ -1265,21 +1299,24 @@ export default function CamdenPortfolio() {
                     ? "0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1)"
                     : "0 8px 32px rgba(0, 0, 0, 0.08)",
                   transform: headshotHovered
-                    ? `perspective(800px) rotateX(${headshotTilt.x}deg) rotateY(${headshotTilt.y}deg) scale(1.02)`
+                    ? `perspective(800px) rotateX(${headshotTilt.x}deg) rotateY(${headshotTilt.y}deg) scale(1.03)`
                     : "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)",
-                  transition: "transform 0.3s cubic-bezier(0.03, 0.98, 0.52, 0.99), border-color 0.3s ease, box-shadow 0.3s ease",
+                  transition: "transform 0.3s cubic-bezier(0.03, 0.98, 0.52, 0.99), border-color 0.3s ease, box-shadow 0.3s ease, border-radius 0.35s ease",
                 }}
               >
                 <img
                   src="/headshot.png"
                   alt="Camden Blackburn"
+                  loading="eager"
+                  fetchPriority="high"
                   style={{
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
                     display: "block",
+                    transform: headshotHovered ? "scale(1.05)" : "scale(1)",
                     filter: headshotHovered ? "grayscale(20%) contrast(1) brightness(1)" : "grayscale(100%) contrast(1.05) brightness(1.02)",
-                    transition: "filter 0.6s ease",
+                    transition: "filter 0.6s ease, transform 0.35s ease",
                   }}
                 />
                 <div
@@ -1290,19 +1327,19 @@ export default function CamdenPortfolio() {
                     mixBlendMode: "color",
                     opacity: headshotHovered ? 0.15 : 0,
                     pointerEvents: "none",
-                    borderRadius: 20,
-                    transition: "opacity 0.6s ease",
+                    borderRadius: headshotHovered ? "50%" : 20,
+                    transition: "opacity 0.6s ease, border-radius 0.35s ease",
                   }}
                 />
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
-                    borderRadius: 20,
+                    borderRadius: headshotHovered ? "50%" : 20,
                     background: `radial-gradient(ellipse 60% 60% at ${headshotMouse.x}% ${headshotMouse.y}%, rgba(255,255,255,0.12) 0%, transparent 60%)`,
                     pointerEvents: "none",
                     opacity: headshotHovered ? 1 : 0,
-                    transition: "opacity 0.3s ease",
+                    transition: "opacity 0.3s ease, border-radius 0.35s ease",
                   }}
                 />
               </div>

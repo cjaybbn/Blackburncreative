@@ -19,10 +19,12 @@ const C = {
 
 const DARK_SECTION_IDS = ["realcopy"];
 
-const MAG_MAX_SCALE = 1.1;
-const MAG_PADDING_PX = 5; // extra pixels outside link bounds for reaction zone
+const MAX_SCALE = 1.08;
+const MAX_DISTANCE = 140; // px — subtle dock magnification
+/** Inside the glass: same value for side padding and gaps between items */
+const NAV_SPACING = 12;
 
-function NavLink({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBackground }) {
+function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, darkBackground }) {
   const linkRef = useRef(null);
   const leaveTimerRef = useRef(null);
   const [scale, setScale] = useState(1);
@@ -31,21 +33,19 @@ function NavLink({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBack
   const [isBouncing, setIsBouncing] = useState(false);
 
   useEffect(() => {
-    if (mouseX === null || !navRef?.current || !linkRef.current) {
+    if (navMouseX === null || !linkRef.current) {
       setScale(1);
       setMagnificationFactor(0);
       return;
     }
-    const navRect = navRef.current.getBoundingClientRect();
     const linkRect = linkRef.current.getBoundingClientRect();
-    const linkCenter = linkRect.left + linkRect.width / 2 - navRect.left;
-    const distance = Math.abs(mouseX - linkCenter);
-    const maxDistance = linkRect.width / 2 + MAG_PADDING_PX;
-    const factor = Math.max(0, 1 - distance / maxDistance);
-    const newScale = 1 + (MAG_MAX_SCALE - 1) * Math.pow(factor, 1.5);
+    const linkCenter = linkRect.left + linkRect.width / 2 - navLeft;
+    const distance = Math.abs(navMouseX - linkCenter);
+    const factor = Math.max(0, 1 - distance / MAX_DISTANCE);
+    const newScale = 1 + (MAX_SCALE - 1) * Math.pow(factor, 2);
     setScale(newScale);
     setMagnificationFactor(factor);
-  }, [mouseX, navRef]);
+  }, [navMouseX, navLeft]);
 
   useEffect(() => {
     if (!isBouncing) return;
@@ -57,7 +57,7 @@ function NavLink({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBack
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
   }, []);
 
-  const displayScale = isActive ? Math.max(scale, 1.05) : scale;
+  const displayScale = isActive ? Math.max(scale, 1.02) : scale;
 
   const handleMouseDown = () => {
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
@@ -78,32 +78,32 @@ function NavLink({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBack
     setIsPressed(false);
   };
 
-  const defaultInactiveColor = darkBackground ? "rgba(255, 255, 255, 0.85)" : "rgba(26, 24, 20, 0.5)";
+  const defaultInactiveColor = darkBackground ? "rgba(255, 255, 255, 0.92)" : "rgba(26, 24, 20, 0.78)";
   const coral = C.accent;
   const f = magnificationFactor;
-  const blendColor = darkBackground
-    ? `rgba(${Math.round(255 * (1 - f) + 224 * f)}, ${Math.round(255 * (1 - f) + 91 * f)}, ${Math.round(255 * (1 - f) + 91 * f)}, ${(0.85 * (1 - f) + 1 * f).toFixed(2)})`
-    : `rgba(${Math.round(26 * (1 - f) + 224 * f)}, ${Math.round(24 * (1 - f) + 91 * f)}, ${Math.round(20 * (1 - f) + 91 * f)}, ${(0.5 * (1 - f) + 1 * f).toFixed(2)})`;
+  // Subtle hover: keep text readable; tiny warm nudge only when magnified
+  const subtleHoverColor = darkBackground
+    ? `rgba(255, 255, 255, ${0.92 + 0.06 * f})`
+    : `rgba(26, 24, 20, ${0.78 + 0.12 * f})`;
+
+  const shouldTint = scale > 1.035;
+  const shouldBold = scale > 1.055;
 
   const innerStyle = {
     fontFamily: FONT.mono,
     fontSize: 11,
-    fontWeight: isActive ? 600 : 400 + Math.round(200 * f),
+    fontWeight: isActive ? 600 : shouldBold ? 500 : 400,
     letterSpacing: 1.5,
     textTransform: "uppercase",
-    color: isActive ? coral : f > 0 ? blendColor : defaultInactiveColor,
-    padding: "8px 16px",
+    color: isActive ? coral : f > 0 ? subtleHoverColor : defaultInactiveColor,
+    padding: `8px ${NAV_SPACING}px`,
     borderRadius: 8,
     cursor: "pointer",
     transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease",
     background: isActive
-      ? scale > 1.05
-        ? darkBackground
-          ? "rgba(255, 255, 255, 0.08)"
-          : "rgba(224, 91, 91, 0.05)"
-        : "transparent"
-      : f > 0
-        ? `rgba(224, 91, 91, ${0.05 * f})`
+      ? "transparent"
+      : shouldTint
+        ? "rgba(224, 91, 91, 0.035)"
         : "transparent",
     display: "inline-flex",
     alignItems: "center",
@@ -113,13 +113,13 @@ function NavLink({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBack
   };
 
   const wrapperStyle = {
-    transformOrigin: "center bottom",
+    transformOrigin: "center center",
     display: "inline-block",
     ...(isBouncing
       ? { animation: "glassPress 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }
       : {
           transform: `scale(${isPressed ? displayScale * 0.92 : displayScale})`,
-          transition: isPressed ? "transform 0.1s ease" : "transform 0.28s ease-out",
+          transition: isPressed ? "transform 0.1s ease" : "transform 0.12s ease-out",
         }),
   };
 
@@ -173,7 +173,8 @@ export default function Nav({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mouseX, setMouseX] = useState(null);
+  const [navMouseX, setNavMouseX] = useState(null);
+  const [navLeft, setNavLeft] = useState(0);
   const [navOverDark, setNavOverDark] = useState(darkBackground);
   const navRef = useRef(null);
   const logoRef = useRef(null);
@@ -223,27 +224,31 @@ export default function Nav({
   };
 
   const handleNavMouseMove = useCallback((e) => {
+    if (mode !== "home") return;
     if (window.innerWidth <= 768) return;
-    if (!navRef.current) return;
-    const rect = navRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    setMouseX(x);
-  }, []);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setNavMouseX(e.clientX - rect.left);
+    setNavLeft(rect.left);
+  }, [mode]);
 
-  const handleNavMouseLeave = useCallback(() => setMouseX(null), []);
+  const handleNavMouseLeave = useCallback(() => setNavMouseX(null), []);
 
   useEffect(() => {
-    if (mouseX === null || !navRef?.current || !logoRef.current) {
+    if (mode !== "home") {
+      setLogoScale(1);
+      return;
+    }
+    if (navMouseX === null || !navRef?.current || !logoRef.current) {
       setLogoScale(1);
       return;
     }
     const navRect = navRef.current.getBoundingClientRect();
     const logoRect = logoRef.current.getBoundingClientRect();
     const logoCenter = logoRect.left + logoRect.width / 2 - navRect.left;
-    const distance = Math.abs(mouseX - logoCenter);
+    const distance = Math.abs(navMouseX - logoCenter);
     const maxDist = 120;
-    setLogoScale(distance > 120 ? 1 : 1 + 0.12 * Math.pow(1 - distance / maxDist, 2));
-  }, [mouseX]);
+    setLogoScale(distance > 120 ? 1 : 1 + 0.06 * Math.pow(1 - distance / maxDist, 2));
+  }, [navMouseX, mode]);
 
   const links = [
     { id: "about", label: "About" },
@@ -263,23 +268,74 @@ export default function Nav({
           100% { transform: scale(1); }
         }
 
+        @keyframes noiseShift {
+          0% { background-position: 0 0; }
+          100% { background-position: 128px 128px; }
+        }
+
+        /* Fallback for browsers where backdrop-filter is unsupported/blocked.
+           The absolute fallback-surface div already provides a blur layer;
+           this rule additionally forces the LiquidGlassContainer to an
+           opaque background so the nav is never fully invisible. */
+        @supports not (backdrop-filter: blur(1px)) {
+          .nav-glass-fallback-surface {
+            background: rgba(244, 241, 236, 0.94) !important;
+            border: 1px solid rgba(0, 0, 0, 0.10) !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10) !important;
+          }
+        }
+
+        /* Centered dock; width hugs content; cap so it never overflows viewport */
+        .nav-pill {
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+          transform: none !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+          overflow: visible !important;
+          padding: 10px 12px 14px !important;
+          box-sizing: border-box !important;
+        }
+        .nav-glass-wrap {
+          width: max-content !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+          flex: 0 1 auto !important;
+          min-width: 0 !important;
+          overflow: visible !important;
+          position: relative !important;
+        }
+        .nav-glass-wrap > * {
+          width: max-content !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+          box-sizing: border-box !important;
+          overflow: visible !important;
+        }
+        /* Gallery routes: bar spans cap width so label can sit on the right */
+        .nav-glass-wrap--page {
+          width: min(960px, calc(100vw - 24px)) !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+        }
+        .nav-glass-wrap--page > * {
+          width: 100% !important;
+          max-width: min(960px, calc(100vw - 24px)) !important;
+        }
+
         @media (max-width: 768px) {
           .nav-pill {
-            left: 12px !important;
-            right: 12px !important;
-            width: calc(100vw - 24px) !important;
-            max-width: calc(100vw - 24px) !important;
-            transform: none !important;
-            display: flex !important;
-            justify-content: stretch !important;
-            overflow: hidden !important;
+            padding: 10px 12px 16px !important;
           }
-          .nav-pill > div {
-            width: 100% !important;
-            max-width: 100% !important;
+          .nav-pill-inner-row {
+            width: max-content !important;
+            min-width: 0 !important;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
+          }
+          .nav-glass-wrap--page .nav-pill-inner-row {
+            width: 100% !important;
           }
           .nav-pill-divider { display: none !important; }
           .desktop-nav { display: none !important; }
@@ -294,12 +350,31 @@ export default function Nav({
         style={{
           position: "fixed",
           top: 12,
-          left: "50%",
-          transform: "translateX(-50%)",
+          left: 0,
+          right: 0,
+          width: "100%",
           zIndex: 1000,
         }}
         className="nav-pill"
       >
+        <div className={`nav-glass-wrap${mode !== "home" ? " nav-glass-wrap--page" : ""}`}>
+        {/* Fallback surface: sits behind LiquidGlassContainer and is visible
+            when backdrop-filter fails — ensures nav is never fully transparent */}
+        <div
+          aria-hidden="true"
+          className="nav-glass-fallback-surface"
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: 50,
+            background: "rgba(248, 244, 240, 0.82)",
+            backdropFilter: "blur(10px) saturate(1.3)",
+            WebkitBackdropFilter: "blur(10px) saturate(1.3)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 20px rgba(0,0,0,0.07)",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
         <LiquidGlassContainer
           borderRadius={50}
           innerShadowColor="rgba(255, 255, 255, 0.5)"
@@ -310,72 +385,121 @@ export default function Nav({
           frostBlurRadius={2}
           noiseFrequency={0.009}
           noiseStrength={80}
-          width={700}
+          width={960}
           height={52}
           style={{
-            width: "auto",
-            minWidth: 200,
-            borderRadius: "50px",
+            width: mode === "home" ? "max-content" : "100%",
+            maxWidth: "min(960px, calc(100vw - 24px))",
+            minWidth: 0,
+            borderRadius: 50,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            background: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "none",
+            WebkitBackdropFilter: "none",
+            border: "none",
+            boxShadow: "none",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
+          {/* Specular highlight at the top edge */}
           <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 50,
+              pointerEvents: "none",
+              background:
+                "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Subtle animated internal glass noise */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 50,
+              overflow: "hidden",
+              pointerEvents: "none",
+              opacity: 0.04,
+              zIndex: 0,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage:
+                  'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'256\' height=\'256\' filter=\'url(%23n)\' opacity=\'0.5\'/%3E%3C/svg%3E")',
+                backgroundSize: "128px 128px",
+                mixBlendMode: "overlay",
+                animation: "noiseShift 8s linear infinite",
+              }}
+            />
+          </div>
+
+          <div
+            className="nav-pill-inner-row"
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 4,
-              padding: "8px 24px",
-              width: "100%",
-              justifyContent: mode === "home" ? "center" : "space-between",
+              gap: NAV_SPACING,
+              padding: `8px ${NAV_SPACING}px`,
+              width: mode === "home" ? "max-content" : "100%",
+              maxWidth: "min(960px, calc(100vw - 24px))",
+              justifyContent: mode === "home" ? "center" : "flex-start",
+              position: "relative",
+              zIndex: 2,
             }}
           >
-            {/* Logo (dock magnification) */}
-            <div
-              ref={logoRef}
-              onClick={() => (mode === "home" ? scrollTo(null) : (window.location.href = "/"))}
-              style={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                transform: `scale(${logoScale})`,
-                transformOrigin: "center bottom",
-                transition: "transform 0.28s ease-out",
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && (mode === "home" ? scrollTo(null) : (window.location.href = "/"))}
-            >
-              <img
-                src={logoImg}
-                alt="CB"
-                style={{
-                  height: 28,
-                  width: "auto",
-                  display: "block",
-                  filter: navOverDark ? "brightness(0) invert(1)" : "none",
-                  transition: "filter 0.25s ease",
-                  opacity: mode === "home" ? 1 : 0.3,
-                }}
-              />
-            </div>
-
             {mode === "home" ? (
               <>
+                {/* Logo — always original coral; dock magnification on home only */}
+                <div
+                  ref={logoRef}
+                  onClick={() => scrollTo(null)}
+                  style={{
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    transform: `scale(${logoScale})`,
+                    transformOrigin: "center bottom",
+                    transition: "transform 0.28s ease-out",
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && scrollTo(null)}
+                >
+                  <img
+                    src={logoImg}
+                    alt="CB"
+                    style={{
+                      height: 28,
+                      width: "auto",
+                      display: "block",
+                      transition: "opacity 0.25s ease",
+                    }}
+                  />
+                </div>
                 <div
                   className="nav-pill-divider"
                   style={{
                     width: 1,
                     height: 16,
                     background: navOverDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.08)",
-                    margin: "0 8px",
+                    margin: 0,
                     flexShrink: 0,
                     transition: "background 0.25s ease",
                   }}
                 />
                 {/* Desktop links */}
-                <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
+                <div style={{ display: "flex", gap: NAV_SPACING, alignItems: "center" }} className="desktop-nav">
                   {links.map((l) => (
                     <NavLink
                       key={l.id}
@@ -383,8 +507,8 @@ export default function Nav({
                       label={l.label}
                       href={l.href}
                       isActive={activeSection === l.id}
-                      mouseX={mouseX}
-                      navRef={navRef}
+                      navMouseX={navMouseX}
+                      navLeft={navLeft}
                       scrollTo={scrollTo}
                       darkBackground={navOverDark}
                     />
@@ -439,21 +563,15 @@ export default function Nav({
                 </div>
               </>
             ) : (
-              <div style={{ display: "flex", gap: 14, alignItems: "center", width: "100%", justifyContent: "flex-end" }}>
-                <div
-                  style={{
-                    fontFamily: FONT.mono,
-                    fontSize: 11,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    color: navOverDark ? "rgba(255,255,255,0.3)" : C.inkMuted,
-                    padding: "8px 0",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {pageLabel}
-                </div>
-
+              <div
+                style={{
+                  display: "flex",
+                  gap: NAV_SPACING,
+                  alignItems: "center",
+                  width: "100%",
+                  justifyContent: "flex-start",
+                }}
+              >
                 <Link
                   to={backHref}
                   style={{
@@ -461,20 +579,61 @@ export default function Nav({
                     fontSize: 11,
                     letterSpacing: 1.5,
                     textTransform: "uppercase",
-                    color: navOverDark ? "rgba(255,255,255,0.3)" : C.inkMuted,
+                    color: navOverDark ? "rgba(255, 255, 255, 0.92)" : "rgba(26, 24, 20, 0.78)",
                     textDecoration: "none",
                     whiteSpace: "nowrap",
-                    transition: "color 0.2s",
+                    transition: "opacity 0.2s ease",
+                    padding: "8px 0",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = C.accent)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = navOverDark ? "rgba(255,255,255,0.3)" : C.inkMuted)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = "0.75";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = "1";
+                  }}
                 >
                   ← Back
                 </Link>
+
+                <Link
+                  to="/"
+                  aria-label="Home"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    lineHeight: 0,
+                  }}
+                >
+                  <img
+                    src={logoImg}
+                    alt=""
+                    style={{
+                      height: 28,
+                      width: "auto",
+                      display: "block",
+                    }}
+                  />
+                </Link>
+
+                <div
+                  style={{
+                    fontFamily: FONT.mono,
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: navOverDark ? "rgba(255, 255, 255, 0.92)" : "rgba(26, 24, 20, 0.78)",
+                    padding: "8px 0",
+                    whiteSpace: "nowrap",
+                    marginLeft: "auto",
+                  }}
+                >
+                  {pageLabel}
+                </div>
               </div>
             )}
           </div>
         </LiquidGlassContainer>
+        </div>
       </nav>
 
       {mode === "home" && menuOpen && (

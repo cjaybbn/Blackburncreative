@@ -30,20 +30,41 @@ export default function GlassButton({
   const [isHovered, setIsHovered] = useState(false);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 });
 
+  // Pending values accumulate during mousemove; a single RAF flushes them
+  const pendingMousePos = useRef({ x: 50, y: 50 });
+  const pendingTilt = useRef({ rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 });
+  const rafPending = useRef(false);
+
   const seed = index * 100;
   const isLink = href && href !== "#";
 
+  const flushPending = useCallback(() => {
+    setMousePos({ ...pendingMousePos.current });
+    setTilt({ ...pendingTilt.current });
+    rafPending.current = false;
+  }, []);
+
+  const scheduleFlush = useCallback(() => {
+    if (!rafPending.current) {
+      rafPending.current = true;
+      requestAnimationFrame(flushPending);
+    }
+  }, [flushPending]);
+
   const handleWrapperMouseMove = useCallback((e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
+    pendingMousePos.current = {
       x: ((e.clientX - rect.left) / rect.width) * 100,
       y: ((e.clientY - rect.top) / rect.height) * 100,
-    });
-  }, []);
+    };
+    scheduleFlush();
+  }, [scheduleFlush]);
 
   const handleWrapperMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleWrapperMouseLeave = useCallback(() => {
     setIsHovered(false);
+    pendingMousePos.current = { x: 50, y: 50 };
+    pendingTilt.current = { rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 };
     setMousePos({ x: 50, y: 50 });
   }, []);
 
@@ -55,17 +76,19 @@ export default function GlassButton({
     const y = (e.clientY - rect.top) / rect.height;
     const cx = x - 0.5;
     const cy = y - 0.5;
-    setTilt({
+    pendingTilt.current = {
       rx: cy * -12,
       ry: cx * 12,
       tx: cx * 5,
       ty: cy * 3,
       mx: x * 100,
       my: y * 100,
-    });
-  }, []);
+    };
+    scheduleFlush();
+  }, [scheduleFlush]);
 
   const handleButtonMouseLeave = useCallback(() => {
+    pendingTilt.current = { rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 };
     setTilt({ rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 });
   }, []);
 
