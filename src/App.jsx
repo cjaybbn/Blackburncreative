@@ -1,95 +1,76 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Link } from "react-router-dom";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
 import HeroBackground from "./HeroBackground";
 import GlassButton from "./GlassButton";
 import AIChatBubble from "./AIChatBubble";
-import SiteNav from "./Nav.jsx";
+import SiteNav, { NAV_SCROLL_ROOT } from "./Nav.jsx";
+import SeoHead from "./SeoHead.jsx";
+import { SEO, HOME_JSON_LD_GRAPH } from "./seoConstants.js";
+import CaseStudyLayout from "./CaseStudyLayout.jsx";
+import { C, FONT, viewport, sectionVariants, staggerContainer, staggerItem } from "./theme.js";
 
 const springConfig = { mass: 1, tension: 170, friction: 26 };
 const MAGNETIC_RADIUS = 100;
 const MAX_PULL = 10;
-
-// Scroll-triggered animation config (amount: 0.1 = trigger when 10% visible)
-const viewport = { once: true, amount: 0.1 };
-const sectionVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { delayChildren: 0.15, staggerChildren: 0.1 },
-  },
-};
-const staggerItem = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
 const heroTitleVariants = {
   hidden: { opacity: 0, x: -60 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
-const heroTaglineVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.5, delay: 0.3 } },
-};
-
 // ─── CAMDEN BLACKBURN — PORTFOLIO ───────────────────────────────────────────
 // Editorial + Architectural aesthetic. Warm concrete, sharp type, intentional space.
 
 const SITE_DATA = {
+  /** Legal / schema name */
+  fullName: "Camden J Blackburn",
   name: "Camden Blackburn",
-  title: "AI Product Builder",
-  tagline: "Building products through relentless iteration and cutting-edge AI collaboration.",
+  tagline: "Building Scalable Systems through AI-Native Collaboration.",
+  heroMono: "SYSTEM DESIGN · ENTREPRENEURSHIP · AI-NATIVE BUILD",
   email: "Blackburncamden@gmail.com",
   phone: "(206) 321-6087",
   location: "Phoenix, AZ",
   school: "Arizona State University — B.S. Graphic Information Technology",
   graduation: "Summer 2026",
 
-  intro: `I'm a product builder, designer, and relentless experimenter at the intersection of AI and human-centered design. I've been using AI tools since their earliest public releases — not as a novelty, but as a fundamental part of how I think, create, and ship.
+  intro: `I operate as a product founder and system architect: framing problems, sequencing bets, and shipping MVPs with teams and agents side-by-side. My workflow is AI-native — Gemini, Vertex AI, Cursor, and disciplined prompts are part of the stack, not a slide deck afterthought.
 
-I built RealCopy, an AI-powered marketing platform for real estate agents, from concept to TestFlight beta with no traditional development background. I used prompt engineering, Gemini, Vertex AI, Supabase, and Cursor to bring it to life. When Google's lead designer for Gemini heard about my process, he reached out to meet with me — my perspective as a power user building real products with AI was valuable to his team.
+A concrete proof point: Google's Gemini design leadership reached out after learning how I build in production with their tools. The working sessions that followed shaped how I give structured product and UX feedback upstream — directly informing priorities on a product used at global scale. That collaboration is the standard I hold for every engagement: research-backed, specific, and tied to ship cycles.
 
-I'm finishing my degree at ASU and looking for roles where I can do what I do best: identify problems, design solutions, and use AI to build them.`,
-
-  realcopy: {
-    name: "RealCopy",
-    status: "Beta — TestFlight",
-    tagline: "AI-powered marketing and market intelligence for real estate agents",
-    description: "RealCopy started as a copywriting tool and evolved into a full marketing and data platform for real estate agents. It generates listing descriptions, social media content, and marketing copy — but it also pulls live market data to give agents property snapshots with comparable sales, pricing analysis, and neighborhood context. One app replaces a copywriter, a data analyst, and a social media manager.",
-    process: [
-      { phase: "Problem", detail: "Real estate agents waste 3-5 hours per listing juggling marketing content and market research across multiple tools. Most end up with generic copy and outdated comps." },
-      { phase: "Research", detail: "Interviewed agents, analyzed competitors like Jasper and Copy.ai. Found that no tool combined AI content generation with real property data — comps, sale prices, neighborhood stats." },
-      { phase: "Design", detail: "Designed for agents working between showings — every flow is under 3 taps. Property snapshots surface comps, recently sold prices, and comparable listings alongside the generated content." },
-      { phase: "Build", detail: "Expo/React Native frontend, Railway backend, Supabase for data. Integrated Gemini and Vertex AI for content generation, Rentcast for property valuations and comps, Google Places for neighborhood data, and web queries for market context." },
-      { phase: "Ship", detail: "Deployed to TestFlight via EAS Build. Currently onboarding beta testers and iterating on content quality, data accuracy, and the market comps feature based on real agent feedback." },
-    ],
-    processDetails: [
-      { title: "The Pain Point", detail: "Agents juggle 10-15 active listings, each needing unique descriptions, social posts, market analysis, and comps. They use separate tools for writing, data, and social — or just copy-paste from old listings.", stat: "3-5 hrs", statLabel: "per listing on marketing + research", statPrefix: "3-", statValue: 5, statSuffix: " hrs" },
-      { title: "Competitive Gap", detail: "Existing AI writing tools generate generic copy. MLS platforms show data but don't write content. No product combined both — property-aware AI content plus live market intelligence in one interface.", stat: "0", statLabel: "competitors combining AI content + market data", statValue: 0 },
-      { title: "Speed-First UX", detail: "Agents work from their cars between showings. Property snapshots show comps, recent sales, and pricing analysis in a single scrollable view. Content generation is 3 taps: select listing, choose type, generate.", stat: "< 3", statLabel: "taps to generate or pull data", statPrefix: "< ", statValue: 3 },
-      { title: "Full-Stack AI Platform", detail: "Seven APIs working together. Gemini and Vertex AI handle content generation. Rentcast provides comp data and property valuations. Google Places adds neighborhood context. The prompt engineering layer makes each API's data available to the AI when generating content.", stat: "7", statLabel: "APIs integrated", statValue: 7 },
-      { title: "Beta & Iteration", detail: "Live on TestFlight. Iterating weekly based on agent feedback. Current focus: improving comp data accuracy, adding bulk content generation for agents with 10+ listings, and refining the property snapshot feature.", stat: "Live", statLabel: "on TestFlight" },
-    ],
-    stack: ["Expo / React Native", "Supabase", "Railway", "Gemini API", "Vertex AI", "Google Places API", "Rentcast API", "Cursor AI"],
-  },
+Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lead systems-level programs — including the ASU Polytechnic design language — and technical innovation such as BirdsEye (drone orthomosaic mapping and interactive construction maps). I'm completing my GIT degree at ASU and partner with teams that care about accessibility, performance, and narrative as much as velocity.`,
 
   aiPhilosophy: {
     title: "How I Use AI",
     paragraphs: [
       "I don't use AI to skip the work. I use it to do work that wouldn't exist otherwise. Before AI-assisted development, I had product ideas and design skills but no way to build them. Now I can take a concept from napkin sketch to working beta in weeks — not because AI does it for me, but because it amplifies what I already bring: taste, judgment, and an obsessive focus on the user experience.",
       "My workflow treats AI as a collaborator at every stage: Gemini for research and content architecture, Claude for strategic thinking and complex problem-solving, Cursor for prompt-engineered development, and Midjourney for rapid visual exploration. The skill isn't in using any one tool — it's in knowing which tool to reach for, what to ask it, and when to override its suggestions with your own judgment.",
-      "When Google's Gemini design team reached out to discuss my workflow, it confirmed something I'd suspected: the people building AI tools often have less insight into how those tools get used in real creative and product work than the people actually using them. That gap is where I operate.",
+      "Structured feedback to Google's Gemini design leaders on real-world product use reinforced a lesson I lead with: builders who live in the workflow often see constraints and opportunities that don't surface in lab conditions. I carry that lens into every system I architect.",
     ],
   },
+
+  /** Practice pillars — narrative IA for founder / architect positioning */
+  practicePillars: [
+    {
+      title: "Entrepreneurship",
+      description:
+        "DealerDeck LLC (automotive SaaS) and RealCopy (AI for realtors). Problem-to-MVP journeys, feasibility gates, and iteration loops grounded in customer evidence — not slideware.",
+    },
+    {
+      title: "Systems Architecture",
+      description:
+        "ASU Polytechnic design system — 6×6 isometric grid construction, Mother Shape narrative, and PM-owned orchestration across brand, digital, and environmental touchpoints.",
+    },
+    {
+      title: "Technical Innovation",
+      description:
+        "BirdsEye — drone orthomosaic pipelines, 3D models, and interactive construction maps that turn aerial capture into operational clarity for stakeholders.",
+    },
+    {
+      title: "Creative Excellence",
+      description:
+        "IPA-shortlisted photography and automotive lightpainting — editorial craft, composition, and lighting discipline that inform how I shape product and brand systems.",
+    },
+  ],
 
   designWork: [
     { title: "Brand Identity Systems", description: "Logo design, visual identity, brand guidelines for small businesses and personal projects." },
@@ -101,7 +82,7 @@ I'm finishing my degree at ASU and looking for roles where I can do what I do be
   ],
 
   skills: [
-    { category: "Product", items: ["Product Strategy", "UX Design", "User Research", "Rapid Prototyping", "Beta Testing"] },
+    { category: "Product", items: ["Product Strategy", "Founder-Led MVP", "Systems Thinking", "UX Design", "User Research", "Rapid Prototyping", "Beta Testing"] },
     { category: "AI Tools", items: ["Gemini / Vertex AI", "Claude", "Cursor AI", "Midjourney", "Prompt Engineering"] },
     { category: "Development", items: ["React Native / Expo", "Supabase", "Railway", "Node.js", "REST APIs"] },
     { category: "Design", items: ["Figma", "Adobe Creative Suite", "Photography", "Brand Identity", "Typography"] },
@@ -109,95 +90,199 @@ I'm finishing my degree at ASU and looking for roles where I can do what I do be
 
   professionalWork: [
     {
+      client: "RealCopy",
+      role: "Founder",
+      context: "PropTech / AI",
+      description:
+        "AI-powered marketing and market intelligence for real estate agents — property-aware copy, live comps, and social content in one mobile-first flow (TestFlight).",
+      tags: ["AI", "PropTech", "React Native"],
+      status: "Beta",
+      caseStudyId: "realcopy",
+    },
+    {
+      client: "DealerDeck LLC",
+      role: "Founder",
+      context: "Automotive SaaS",
+      description:
+        "Problem framing through MVP: dealer workflows, data handoffs, and roadmap sequencing for an automotive SaaS surface — feasibility, pilots, and AI-native build practices.",
+      tags: ["Entrepreneurship", "SaaS", "Automotive"],
+      status: "In Progress",
+      caseStudyId: "dealerdeck",
+    },
+    {
+      client: "BirdsEye",
+      role: "Technical Lead",
+      context: "Geospatial / Construction Tech",
+      description:
+        "Drone orthomosaic capture, 3D reconstruction, and interactive construction maps — aerial data as stakeholder-ready operational views.",
+      tags: ["Drones", "3D", "Mapping"],
+      status: "Case study",
+      caseStudyId: "birdseye",
+    },
+    {
+      client: "ASU Polytechnic Design System",
+      role: "Project Manager & Systems Architect",
+      context: "ASU Partnership",
+      description:
+        "Campus-wide design language on a 6×6 isometric grid with Mother Shape narrative — signage, digital, and environmental graphics under PM delivery.",
+      tags: ["Design System", "Grid Logic", "PM"],
+      status: "In Progress",
+      caseStudyId: "polytechnic",
+    },
+    {
       client: "TEDx Faurot Park",
       role: "Brand Designer",
       context: "ASU Design Agency Course",
-      description: "Developed the visual brand identity for TEDx Faurot Park including logo, event collateral, and brand guidelines. Collaborated within an agency team structure with creative direction, client presentations, and iterative feedback rounds.",
+      description: "Visual brand identity: logo, event collateral, and guidelines within an agency team — creative direction, client presentations, iterative rounds.",
       tags: ["Branding", "Logo Design", "Event Identity"],
       status: "Completed",
+      caseStudyId: "tedx",
     },
     {
       client: "Southwest Label & Print",
       role: "Lead Designer",
       context: "Client Project",
-      description: "Full brand redesign for an established printing company. Scope includes new logo, typography system, UX research, and a complete website redesign. Leading the project from research through final delivery.",
+      description: "Full brand redesign: logo, typography, UX research, and website — research through delivery for an established print company.",
       tags: ["Brand Redesign", "UX Research", "Web Design", "Logo"],
       status: "In Progress",
-    },
-    {
-      client: "ASU TEM Degree Program",
-      role: "Project Manager & Brand Designer",
-      context: "ASU Partnership",
-      description: "Managing the brand development for ASU's Technology Entrepreneurship and Management degree program. Delivering logo, typography system, color palette, and marketing collateral. Leading a team as project manager.",
-      tags: ["Project Management", "Branding", "Collateral", "Typography"],
-      status: "In Progress",
+      caseStudyId: "southwest",
     },
   ],
-};
 
-// ─── PALETTE ────────────────────────────────────────────────────────────────
-// Light/accent = logo; dark/background = rgba(42,6,17) shades; text = legible (dark on light, white on dark)
-const C = {
-  bg: "rgba(42, 6, 17, 0.1)",
-  bgAlt: "rgba(42, 6, 17, 0.15)",
-  surface: "rgba(42, 6, 17, 0.08)",
-  surfaceDim: "rgba(42, 6, 17, 0.05)",
-  ink: "rgba(42, 6, 17, 0.95)",
-  inkSoft: "rgba(42, 6, 17, 0.75)",
-  inkMuted: "rgba(42, 6, 17, 0.6)",
-  inkFaint: "rgba(42, 6, 17, 0.4)",
-  accent: "#E05B5B",
-  accentDim: "rgba(224, 91, 91, 0.08)",
-  accentLight: "rgba(224, 91, 91, 0.15)",
-  rule: "rgba(42, 6, 17, 0.1)",
-  ruleStrong: "rgba(150, 150, 150, 0.2)",
-  darkBg: "#141416",
-  inkOnDark: "rgba(255, 255, 255, 0.95)",
-  inkOnDarkMuted: "rgba(255, 255, 255, 0.7)",
-  inkOnDarkFaint: "rgba(255, 255, 255, 0.5)",
-};
-
-// ─── FONTS (loaded via Google Fonts link) ───────────────────────────────────
-const FONT = {
-  display: "'DM Serif Display', Georgia, serif",
-  body: "'DM Sans', -apple-system, sans-serif",
-  mono: "'JetBrains Mono', monospace",
+  /** Full case study payloads — same schema for CaseStudyLayout / inline panels */
+  caseStudyById: {
+    realcopy: {
+      name: "RealCopy",
+      status: "Beta — TestFlight",
+      description:
+        "RealCopy started as a copywriting tool and evolved into a full marketing and data platform for real estate agents. It generates listing descriptions, social media content, and marketing copy — but it also pulls live market data to give agents property snapshots with comparable sales, pricing analysis, and neighborhood context. One app replaces a copywriter, a data analyst, and a social media manager.",
+      process: [
+        { phase: "Problem", detail: "Real estate agents waste 3-5 hours per listing juggling marketing content and market research across multiple tools. Most end up with generic copy and outdated comps." },
+        { phase: "Research", detail: "Interviewed agents, analyzed competitors like Jasper and Copy.ai. Found that no tool combined AI content generation with real property data — comps, sale prices, neighborhood stats." },
+        { phase: "Design", detail: "Designed for agents working between showings — every flow is under 3 taps. Property snapshots surface comps, recently sold prices, and comparable listings alongside the generated content." },
+        { phase: "Build", detail: "Expo/React Native frontend, Railway backend, Supabase for data. Integrated Gemini and Vertex AI for content generation, Rentcast for property valuations and comps, Google Places for neighborhood data, and web queries for market context." },
+        { phase: "Ship", detail: "Deployed to TestFlight via EAS Build. Currently onboarding beta testers and iterating on content quality, data accuracy, and the market comps feature based on real agent feedback." },
+      ],
+      processDetails: [
+        { title: "The Pain Point", detail: "Agents juggle 10-15 active listings, each needing unique descriptions, social posts, market analysis, and comps. They use separate tools for writing, data, and social — or just copy-paste from old listings.", stat: "3-5 hrs", statLabel: "per listing on marketing + research", statPrefix: "3-", statValue: 5, statSuffix: " hrs" },
+        { title: "Competitive Gap", detail: "Existing AI writing tools generate generic copy. MLS platforms show data but don't write content. No product combined both — property-aware AI content plus live market intelligence in one interface.", stat: "0", statLabel: "competitors combining AI content + market data", statValue: 0 },
+        { title: "Speed-First UX", detail: "Agents work from their cars between showings. Property snapshots show comps, recent sales, and pricing analysis in a single scrollable view. Content generation is 3 taps: select listing, choose type, generate.", stat: "< 3", statLabel: "taps to generate or pull data", statPrefix: "< ", statValue: 3 },
+        { title: "Full-Stack AI Platform", detail: "Seven APIs working together. Gemini and Vertex AI handle content generation. Rentcast provides comp data and property valuations. Google Places adds neighborhood context. The prompt engineering layer makes each API's data available to the AI when generating content.", stat: "7", statLabel: "APIs integrated", statValue: 7 },
+        { title: "Beta & Iteration", detail: "Live on TestFlight. Iterating weekly based on agent feedback. Current focus: improving comp data accuracy, adding bulk content generation for agents with 10+ listings, and refining the property snapshot feature.", stat: "Live", statLabel: "on TestFlight" },
+      ],
+      stack: ["Expo / React Native", "Supabase", "Railway", "Gemini API", "Vertex AI", "Google Places API", "Rentcast API", "Cursor AI"],
+    },
+    dealerdeck: {
+      name: "DealerDeck LLC",
+      status: "In Progress — MVP",
+      description:
+        "Implmented and created SaaS solutions while working as Valet at BMW North Scottsdale. Developed a deep understanding of front end problems and used AI tools and methods to build solutions with foresight, integration into existing systems (CRM). and scalability in mind.",
+      stack: ["Product strategy", "React / web", "APIs", "Cursor AI", "Gemini", "Customer pilots"],
+      process: [
+        { phase: "Problem", detail: "Sales representatives spend hours typing into CRM software, a tool designed for managers and rarely effectively utilized by the representative. Customer information is often incomplete, incorrect, or absent alltogether." },
+        { phase: "Research", detail: "Spoke in depth with the sales team, managers, and the different facets and departments of the dealership. This gave me a bottom up understanding of the entire dealership ecosystem." },
+        { phase: "Design", detail: "Sales centric UI and workflow design, voice first app interaction enabling hands free mobile usage, encouraging data logging with zero friction. AI generated summaries and coaching notes, live accurate inventory recommendations and search tools, plug and play into any CRM system, curated feedback, followup reminders, and more. " },
+        { phase: "Build", detail: "Built using Claude code, cursor agentic AI, Gemini API, built in react native for android and ios, launched on apple testflight, constantly iterated based on realtime feedback, waiting for CRM swap to determine integration technique with the GM." },
+        { phase: "MVP", detail: "Pilot cohort onboarding, success metrics on time-to-publish and rep adoption; roadmap for compliance and multi-rooftop scale." },
+      ],
+      processDetails: [
+        { title: "CRM Compliance", detail: "Dealers rely on accurate and updated data based on sales to customer interactions to close deals and foster customer relationships.", stat: "70%", statLabel: "of sales missuse CRM software", statValue: 70, statSuffix: "%", statEntranceScale: true },
+        { title: "Disconnected", detail: "CRM software is not built with the sales rep in mind, requiring tedious manually entry of info and copy paste from email threads to keep track of customer information - providing little to no value to the sales rep.", stat: "6", statLabel: "per week salesman waste on CRM", statValue: 6, statSuffix: " hours" },
+        { title: "Frictionless", detail: "Designed to be used on the fly, use voice to log and AI takes care of the rest.", stat: "10", statLabel: "To log new data", statValue: 10, statSuffix: " seconds" },
+        { title: "AI guardrails", detail: "Editable content at every stop, deep AI understanding of dealership and brand lingo, and contextually aware AI to help the sales rep at every step.", stat: "99%", statLabel: "CRM adoption", statValue: 99, statSuffix: "%", statEntranceScale: true },
+        { title: "North star", detail: "Designing a better future for not only sales, but customer satisfaction, dealership metrics, and CRM compliance.", stat: "< 15", statLabel: "minutes sales should spend on CRM", statPrefix: "< ", statValue: 15 },
+      ],
+    },
+    birdseye: {
+      name: "BirdsEye",
+      status: "Case study",
+      description:
+        "Drone orthomosaic and 3D reconstruction for construction and site operations: repeatable flight plans, GCP-backed accuracy, and browser-based maps for supers and owners — not just pretty tiles, but decision surfaces.",
+      stack: ["Photogrammetry", "Pix4D / ODM", "GIS", "Three.js / web GL", "Python tooling"],
+      process: [
+        { phase: "Problem", detail: "Site teams relied on disjointed photo dumps and static PDFs; progress disputes slowed pay apps and safety walkthroughs." },
+        { phase: "Research", detail: "Compared capture frequencies, accuracy tolerances for earthwork, and how supers consume map data on tablets in the field." },
+        { phase: "Design", detail: "Layered orthomosaics with measurement, cut/fill overlays, and time-slider compare; WCAG-aware contrast for outdoor glare." },
+        { phase: "Build", detail: "Pipeline from RAW to tiles; 3D mesh for stakeholder flythroughs; export hooks for CAD/GIS handoff." },
+        { phase: "Deliver", detail: "Playbooks for flight ops, QA checklists, and client handoff packages — repeatable per site phase." },
+      ],
+      processDetails: [
+        { title: "Accuracy", detail: "GCP layout and camera model checks before sign-off on quantity disputes.", stat: "~5 cm", statLabel: "typical site accuracy band" },
+        { title: "Cadence", detail: "Weekly or milestone flights tied to schedule of values.", stat: "1×", statLabel: "min flights per active phase", statValue: 1 },
+        { title: "Stakeholder map", detail: "Owner, GC, subs, and safety leads each get filtered layers — same base ortho, different questions.", stat: "4", statLabel: "role-based views", statValue: 4 },
+        { title: "3D value", detail: "Mesh and contour exports for clash avoidance and as-built documentation.", stat: "3D", statLabel: "deliverable modes" },
+        { title: "Field UX", detail: "Offline-tolerant viewers where LTE is thin; large tap targets for gloved use.", stat: "60m", statLabel: "typical field review session" },
+      ],
+    },
+    polytechnic: {
+      name: "ASU Polytechnic Design System",
+      status: "In Progress",
+      description:
+        "Campus-scale visual system: 6×6 isometric construction grid, Mother Shape as the unifying mark logic, and PM-led rollout across environmental, digital, and print. Balances institutional restraint with polytechnic craft identity.",
+      stack: ["Grid systems", "Figma libraries", "Environmental graphics", "PM / Agile", "Brand narrative"],
+      process: [
+        { phase: "Problem", detail: "Fragmented vendor art and one-off campaigns weakened wayfinding and digital cohesion across Polytechnic sites." },
+        { phase: "Research", detail: "Audited touchpoints: signage, web templates, event graphics; synthesized constraints from facilities and communications." },
+        { phase: "Design", detail: "Defined Mother Shape rules, isometric module usage, typography tiers, and color accessibility checks for outdoor contrast." },
+        { phase: "Build", detail: "Component library, specimen docs, and templates for student makerspace outputs and official comms." },
+        { phase: "Ship", detail: "Phased adoption with training decks, office hours for college partners, and versioned asset drops." },
+      ],
+      processDetails: [
+        { title: "Grid logic", detail: "6×6 isometric module scales from poster to building placemaking without arbitrary stretching.", stat: "6×6", statLabel: "isometric base module" },
+        { title: "Mother Shape", detail: "Single rhetorical anchor — all sub-brands resolve to the core silhouette language.", stat: "1", statLabel: "unifying form system", statValue: 1 },
+        { title: "PM scope", detail: "Cross-team sequencing: facilities, web, recruitment events, and student portfolio shows.", stat: "12+", statLabel: "stakeholder groups engaged", statValue: 12 },
+        { title: "Accessibility", detail: "Type scale and contrast tested for exterior signage and low-light kiosks.", stat: "AA", statLabel: "contrast target (body text)" },
+        { title: "Adoption", detail: "Template downloads and office hours reduced one-off off-brand files.", stat: "↓", statLabel: "off-brand incidents (qualitative)" },
+      ],
+    },
+    tedx: {
+      name: "TEDx Faurot Park",
+      status: "Completed",
+      description:
+        "Brand system for a TEDx signature event: mark, collateral, social templates, and guidelines usable by a volunteer team — tight turnaround, high legibility, and stage-ready presence.",
+      stack: ["Brand identity", "Print & digital", "Event graphics", "Guidelines"],
+      process: [
+        { phase: "Problem", detail: "Needed a flexible identity that reads at arm’s length on stage and on phone screens for promotion." },
+        { phase: "Research", detail: "Mood boards aligned to speaker diversity and venue architecture; competitor scan of other TEDx marks." },
+        { phase: "Design", detail: "Wordmark, symbol lockups, color system with accessible pairs, and motion-safe static assets." },
+        { phase: "Build", detail: "Delivered print packs, slide master, and social kits; spec’d vendor color for signage." },
+        { phase: "Deliver", detail: "Handoff session with organizers; file naming and folder structure for volunteer editors." },
+      ],
+      processDetails: [
+        { title: "Legibility", detail: "Tested mark at 24px and on projection mockups before approval.", stat: "24px", statLabel: "min digital mark size", statValue: 24 },
+        { title: "Volunteer-ready", detail: "Non-designers could swap speaker photos without breaking grid.", stat: "100%", statLabel: "templates with safe zones", statValue: 100 },
+        { title: "Deliverables", detail: "Programs, wayfinding, stage lower-thirds, and social sets.", stat: "20+", statLabel: "asset families", statValue: 20 },
+        { title: "Timeline", detail: "Agency course cadence with client reviews every sprint.", stat: "4", statLabel: "review cycles", statValue: 4 },
+        { title: "Outcome", detail: "Cohesive event presence; foundation for future year refreshes.", stat: "Live", statLabel: "event deployment" },
+      ],
+    },
+    southwest: {
+      name: "Southwest Label & Print",
+      status: "In Progress",
+      description:
+        "Full brand redesign for a legacy print shop: new mark, typography system, UX research on quote and reorder flows, and a website that reflects craft while converting B2B leads.",
+      stack: ["Brand", "UX research", "Web design", "Print production"],
+      process: [
+        { phase: "Problem", detail: "Outdated identity and confusing web journey hid technical capabilities; enterprise buyers bounced before understanding services." },
+        { phase: "Research", detail: "Customer interviews, shop floor observation, and analytics on quote form abandonment." },
+        { phase: "Design", detail: "Logo system, color/type, component library for web; print swatch and proofing language aligned to production reality." },
+        { phase: "Build", detail: "Responsive site build in collaboration with dev; content model for capabilities and case snippets." },
+        { phase: "Ship", detail: "Rollout checklist: fleet graphics, stationery, and sales one-pagers — phased to production downtime." },
+      ],
+      processDetails: [
+        { title: "Research depth", detail: "Mixed methods: qualitative interviews plus funnel metrics.", stat: "12", statLabel: "stakeholder touchpoints", statValue: 12 },
+        { title: "Web goals", detail: "Clear service taxonomy and faster quote intent.", stat: "−40%", statLabel: "target form abandonment drop" },
+        { title: "Brand system", detail: "Logo, palette, type, voice — documented for external vendors.", stat: "1", statLabel: "single source PDF + Figma", statValue: 1 },
+        { title: "Print truth", detail: "Design respects die lines, ink limits, and shop jargon customers actually use.", stat: "✓", statLabel: "production-aware specs" },
+        { title: "Status", detail: "Website and fleet phases staggered around press maintenance windows.", stat: "Phased", statLabel: "rollout" },
+      ],
+    },
+  },
 };
 
 // ─── COMPONENTS ─────────────────────────────────────────────────────────────
 
-const AnimatedNumber = ({ value, suffix = "", prefix = "", duration = 1.5 }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    if (!isInView) return;
-    const numValue = parseInt(value.toString().replace(/[^0-9]/g, ""), 10) || 0;
-    const startTime = Date.now();
-    const tick = () => {
-      const elapsed = (Date.now() - startTime) / (duration * 1000);
-      if (elapsed >= 1) {
-        setDisplay(numValue);
-        return;
-      }
-      const eased = 1 - Math.pow(1 - elapsed, 3);
-      setDisplay(Math.floor(numValue * eased));
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [isInView, value, duration]);
-
-  return (
-    <span ref={ref}>
-      {prefix}
-      {isInView ? display.toLocaleString() : "0"}
-      {suffix}
-    </span>
-  );
-};
-
-const Reveal = ({ children, delay = 0, direction = "up", glowText = false }) => {
+const Reveal = ({ children, delay = 0, direction = "up", glowText = false, gridCell = false }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -225,6 +310,15 @@ const Reveal = ({ children, delay = 0, direction = "up", glowText = false }) => 
         overflow: "visible",
         overflowX: "visible",
         overflowY: "visible",
+        ...(gridCell
+          ? {
+              height: "100%",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignSelf: "stretch",
+            }
+          : {}),
       }}
       initial={{ opacity: 0, ...directions[direction] }}
       animate={isInView ? { opacity: 1, y: 0, x: 0 } : {}}
@@ -302,6 +396,11 @@ const DesignCard = ({ title, description, index }) => (
       padding: "28px 24px", background: C.surface,
       border: `1px solid ${C.rule}`, borderRadius: 2,
       cursor: "default",
+      boxSizing: "border-box",
+      height: "100%",
+      minHeight: 0,
+      display: "flex",
+      flexDirection: "column",
     }}
     whileHover={{
       scale: 1.02,
@@ -326,6 +425,7 @@ const DesignCard = ({ title, description, index }) => (
     <p style={{
       fontFamily: FONT.body, fontSize: 13, lineHeight: 1.6,
       color: C.inkMuted, margin: 0,
+      flex: 1,
     }}>
       {description}
     </p>
@@ -355,74 +455,104 @@ const SkillCluster = ({ category, items }) => (
   </div>
 );
 
-const SkillMarquee = ({ items, speed = 30, direction = "left", label }) => {
+const SkillMarquee = ({ items, speed = 30, direction = "left", label, fullWidth = false }) => {
   const [isPaused, setIsPaused] = useState(false);
   const allItems = [...items, ...items, ...items];
 
-  return (
-    <div style={{ marginBottom: 24 }}>
-      {label && (
-        <div style={{
-          fontFamily: FONT.mono, fontSize: 10, letterSpacing: 2,
-          textTransform: "uppercase", color: "rgba(74, 70, 64, 0.35)",
-          marginBottom: 10,
-        }}>
-          {label}
-        </div>
-      )}
-      <div
-        style={{
-          overflow: "hidden",
-          width: "100%",
-          padding: "12px 0",
-          maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+  const labelEl = label ? (
+    <div style={{
+      fontFamily: FONT.mono, fontSize: 10, letterSpacing: 2,
+      textTransform: "uppercase", color: "rgba(74, 70, 64, 0.35)",
+      marginBottom: 10,
+    }}>
+      {label}
+    </div>
+  ) : null;
+
+  const trackInner = (
+    <div
+      style={{
+        overflow: "hidden",
+        width: "100%",
+        padding: "12px 0",
+        maskImage: "linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)",
+      }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <motion.div
+        style={{ display: "flex", gap: 12, width: "max-content" }}
+        animate={{
+          x: direction === "left" ? [0, "-33.33%"] : ["-33.33%", 0],
         }}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+        transition={{
+          duration: isPaused ? 999999 : speed,
+          repeat: Infinity,
+          ease: "linear",
+        }}
       >
-        <motion.div
-          style={{ display: "flex", gap: 12, width: "max-content" }}
-          animate={{
-            x: direction === "left" ? [0, "-33.33%"] : ["-33.33%", 0],
-          }}
-          transition={{
-            duration: isPaused ? 999999 : speed,
-            repeat: Infinity,
-            ease: "linear",
+        {allItems.map((item, i) => (
+          <span
+            key={i}
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 13,
+              fontWeight: 500,
+              color: "rgba(74, 70, 64, 0.6)",
+              background: "rgba(0, 0, 0, 0.03)",
+              border: "1px solid rgba(0, 0, 0, 0.06)",
+              padding: "8px 18px",
+              borderRadius: 8,
+              whiteSpace: "nowrap",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={e => {
+              e.target.style.color = "#E05B5B";
+              e.target.style.borderColor = "rgba(224, 91, 91, 0.3)";
+              e.target.style.background = "rgba(224, 91, 91, 0.05)";
+            }}
+            onMouseLeave={e => {
+              e.target.style.color = "rgba(74, 70, 64, 0.6)";
+              e.target.style.borderColor = "rgba(0, 0, 0, 0.06)";
+              e.target.style.background = "rgba(0, 0, 0, 0.03)";
+            }}
+          >
+            {item}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+
+  if (fullWidth) {
+    return (
+      <div style={{ marginBottom: 24 }}>
+        {label ? (
+          <div
+            className="section-padding"
+            style={{ maxWidth: 1200, margin: "0 auto", paddingLeft: 40, paddingRight: 40 }}
+          >
+            {labelEl}
+          </div>
+        ) : null}
+        <div
+          style={{
+            width: "100vw",
+            marginLeft: "calc(50% - 50vw)",
+            overflow: "hidden",
           }}
         >
-          {allItems.map((item, i) => (
-            <span
-              key={i}
-              style={{
-                fontFamily: FONT.mono,
-                fontSize: 13,
-                fontWeight: 500,
-                color: "rgba(74, 70, 64, 0.6)",
-                background: "rgba(0, 0, 0, 0.03)",
-                border: "1px solid rgba(0, 0, 0, 0.06)",
-                padding: "8px 18px",
-                borderRadius: 8,
-                whiteSpace: "nowrap",
-                transition: "all 0.3s",
-              }}
-              onMouseEnter={e => {
-                e.target.style.color = "#E05B5B";
-                e.target.style.borderColor = "rgba(224, 91, 91, 0.3)";
-                e.target.style.background = "rgba(224, 91, 91, 0.05)";
-              }}
-              onMouseLeave={e => {
-                e.target.style.color = "rgba(74, 70, 64, 0.6)";
-                e.target.style.borderColor = "rgba(0, 0, 0, 0.06)";
-                e.target.style.background = "rgba(0, 0, 0, 0.03)";
-              }}
-            >
-              {item}
-            </span>
-          ))}
-        </motion.div>
+          {trackInner}
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 24 }}>
+      {labelEl}
+      {trackInner}
     </div>
   );
 };
@@ -615,382 +745,12 @@ const MagneticGlassButton = memo(function MagneticGlassButton({ href, children }
   );
 });
 
-// Sections with dark backgrounds (nav text switches to white when over these)
-const DARK_SECTION_IDS = ["realcopy"];
-
-// ─── NAV (frosted glass pill + dock magnification) ───────────────────────────
-const MAG_MAX_SCALE = 1.1;
-const MAG_PADDING_PX = 5; // extra pixels outside link bounds for reaction zone
-
-const NavLink = ({ label, id, href, isActive, mouseX, navRef, scrollTo, darkBackground }) => {
-  const linkRef = useRef(null);
-  const leaveTimerRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const [magnificationFactor, setMagnificationFactor] = useState(0);
-  const [isPressed, setIsPressed] = useState(false);
-  const [isBouncing, setIsBouncing] = useState(false);
-
-  useEffect(() => {
-    if (mouseX === null || !navRef?.current || !linkRef.current) {
-      setScale(1);
-      setMagnificationFactor(0);
-      return;
-    }
-    const navRect = navRef.current.getBoundingClientRect();
-    const linkRect = linkRef.current.getBoundingClientRect();
-    const linkCenter = linkRect.left + linkRect.width / 2 - navRect.left;
-    const distance = Math.abs(mouseX - linkCenter);
-    const maxDistance = linkRect.width / 2 + MAG_PADDING_PX;
-    const factor = Math.max(0, 1 - distance / maxDistance);
-    const newScale = 1 + (MAG_MAX_SCALE - 1) * Math.pow(factor, 1.5);
-    setScale(newScale);
-    setMagnificationFactor(factor);
-  }, [mouseX, navRef]);
-
-  useEffect(() => {
-    if (!isBouncing) return;
-    const t = setTimeout(() => setIsBouncing(false), 400);
-    return () => clearTimeout(t);
-  }, [isBouncing]);
-
-  useEffect(() => () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-  }, []);
-
-  const displayScale = isActive ? Math.max(scale, 1.05) : scale;
-  const handleMouseDown = () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-    setIsPressed(true);
-  };
-  const handleMouseUp = () => {
-    leaveTimerRef.current = setTimeout(() => {
-      leaveTimerRef.current = null;
-      setIsPressed(false);
-      setIsBouncing(true);
-    }, 150);
-  };
-  const handleMouseLeave = () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-    leaveTimerRef.current = null;
-    setIsPressed(false);
-  };
-
-  const defaultInactiveColor = darkBackground ? "rgba(255, 255, 255, 0.85)" : "rgba(26, 24, 20, 0.5)";
-  const coral = "#E05B5B";
-  const f = magnificationFactor;
-  const blendColor = darkBackground
-    ? `rgba(${Math.round(255 * (1 - f) + 224 * f)}, ${Math.round(255 * (1 - f) + 91 * f)}, ${Math.round(255 * (1 - f) + 91 * f)}, ${(0.85 * (1 - f) + 1 * f).toFixed(2)})`
-    : `rgba(${Math.round(26 * (1 - f) + 224 * f)}, ${Math.round(24 * (1 - f) + 91 * f)}, ${Math.round(20 * (1 - f) + 91 * f)}, ${(0.5 * (1 - f) + 1 * f).toFixed(2)})`;
-  const innerStyle = {
-    fontFamily: FONT.mono,
-    fontSize: 11,
-    fontWeight: isActive ? 600 : 400 + Math.round(200 * f),
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    color: isActive ? coral : (f > 0 ? blendColor : defaultInactiveColor),
-    padding: "8px 16px",
-    borderRadius: 8,
-    cursor: "pointer",
-    transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease",
-    background: isActive ? (scale > 1.05 ? (darkBackground ? "rgba(255, 255, 255, 0.08)" : "rgba(224, 91, 91, 0.05)") : "transparent") : (f > 0 ? `rgba(224, 91, 91, ${0.05 * f})` : "transparent"),
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    whiteSpace: "nowrap",
-    textDecoration: "none",
-  };
-
-  const wrapperStyle = {
-    transformOrigin: "center bottom",
-    display: "inline-block",
-    ...(isBouncing
-      ? { animation: "glassPress 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }
-      : {
-          transform: `scale(${isPressed ? displayScale * 0.92 : displayScale})`,
-          transition: isPressed ? "transform 0.1s ease" : "transform 0.28s ease-out",
-        }),
-  };
-
-  return (
-    <span
-      ref={linkRef}
-      style={wrapperStyle}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-    >
-      {href ? (
-        <Link to={href} style={innerStyle}>
-          {label}
-        </Link>
-      ) : (
-        <span
-          onClick={() => scrollTo(id)}
-          style={{ ...innerStyle, flexDirection: "column" }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={e => e.key === "Enter" && scrollTo(id)}
-        >
-          {label}
-          {isActive && (
-            <div style={{
-              width: 4, height: 4, borderRadius: "50%",
-              background: "#E05B5B",
-              margin: "4px auto 0",
-            }} />
-          )}
-        </span>
-      )}
-    </span>
-  );
-};
-
-const Nav = ({ activeSection }) => {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mouseX, setMouseX] = useState(null);
-  const [navOverDark, setNavOverDark] = useState(false);
-  const navRef = useRef(null);
-  const logoRef = useRef(null);
-  const [logoScale, setLogoScale] = useState(1);
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
-
-  useEffect(() => {
-    const checkSection = () => {
-      const navCenterY = 50;
-      const sectionIds = ["about", "realcopy", "experience", "process", "work", "contact"];
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= navCenterY && rect.bottom >= navCenterY) {
-          setNavOverDark(DARK_SECTION_IDS.includes(id));
-          return;
-        }
-      }
-      setNavOverDark(false);
-    };
-    checkSection();
-    window.addEventListener("scroll", checkSection, { passive: true });
-    window.addEventListener("resize", checkSection);
-    return () => {
-      window.removeEventListener("scroll", checkSection);
-      window.removeEventListener("resize", checkSection);
-    };
-  }, []);
-
-  const scrollTo = (id) => {
-    setMenuOpen(false);
-    if (id && id !== "about") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    else window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleNavMouseMove = useCallback((e) => {
-    if (window.innerWidth <= 768) return;
-    if (!navRef.current) return;
-    const rect = navRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    console.log("mouseX", x);
-    setMouseX(x);
-  }, []);
-  const handleNavMouseLeave = useCallback(() => setMouseX(null), []);
-
-  useEffect(() => {
-    if (mouseX === null || !navRef?.current || !logoRef.current) {
-      setLogoScale(1);
-      return;
-    }
-    const navRect = navRef.current.getBoundingClientRect();
-    const logoRect = logoRef.current.getBoundingClientRect();
-    const logoCenter = logoRect.left + logoRect.width / 2 - navRect.left;
-    const distance = Math.abs(mouseX - logoCenter);
-    const maxDist = 120;
-    setLogoScale(distance > 120 ? 1 : 1 + 0.12 * Math.pow(1 - distance / maxDist, 2));
-  }, [mouseX]);
-
-  const links = [
-    { id: "about", label: "About" },
-    { id: "realcopy", label: "RealCopy" },
-    { id: "experience", label: "Experience" },
-    { id: "process", label: "Process" },
-    { id: "work", label: "Work", href: "/work" },
-    { id: "contact", label: "Contact" },
-  ];
-
-  return (
-    <>
-      <nav
-        ref={navRef}
-        onMouseMove={handleNavMouseMove}
-        onMouseLeave={handleNavMouseLeave}
-        style={{
-          position: "fixed",
-          top: 12,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1000,
-        }}
-        className="nav-pill"
-      >
-        <LiquidGlassContainer
-          borderRadius={50}
-          innerShadowColor="rgba(255, 255, 255, 0.5)"
-          innerShadowBlur={20}
-          innerShadowSpread={-5}
-          glassTintColor="#ffffff"
-          glassTintOpacity={scrolled ? 14 : 10}
-          frostBlurRadius={2}
-          noiseFrequency={0.009}
-          noiseStrength={80}
-          width={700}
-          height={52}
-          style={{
-            width: "auto",
-            minWidth: 200,
-            borderRadius: "50px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "8px 24px",
-            }}
-          >
-            {/* Logo (dock magnification) */}
-            <div
-              ref={logoRef}
-              onClick={() => scrollTo(null)}
-              style={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                transform: `scale(${logoScale})`,
-                transformOrigin: "center bottom",
-                transition: "transform 0.28s ease-out",
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === "Enter" && scrollTo(null)}
-            >
-              <img src={logoImg} alt="Home" style={{ height: 28, width: "auto", display: "block", filter: navOverDark ? "brightness(0) invert(1)" : "none", transition: "filter 0.25s ease" }} />
-            </div>
-            <div className="nav-pill-divider" style={{
-              width: 1, height: 16, background: navOverDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.08)", margin: "0 8px", flexShrink: 0, transition: "background 0.25s ease",
-            }} />
-            {/* Desktop links */}
-            <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
-              {links.map(l => (
-                <NavLink
-                  key={l.id}
-                  id={l.id}
-                  label={l.label}
-                  href={l.href}
-                  isActive={activeSection === l.id}
-                  mouseX={mouseX}
-                  navRef={navRef}
-                  scrollTo={scrollTo}
-                  darkBackground={navOverDark}
-                />
-              ))}
-            </div>
-            {/* Mobile hamburger */}
-            <div
-              className="mobile-nav-toggle"
-              onClick={() => setMenuOpen(!menuOpen)}
-              style={{
-                width: 40,
-                height: 40,
-                cursor: "pointer",
-                display: "none",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-                gap: 5,
-              }}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-            >
-              <div style={{
-                width: 20, height: 2, background: navOverDark ? "rgba(255,255,255,0.9)" : C.ink,
-                transition: "transform 0.3s ease, background 0.25s ease",
-                transformOrigin: "center",
-                transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
-              }} />
-              <div style={{
-                width: 20, height: 2, background: navOverDark ? "rgba(255,255,255,0.9)" : C.ink,
-                transition: "opacity 0.3s ease, background 0.25s ease",
-                opacity: menuOpen ? 0 : 1,
-              }} />
-              <div style={{
-                width: 20, height: 2, background: navOverDark ? "rgba(255,255,255,0.9)" : C.ink,
-                transition: "transform 0.3s ease, background 0.25s ease",
-                transformOrigin: "center",
-                transform: menuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
-              }} />
-            </div>
-          </div>
-        </LiquidGlassContainer>
-      </nav>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 999,
-          background: "rgba(244, 241, 236, 0.98)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-          display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", gap: 32, paddingTop: 80,
-        }}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen(false)}
-            aria-label="Close menu"
-            style={{
-              position: "absolute", top: 20, right: 24,
-              width: 40, height: 40, padding: 0, border: "none",
-              background: "transparent", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#E05B5B",
-            }}
-          >
-            <span style={{ fontSize: 32, lineHeight: 1 }}>×</span>
-          </button>
-          {links.map(l => (
-            l.href ? (
-              <Link key={l.id} to={l.href} onClick={() => setMenuOpen(false)} style={{
-                fontFamily: FONT.display, fontSize: 28, fontStyle: "italic",
-                color: "#E05B5B", cursor: "pointer", textDecoration: "none",
-              }}>
-                {l.label}
-              </Link>
-            ) : (
-              <span key={l.id} onClick={() => { scrollTo(l.id); setMenuOpen(false); }} style={{
-                fontFamily: FONT.display, fontSize: 28, fontStyle: "italic",
-                color: "#E05B5B", cursor: "pointer",
-              }}>
-                {l.label}
-              </span>
-            )
-          ))}
-        </div>
-      )}
-    </>
-  );
-};
-
 // ─── MAIN ───────────────────────────────────────────────────────────────────
 export default function CamdenPortfolio() {
-  const [activeSection, setActiveSection] = useState("about");
+  const location = useLocation();
+  const navigate = useNavigate();
   const [heroReady, setHeroReady] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
+  const [openCaseStudyId, setOpenCaseStudyId] = useState(null);
   const [headshotTilt, setHeadshotTilt] = useState({ x: 0, y: 0 });
   const [headshotHovered, setHeadshotHovered] = useState(false);
   const [headshotMouse, setHeadshotMouse] = useState({ x: 50, y: 50 });
@@ -1008,24 +768,27 @@ export default function CamdenPortfolio() {
   }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id);
-        });
-      },
-      { rootMargin: "-30% 0px -60% 0px" }
-    );
-
-    setTimeout(() => {
-      ["about", "realcopy", "experience", "process", "work", "contact"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) observer.observe(el);
+    if (!location.state || !("scrollToId" in location.state)) return;
+    const scrollToId = location.state.scrollToId;
+    navigate(location.pathname, { replace: true, state: {} });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (scrollToId === NAV_SCROLL_ROOT || scrollToId === "about") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          document.getElementById(scrollToId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
-    }, 200);
+    });
+  }, [location.state, location.pathname, navigate]);
 
-    return () => observer.disconnect();
-  }, []);
+  useEffect(() => {
+    if (!openCaseStudyId) return;
+    const id = `pro-work-panel-${openCaseStudyId}`;
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }, [openCaseStudyId]);
 
   const headshotMouseMove = useCallback((e) => {
     const el = headshotRef.current;
@@ -1105,13 +868,16 @@ export default function CamdenPortfolio() {
           .process-grid { grid-template-columns: 1fr !important; }
           .process-detail-panel { display: none !important; }
           .pro-work-card-grid { grid-template-columns: 1fr !important; }
+          .pro-work-expandable .pro-work-card-grid {
+            padding: 20px 18px !important;
+            gap: 18px !important;
+          }
           .hero-grid { grid-template-columns: 1fr !important; }
           .hero-image-col { order: -1 !important; justify-content: center !important; }
           .hero-headshot-inner { max-width: 280px !important; margin-left: auto !important; margin-right: auto !important; }
           .hero-text-col { text-align: center !important; align-items: center !important; }
           .hero-text-col .hero-buttons { justify-content: center !important; }
           .section-padding { padding-left: 24px !important; padding-right: 24px !important; }
-          .hero-title { font-size: 48px !important; }
           .hero-tagline { font-size: 18px !important; }
           .process-with-chat { grid-template-columns: 1fr !important; }
           .process-chat-bubble-col { position: relative !important; top: auto !important; order: 2 !important; justify-content: flex-start !important; }
@@ -1143,11 +909,19 @@ export default function CamdenPortfolio() {
         }
       `}</style>
 
-      <SiteNav activeSection={activeSection} mode="home" />
+      <SeoHead
+        title={SEO.home.title}
+        description={SEO.home.description}
+        path={SEO.home.path}
+        jsonLd={HOME_JSON_LD_GRAPH}
+      />
+      <SiteNav />
 
+      <main id="main-content">
       {/* ═══ HERO ═══ */}
       <motion.section
         id="about"
+        aria-label="Introduction and hero"
         initial="hidden"
         animate={heroReady ? "visible" : "hidden"}
         variants={sectionVariants}
@@ -1220,8 +994,8 @@ export default function CamdenPortfolio() {
                 className="hero-title"
                 variants={heroTitleVariants}
                 style={{
-                  fontFamily: FONT.display, fontSize: 80, fontWeight: 400,
-                  lineHeight: 1.05, color: "#1A1814", marginBottom: 16, fontStyle: "italic",
+                  fontFamily: FONT.display, fontSize: 50, fontWeight: 400,
+                  lineHeight: 1.05, color: "#1A1814", marginBottom: 12, fontStyle: "italic",
                   letterSpacing: -1,
                 }}
               >
@@ -1232,10 +1006,10 @@ export default function CamdenPortfolio() {
               <Reveal delay={0.3}>
               <motion.p
                 className="hero-tagline"
-                variants={heroTaglineVariants}
+                variants={staggerItem}
                 style={{
                   fontFamily: FONT.body, fontSize: 22, lineHeight: 1.5,
-                  color: "rgba(74, 70, 64, 0.8)", maxWidth: 600, marginBottom: 36, fontWeight: 300,
+                  color: "rgba(74, 70, 64, 0.85)", maxWidth: 640, marginBottom: 28, fontWeight: 400,
                 }}
               >
                 {SITE_DATA.tagline}
@@ -1248,10 +1022,10 @@ export default function CamdenPortfolio() {
                 fontSize: 11,
                 letterSpacing: 3,
                 textTransform: "uppercase",
-                color: "rgba(80, 60, 50, 0.4)",
+                color: "rgba(80, 60, 50, 0.62)",
                 marginBottom: 32,
               }}>
-                AI Product Builder & Designer
+                {SITE_DATA.heroMono}
               </div>
               </Reveal>
 
@@ -1260,8 +1034,8 @@ export default function CamdenPortfolio() {
                 <GlassButton index={0} href="mailto:Blackburncamden@gmail.com">
                   Get in touch
                 </GlassButton>
-                <GlassButton index={1} animationDelay={0.15} onClick={() => document.getElementById("realcopy")?.scrollIntoView({ behavior: "smooth" })}>
-                  View case study →
+                <GlassButton index={1} animationDelay={0.15} onClick={() => document.getElementById("dealerdeck")?.scrollIntoView({ behavior: "smooth" })}>
+                  View case studies →
                 </GlassButton>
                 <GlassButton index={2} href="/camden-blackburn-resume.pdf" download>
                   Download Resume ↓
@@ -1355,6 +1129,7 @@ export default function CamdenPortfolio() {
         whileInView="visible"
         viewport={viewport}
         variants={sectionVariants}
+        aria-label="About"
         style={{
           maxWidth: 1200, margin: "0 auto", padding: "100px 40px",
         }}
@@ -1391,250 +1166,78 @@ export default function CamdenPortfolio() {
         </motion.div>
       </motion.section>
 
-      {/* ═══ REALCOPY CASE STUDY ═══ */}
+      {/* ═══ PRACTICE PILLARS ═══ */}
       <motion.section
-        id="realcopy"
-        initial={{ opacity: 0, scale: 0.98 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        id="pillars"
+        initial="hidden"
+        whileInView="visible"
         viewport={viewport}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        variants={sectionVariants}
+        aria-label="Practice areas"
         style={{
-          background: "#141416", color: C.inkOnDark, padding: "100px 0", margin: 0,
+          maxWidth: 1200, margin: "0 auto", padding: "0 40px 100px",
         }}
+        className="section-padding"
       >
         <motion.div
-          style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px" }}
-          className="section-padding"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
         >
           <Reveal>
-            <motion.div
-              variants={staggerItem}
-              style={{
-                fontFamily: FONT.mono, fontSize: 10, fontWeight: 500, letterSpacing: 3,
-                textTransform: "uppercase", color: C.accent, marginBottom: 20,
-                display: "flex", alignItems: "center", gap: 12,
-              }}
-            >
-              <div style={{ width: 20, height: 1, background: C.accent }} />
-              Featured Project
+            <motion.div variants={staggerItem}>
+              <SectionLabel>Practice</SectionLabel>
+              <h2 style={{
+                fontFamily: FONT.display, fontSize: 42, fontWeight: 400,
+                fontStyle: "italic", lineHeight: 1.15, marginBottom: 12, color: C.ink,
+              }}>
+                Founder, systems, and craft
+              </h2>
+              <p style={{
+                fontFamily: FONT.body, fontSize: 15, lineHeight: 1.6,
+                color: C.inkMuted, marginBottom: 40, maxWidth: 560,
+              }}>
+                How work is organized — from zero-to-one products to campus-scale design languages and field capture.
+              </p>
             </motion.div>
           </Reveal>
-
-          <motion.div
-            className="two-col"
-            variants={staggerItem}
-            style={{
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, marginBottom: 60,
-            }}
-          >
-            <div>
-              <Reveal delay={0.1}>
-                <h2 style={{
-                  fontFamily: FONT.display, fontSize: 52, fontWeight: 400,
-                  fontStyle: "italic", lineHeight: 1.1, marginBottom: 12,
-                }}>
-                  {SITE_DATA.realcopy.name}
-                </h2>
-              </Reveal>
-              <Reveal delay={0.15}>
-                <div style={{
-                  fontFamily: FONT.mono, fontSize: 11, letterSpacing: 1,
-                  color: C.accent, marginBottom: 24,
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
-                  {SITE_DATA.realcopy.status}
-                </div>
-              </Reveal>
-              <Reveal delay={0.2} glowText>
-                <p style={{
-                  fontFamily: FONT.body, fontSize: 16, lineHeight: 1.8,
-                  color: C.inkOnDarkMuted, maxWidth: 500,
-                }}>
-                  {SITE_DATA.realcopy.description}
-                </p>
-              </Reveal>
-            </div>
-
-            <Reveal delay={0.1} direction="right">
-            <div>
-              <div style={{
-                fontFamily: FONT.mono, fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: C.inkOnDarkFaint,
-                marginBottom: 16,
-              }}>
-                Tech Stack
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {SITE_DATA.realcopy.stack.map(s => (
-                  <motion.span
-                    key={s}
-                    style={{
-                      fontFamily: FONT.mono, fontSize: 11, fontWeight: 500,
-                      color: C.inkOnDarkMuted,
-                      background: "rgba(150, 150, 150, 0.2)",
-                      border: "1px solid rgba(150, 150, 150, 0.25)",
-                      padding: "6px 14px", borderRadius: 2,
-                    }}
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                  >
-                    {s}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-            </Reveal>
-          </motion.div>
-
-          {/* Process timeline */}
           <motion.div
             variants={staggerItem}
-            style={{
-              fontFamily: FONT.mono, fontSize: 10, letterSpacing: 2,
-              textTransform: "uppercase", color: C.inkOnDarkFaint,
-              marginBottom: 32,
-            }}
-          >
-            Development Process
-          </motion.div>
-          <motion.div
-            variants={staggerItem}
-            className="process-grid"
+            className="three-col design-card-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "55% 45%",
-              gap: 40,
-              alignItems: "start",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 16,
+              rowGap: 16,
+              columnGap: 16,
+              alignItems: "stretch",
             }}
           >
-            {/* Left: timeline steps */}
-            <div style={{ maxWidth: 600 }}>
-              {SITE_DATA.realcopy.process.map((step, i) => (
-                <Reveal key={i} delay={0.08 * i}>
-                <div
-                  onMouseEnter={() => setActiveStep(i)}
-                  style={{
-                    display: "flex",
-                    gap: 24,
-                    position: "relative",
-                    marginBottom: i < SITE_DATA.realcopy.process.length - 1 ? 8 : 0,
-                    padding: "16px 20px",
-                    borderRadius: 8,
-                    transition: "all 0.3s ease",
-                    cursor: "default",
-                    borderLeft: activeStep === i ? "2px solid #E05B5B" : "2px solid transparent",
-                    background: activeStep === i ? "rgba(224, 91, 91, 0.05)" : "transparent",
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 20 }}>
-                    <div style={{
-                      width: 10, height: 10, borderRadius: "50%",
-                      background: C.accent, border: `2px solid ${C.inkOnDark}`,
-                      boxShadow: `0 0 0 2px ${C.accent}`, zIndex: 1,
-                    }} />
-                    {i < SITE_DATA.realcopy.process.length - 1 && (
-                      <div style={{ width: 1, flex: 1, background: "rgba(224, 91, 91, 0.2)", marginTop: 4 }} />
-                    )}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontFamily: FONT.mono, fontSize: 10, fontWeight: 600,
-                      letterSpacing: 2, textTransform: "uppercase", color: C.accent,
-                      marginBottom: 6,
-                    }}>
-                      {String(i + 1).padStart(2, "0")} — {step.phase}
-                    </div>
-                    <Reveal glowText delay={0.08 * i}>
-                      <p style={{
-                        fontFamily: FONT.body, fontSize: 14, lineHeight: 1.7,
-                        color: C.inkOnDarkMuted, margin: 0,
-                      }}>
-                        {step.detail}
-                      </p>
-                    </Reveal>
-                  </div>
-                </div>
-                </Reveal>
-              ))}
-            </div>
-
-            {/* Right: detail panel */}
-            <div
-              className="process-detail-panel"
-              style={{
-                position: "sticky",
-                top: 100,
-                background: "rgba(255, 255, 255, 0.04)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: 16,
-                padding: 36,
-                minHeight: 280,
-              }}
-            >
-              {(() => {
-                const item = SITE_DATA.realcopy.processDetails[activeStep];
-                if (!item) return null;
-                return (
-                  <motion.div
-                    key={activeStep}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                  >
-                    <div style={{
-                      fontFamily: FONT.display,
-                      fontSize: 48,
-                      fontWeight: 800,
-                      color: "#E05B5B",
-                      marginBottom: 4,
-                    }}>
-                      {typeof item.statValue === "number" ? (
-                        <AnimatedNumber
-                          value={item.statValue}
-                          prefix={item.statPrefix || ""}
-                          suffix={item.statSuffix || ""}
-                        />
-                      ) : (
-                        item.stat
-                      )}
-                    </div>
-                    <div style={{
-                      fontFamily: FONT.mono,
-                      fontSize: 12,
-                      textTransform: "uppercase",
-                      letterSpacing: 2,
-                      color: "rgba(255, 255, 255, 0.4)",
-                      marginBottom: 28,
-                    }}>
-                      {item.statLabel}
-                    </div>
-                    <div style={{
-                      fontSize: 20,
-                      fontWeight: 700,
-                      color: "rgba(255, 255, 255, 0.9)",
-                      marginBottom: 12,
-                    }}>
-                      {item.title}
-                    </div>
-                    <p style={{
-                      fontSize: 14,
-                      lineHeight: 1.7,
-                      color: "rgba(255, 255, 255, 0.5)",
-                      margin: 0,
-                    }}>
-                      {item.detail}
-                    </p>
-                  </motion.div>
-                );
-              })()}
-            </div>
+            {SITE_DATA.practicePillars.map((pillar, i) => (
+              <Reveal key={pillar.title} delay={0.06 * i} gridCell>
+                <DesignCard title={pillar.title} description={pillar.description} index={i} />
+              </Reveal>
+            ))}
           </motion.div>
         </motion.div>
+      </motion.section>
+
+      {/* ═══ FEATURED CASE STUDY — DealerDeck ═══ */}
+      <motion.section
+        id="dealerdeck"
+        aria-label="DealerDeck case study"
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={viewport}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        style={{ margin: 0 }}
+      >
+        <CaseStudyLayout
+          study={SITE_DATA.caseStudyById.dealerdeck}
+          badgeLabel="Featured Project"
+          embedded
+        />
       </motion.section>
 
       {/* ═══ PROFESSIONAL WORK ═══ */}
@@ -1668,96 +1271,170 @@ export default function CamdenPortfolio() {
                 fontStyle: "italic", lineHeight: 1.15, marginBottom: 40,
               }}
             >
-              Client & Agency Projects
+              Projects and Case Studies
             </motion.h2>
           </Reveal>
-          {SITE_DATA.professionalWork.map((project, i) => (
+          {SITE_DATA.professionalWork.map((project, i) => {
+            const caseStudy = project.caseStudyId ? SITE_DATA.caseStudyById[project.caseStudyId] : null;
+            const isOpen = Boolean(caseStudy && openCaseStudyId === project.caseStudyId);
+            const toggleCaseStudy = caseStudy
+              ? () => setOpenCaseStudyId((prev) => (prev === project.caseStudyId ? null : project.caseStudyId))
+              : undefined;
+
+            return (
             <Reveal key={project.client} delay={0.1 * i}>
-              <motion.div
-                variants={staggerItem}
-                className="pro-work-card-grid"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "65% 35%",
-                  gap: 24,
-                  alignItems: "center",
-                  width: "100%",
-                  background: "rgba(0, 0, 0, 0.02)",
-                  border: "1px solid rgba(0, 0, 0, 0.05)",
-                  borderRadius: 16,
-                  padding: 32,
-                  marginBottom: 16,
-                  transition: "border-color 0.3s ease, box-shadow 0.3s ease",
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = "rgba(224, 91, 91, 0.2)";
-                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(224, 91, 91, 0.06)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.05)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+              <div
+                id={project.caseStudyId ? `pro-work-${project.caseStudyId}` : undefined}
+                className="pro-work-expandable"
+                style={{ marginBottom: "clamp(16px, 3vw, 24px)" }}
               >
-                <div>
-                  <div style={{
-                    fontFamily: FONT.display, fontSize: 24, fontStyle: "italic",
-                    color: C.ink,
-                  }}>
-                    {project.client}
+                <motion.div
+                  variants={staggerItem}
+                  className="pro-work-card-grid"
+                  role={caseStudy ? "button" : undefined}
+                  tabIndex={caseStudy ? 0 : undefined}
+                  aria-expanded={caseStudy ? isOpen : undefined}
+                  aria-controls={caseStudy ? `pro-work-panel-${project.caseStudyId}` : undefined}
+                  aria-label={
+                    caseStudy
+                      ? `${isOpen ? "Collapse" : "Expand"} case study: ${project.client}`
+                      : undefined
+                  }
+                  onClick={toggleCaseStudy}
+                  onKeyDown={
+                    toggleCaseStudy
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            toggleCaseStudy();
+                          }
+                        }
+                      : undefined
+                  }
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "65% 35%",
+                    gap: 24,
+                    alignItems: "center",
+                    width: "100%",
+                    background: "rgba(0, 0, 0, 0.02)",
+                    border: "1px solid rgba(0, 0, 0, 0.05)",
+                    borderRadius: isOpen ? "16px 16px 0 0" : 16,
+                    padding: "clamp(20px, 4vw, 32px)",
+                    marginBottom: 0,
+                    transition: "border-color 0.3s ease, box-shadow 0.3s ease, border-radius 0.25s ease",
+                    cursor: caseStudy ? "pointer" : "default",
+                    ...(isOpen
+                      ? {
+                          borderBottom: "none",
+                          borderColor: "rgba(224, 91, 91, 0.22)",
+                          boxShadow: "0 4px 20px rgba(224, 91, 91, 0.06)",
+                        }
+                      : {}),
+                  }}
+                  onMouseEnter={e => {
+                    if (isOpen) return;
+                    e.currentTarget.style.borderColor = "rgba(224, 91, 91, 0.2)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(224, 91, 91, 0.06)";
+                  }}
+                  onMouseLeave={e => {
+                    if (isOpen) return;
+                    e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.05)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div>
+                    <div style={{
+                      fontFamily: FONT.display, fontSize: 24, fontStyle: "italic",
+                      color: C.ink,
+                    }}>
+                      {project.client}
+                    </div>
+                    <div style={{
+                      fontFamily: FONT.mono, fontSize: 11, letterSpacing: 2,
+                      textTransform: "uppercase", color: C.inkMuted, marginTop: 4,
+                    }}>
+                      <span style={{ color: C.accent }}>{project.role}</span>
+                      {" — "}
+                      {project.context}
+                    </div>
+                    <p style={{
+                      fontFamily: FONT.body, fontSize: 14, lineHeight: 1.7,
+                      color: C.inkMuted, marginTop: 12, marginBottom: 0,
+                    }}>
+                      {project.description}
+                    </p>
                   </div>
                   <div style={{
-                    fontFamily: FONT.mono, fontSize: 11, letterSpacing: 2,
-                    textTransform: "uppercase", color: C.inkMuted, marginTop: 4,
+                    display: "flex", flexDirection: "column", alignItems: "flex-end",
+                    justifyContent: "center", gap: 12,
                   }}>
-                    <span style={{ color: C.accent }}>{project.role}</span>
-                    {" — "}
-                    {project.context}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
+                      {project.tags.map(tag => (
+                        <span
+                          key={tag}
+                          style={{
+                            fontFamily: FONT.mono, fontSize: 10,
+                            background: "rgba(0, 0, 0, 0.03)",
+                            border: "1px solid rgba(0, 0, 0, 0.06)",
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            color: C.inkMuted,
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: FONT.mono, fontSize: 10, letterSpacing: 1.5,
+                        textTransform: "uppercase",
+                        borderRadius: 6, padding: "4px 12px",
+                        ...(project.status === "Completed"
+                          ? { color: "#4A8C5C", background: "rgba(74, 140, 92, 0.08)", border: "1px solid rgba(74, 140, 92, 0.15)" }
+                          : { color: "#E05B5B", background: "rgba(224, 91, 91, 0.08)", border: "1px solid rgba(224, 91, 91, 0.15)" }
+                        ),
+                      }}
+                    >
+                      {project.status}
+                    </span>
                   </div>
-                  <p style={{
-                    fontFamily: FONT.body, fontSize: 14, lineHeight: 1.7,
-                    color: C.inkMuted, marginTop: 12, marginBottom: 0,
-                  }}>
-                    {project.description}
-                  </p>
-                </div>
-                <div style={{
-                  display: "flex", flexDirection: "column", alignItems: "flex-end",
-                  justifyContent: "center", gap: 12,
-                }}>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
-                    {project.tags.map(tag => (
-                      <span
-                        key={tag}
-                        style={{
-                          fontFamily: FONT.mono, fontSize: 10,
-                          background: "rgba(0, 0, 0, 0.03)",
-                          border: "1px solid rgba(0, 0, 0, 0.06)",
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          color: C.inkMuted,
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <span
-                    style={{
-                      fontFamily: FONT.mono, fontSize: 10, letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      borderRadius: 6, padding: "4px 12px",
-                      ...(project.status === "Completed"
-                        ? { color: "#4A8C5C", background: "rgba(74, 140, 92, 0.08)", border: "1px solid rgba(74, 140, 92, 0.15)" }
-                        : { color: "#E05B5B", background: "rgba(224, 91, 91, 0.08)", border: "1px solid rgba(224, 91, 91, 0.15)" }
-                      ),
-                    }}
-                  >
-                    {project.status}
-                  </span>
-                </div>
-              </motion.div>
+                </motion.div>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && caseStudy ? (
+                    <motion.div
+                      key={project.caseStudyId}
+                      id={`pro-work-panel-${project.caseStudyId}`}
+                      role="region"
+                      aria-labelledby={`case-study-heading-${project.caseStudyId}`}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      style={{
+                        border: "1px solid rgba(224, 91, 91, 0.2)",
+                        borderTop: "none",
+                        borderRadius: "0 0 16px 16px",
+                        overflow: "hidden",
+                        background: "#141416",
+                      }}
+                    >
+                      <CaseStudyLayout
+                        study={caseStudy}
+                        badgeLabel="Case Study"
+                        headingId={`case-study-heading-${project.caseStudyId}`}
+                        inline
+                        onClose={() => setOpenCaseStudyId(null)}
+                      />
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </div>
             </Reveal>
-          ))}
+            );
+          })}
         </motion.div>
       </motion.section>
 
@@ -1769,10 +1446,16 @@ export default function CamdenPortfolio() {
         viewport={viewport}
         variants={sectionVariants}
         style={{
-          maxWidth: 1200, margin: "0 auto", padding: "100px 40px",
+          width: "100%",
+          maxWidth: "100%",
+          padding: 0,
+          overflowX: "hidden",
         }}
-        className="section-padding"
       >
+        <div
+          style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 40px 0" }}
+          className="section-padding"
+        >
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -1828,24 +1511,29 @@ export default function CamdenPortfolio() {
             </Reveal>
           </div>
         </motion.div>
+        </div>
 
-        <Divider spacing={80} />
-
-        {/* Skills */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
-          className="two-col"
-          style={{
-            display: "grid", gridTemplateColumns: "200px 1fr", gap: 40,
-          }}
+          style={{ width: "100%", paddingBottom: 100 }}
         >
           <motion.div variants={staggerItem}>
-            <SectionLabel>Capabilities</SectionLabel>
+            <div
+              className="section-padding"
+              style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px" }}
+            >
+              <Divider spacing={80} />
+              <Reveal direction="left">
+                <div style={{ textAlign: "left" }}>
+                  <SectionLabel>Capabilities</SectionLabel>
+                </div>
+              </Reveal>
+            </div>
           </motion.div>
-          <motion.div variants={staggerItem} style={{ maxWidth: "100%" }}>
+          <motion.div variants={staggerItem} style={{ width: "100%" }}>
             <SkillMarquee
               items={[
                 ...SITE_DATA.skills.find(s => s.category === "Product")?.items ?? [],
@@ -1854,6 +1542,7 @@ export default function CamdenPortfolio() {
               speed={30}
               direction="left"
               label="Strategy & AI"
+              fullWidth
             />
             <SkillMarquee
               items={[
@@ -1863,6 +1552,7 @@ export default function CamdenPortfolio() {
               speed={38}
               direction="right"
               label="Build & Design"
+              fullWidth
             />
           </motion.div>
         </motion.div>
@@ -1913,14 +1603,19 @@ export default function CamdenPortfolio() {
           </Reveal>
 
           <motion.div
-            className="three-col"
+            className="three-col design-card-grid"
             variants={staggerItem}
             style={{
-              display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 16,
+              rowGap: 16,
+              columnGap: 16,
+              alignItems: "stretch",
             }}
           >
             {SITE_DATA.designWork.map((w, i) => (
-              <Reveal key={i} delay={(i % 3) * 0.1 + Math.floor(i / 3) * 0.15}>
+              <Reveal key={i} delay={(i % 3) * 0.1 + Math.floor(i / 3) * 0.15} gridCell>
                 <DesignCard title={w.title} description={w.description} index={i} />
               </Reveal>
             ))}
@@ -2013,7 +1708,7 @@ export default function CamdenPortfolio() {
                   fontFamily: FONT.body, fontSize: 16, lineHeight: 1.7,
                   color: C.inkSoft, maxWidth: 440,
                 }}>
-                  I'm looking for roles in AI product design, AI UX, or product management at companies building with and for AI. Open to full-time opportunities starting {SITE_DATA.graduation}.
+                  I'm looking for founder-track product roles, system architecture leadership, and AI-native teams where research, accessibility, and ship velocity share a roadmap. Open to full-time opportunities starting now {SITE_DATA.graduation}.
                 </p>
               </Reveal>
             </motion.div>
@@ -2083,6 +1778,8 @@ export default function CamdenPortfolio() {
           </Reveal>
         </motion.div>
       </motion.section>
+
+      </main>
 
       {/* ═══ FOOTER ═══ */}
       <motion.footer

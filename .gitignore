@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Raw captures exceed GitHub 100MB limit — use exported JPEG/PNG in repo
+public/work/lightpaint/*.TIF
+public/work/lightpaint/*.tif

@@ -2,6 +2,26 @@
 html { scroll-padding-top: 80px; }
 body { -webkit-font-smoothing: antialiased; }
 
+/* Global heading scale — inline heading styles may set family/weight; size is authoritative here */
+h1 {
+  font-size: 50pt !important;
+}
+h2 {
+  font-size: 30pt !important;
+}
+h3 {
+  font-size: 25pt !important;
+}
+
+/* WCAG-friendly keyboard focus — does not replace component-level focus where libraries paint rings */
+:focus-visible {
+  outline: 2px solid #E05B5B;
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* GlassButton: button materialize on load (3s) */
 @keyframes buttonMaterialize {
   0% { opacity: 0; transform: translateY(16px) scale(0.95); }

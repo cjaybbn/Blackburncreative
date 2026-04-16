@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { AnimatePresence, motion, useInView } from "framer-motion";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useScroll, useTransform } from "framer-motion";
 import SiteNav from "./Nav.jsx";
+import SeoHead from "./SeoHead.jsx";
+import { SEO } from "./seoConstants.js";
 
 // Ensure eslint counts `motion` as used (it is referenced in JSX).
 void motion;
@@ -69,7 +71,7 @@ const LIGHTPAINT_PHOTOS = [
   },
   {
     id: 5,
-    image: "/work/lightpaint/photo5.TIF",
+    image: "/work/lightpaint/photo5.jpg",
     title: "Violet Motion",
     description: "Violet light ribbons that feel like motion captured in a single breath.",
     glowColor: "rgba(165, 90, 255, 0.4)",
@@ -111,18 +113,8 @@ const Reveal = ({ children, delay = 0 }) => {
   );
 };
 
-const Lightbox = ({ item, glowColor, onClose, canHover }) => {
+const Lightbox = ({ item, glowColor, onClose }) => {
   const [imageError, setImageError] = useState(false);
-  const [tilt, setTilt] = useState({ x: 0.5, y: 0.5, hovered: false });
-
-  const imageRef = useRef(null);
-  const tiltPendingRef = useRef(null);
-  const rafIdRef = useRef(null);
-  const isHoverCapableRef = useRef(canHover);
-
-  useEffect(() => {
-    isHoverCapableRef.current = canHover;
-  }, [canHover]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -140,33 +132,6 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
       document.body.style.overflow = prevOverflow;
     };
   }, []);
-
-  const handleImageMouseMove = useCallback((e) => {
-    if (!isHoverCapableRef.current) return;
-    if (rafIdRef.current != null) return;
-    const el = imageRef.current;
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-
-    tiltPendingRef.current = { x, y, hovered: true };
-    rafIdRef.current = requestAnimationFrame(() => {
-      rafIdRef.current = null;
-      if (tiltPendingRef.current) setTilt(tiltPendingRef.current);
-    });
-  }, []);
-
-  const handleImageMouseLeave = useCallback(() => {
-    if (rafIdRef.current != null) cancelAnimationFrame(rafIdRef.current);
-    rafIdRef.current = null;
-    tiltPendingRef.current = null;
-    setTilt({ x: 0.5, y: 0.5, hovered: false });
-  }, []);
-
-  const tiltX = (tilt.y - 0.5) * -10;
-  const tiltY = (tilt.x - 0.5) * 10;
 
   if (!item) return null;
 
@@ -186,13 +151,10 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
         inset: 0,
         zIndex: 9999,
         background: "rgba(0, 0, 0, 0.95)",
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 22,
-        overflowY: "auto",
+        padding: 16,
       }}
     >
       <div
@@ -204,7 +166,7 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 18,
+          gap: 16,
         }}
       >
         {/* Close button */}
@@ -224,16 +186,23 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
             width: 44,
             height: 44,
             borderRadius: "50%",
-            background: "rgba(255,255,255,0.08)",
-            border: `1px solid ${C.ruleStrong}`,
+            background: "rgba(255,255,255,0.06)",
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer",
             zIndex: 2,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -247,130 +216,54 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
             justifyContent: "center",
           }}
         >
-          {/* Ambient glow (stronger, always visible) */}
+          {/* Photo-specific ambient glow */}
           <div
             aria-hidden="true"
             style={{
               position: "absolute",
-              inset: -92,
-              borderRadius: 20,
+              width: "80%",
+              height: "80%",
+              top: "10%",
+              left: "10%",
               background: `radial-gradient(ellipse at center, ${resolvedGlowColor} 0%, transparent 70%)`,
-              filter: "blur(90px)",
-              opacity: 0.2,
+              filter: "blur(60px)",
+              opacity: 0.35,
+              zIndex: -1,
               pointerEvents: "none",
             }}
           />
 
-          <div
-            style={{
-              position: "relative",
-              borderRadius: 4,
-              overflow: "visible",
-              width: "100%",
-              maxWidth: 860,
-            }}
-          >
-            <div style={{ perspective: "1200px", position: "relative" }}>
-              <div
-                ref={imageRef}
-                onMouseMove={handleImageMouseMove}
-                onMouseLeave={handleImageMouseLeave}
-                style={{
-                  position: "relative",
-                  borderRadius: 4,
-                  overflow: "hidden",
-                  cursor: canHover ? "default" : "pointer",
-                }}
-              >
-                {imageError ? (
-                  <div
-                    style={{
-                      width: "100%",
-                      aspectRatio: item.aspectRatio,
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "rgba(255,255,255,0.6)",
-                      fontFamily: FONT.mono,
-                      fontSize: 12,
-                      padding: 24,
-                    }}
-                  >
-                    Missing image: {item.title}
-                  </div>
-                ) : (
-                  <motion.img
-                    src={item.image}
-                    alt={item.title}
-                    onError={() => setImageError(true)}
-                    initial={{ opacity: 0, scale: 0.985 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.35, delay: 0.05 }}
-                    style={{
-                      width: "100%",
-                      maxHeight: "76vh",
-                      objectFit: "contain",
-                      display: "block",
-                      borderRadius: 4,
-                      position: "relative",
-                      zIndex: 1,
-                      transformStyle: "preserve-3d",
-                      transform:
-                        canHover && tilt.hovered
-                          ? `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.02)`
-                          : "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)",
-                      transition: canHover ? "transform 0.1s ease-out" : "none",
-                    }}
-                  />
-                )}
-
-                {/* Sheen on tilt */}
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                  borderRadius: 4,
-                    pointerEvents: "none",
-                    zIndex: 2,
-                    background:
-                      canHover && tilt.hovered
-                        ? `radial-gradient(ellipse at ${Math.round(tilt.x * 100)}% ${Math.round(
-                            tilt.y * 100
-                          )}%, rgba(255,255,255,0.12) 0%, transparent 55%), linear-gradient(${120 + tiltY * 4 + tiltX * 4}deg, transparent 34%, rgba(255,255,255,0.05) 50%, transparent 72%)`
-                        : "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 55%)",
-                    transition: "background 0.2s ease-out",
-                  }}
-                />
-
-              </div>
-            </div>
-          </div>
+          {imageError ? (
+            <LightpaintPlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
+          ) : (
+            <motion.img
+              src={item.image}
+              alt={item.title}
+              onError={() => setImageError(true)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                maxWidth: "90vw",
+                maxHeight: "85vh",
+                objectFit: "contain",
+                borderRadius: 4,
+                display: "block",
+              }}
+            />
+          )}
         </div>
 
+        {/* Title + description */}
         <div style={{ textAlign: "center", maxWidth: 720, paddingBottom: 22 }}>
-          <div
-            style={{
-              fontFamily: FONT.mono,
-              fontSize: 10,
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.25)",
-              marginBottom: 10,
-            }}
-          >
-            LIGHTPAINTING
-          </div>
           <h2
             style={{
               fontFamily: FONT.display,
-              fontSize: 34,
+              fontSize: 24,
               fontWeight: 400,
               fontStyle: "italic",
               color: "rgba(255,255,255,0.85)",
               marginBottom: 10,
-              lineHeight: 1.15,
             }}
           >
             {item.title}
@@ -378,7 +271,7 @@ const Lightbox = ({ item, glowColor, onClose, canHover }) => {
           <p
             style={{
               fontFamily: FONT.body,
-              fontSize: 14,
+              fontSize: 13,
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.35)",
               margin: 0,
@@ -440,7 +333,7 @@ const LightpaintCard = ({ item, index, onOpen, canHover }) => {
             position: "absolute",
             inset: -20,
             borderRadius: 16,
-            background: item.glowColor,
+            background: `radial-gradient(ellipse at center, ${item.glowColor} 0%, transparent 60%)`,
             filter: "blur(40px)",
             opacity: imageError ? 0 : undefined,
             transition: "opacity 0.5s ease",
@@ -490,6 +383,30 @@ const LightpaintCard = ({ item, index, onOpen, canHover }) => {
 export default function LightpaintGallery() {
   const [selected, setSelected] = useState(null);
   const [canHover, setCanHover] = useState(true);
+  const heroRef = useRef(null);
+  const [enableParallax, setEnableParallax] = useState(false);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start end", "end start"],
+  });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+
+  useEffect(() => {
+    const mq = window.matchMedia?.("(min-width: 769px)");
+    if (!mq) return;
+    const update = () => setEnableParallax(mq.matches);
+    update();
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+    // Safari fallback
+    if (typeof mq.addListener === "function") {
+      mq.addListener(update);
+      return () => mq.removeListener(update);
+    }
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia?.("(hover: hover) and (pointer: fine)");
@@ -510,7 +427,6 @@ export default function LightpaintGallery() {
     }
   }, []);
 
-  const headerMaxWidth = 600;
   const gridMaxWidth = 1100;
   const lightpaintPhotos = useMemo(() => LIGHTPAINT_PHOTOS, []);
 
@@ -524,21 +440,40 @@ export default function LightpaintGallery() {
         overflowX: "clip",
       }}
     >
+      <SeoHead
+        title={SEO.lightpainting.title}
+        description={SEO.lightpainting.description}
+        path={SEO.lightpainting.path}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::selection { background: rgba(255,255,255,0.12); }
 
-        @keyframes cornerTap {
-          0% { transform: scale(1) translate(0px, 0px); }
-          4% { transform: scale(1.15) translate(-2px, -2px); }
-          8% { transform: scale(1) translate(0px, 0px); }
-          12% { transform: scale(1.15) translate(-2px, -2px); }
-          16% { transform: scale(1) translate(0px, 0px); }
-          20% { transform: scale(1.12) translate(-1.5px, -1.5px); }
-          24% { transform: scale(1) translate(0px, 0px); }
-          100% { transform: scale(1) translate(0px, 0px); }
+        /* ─── Cinematic header reveal ─────────────────────────────────── */
+        @keyframes lightReveal {
+          0% { opacity: 0; filter: brightness(0) contrast(1.5); }
+          15% { opacity: 0.3; filter: brightness(0.2) contrast(2); }
+          40% { opacity: 0.7; filter: brightness(0.5) contrast(1.5); }
+          70% { opacity: 0.9; filter: brightness(0.85) contrast(1.15); }
+          100% { opacity: 1; filter: brightness(1) contrast(1); }
+        }
+
+        @keyframes redPulse {
+          0% { opacity: 0; transform: scale(0.8); }
+          20% { opacity: 0.8; transform: scale(1.1); }
+          50% { opacity: 0.5; transform: scale(1); }
+          100% { opacity: 0.15; transform: scale(1); }
+        }
+
+        @keyframes titleFadeIn {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+          .lightpaint-hero { height: 50vh !important; }
         }
 
         .lightpaint-img {
@@ -602,35 +537,110 @@ export default function LightpaintGallery() {
         }}
       />
 
-      <SiteNav mode="page" pageLabel="Lightpainting" darkBackground={true} />
+      <SiteNav />
 
-      <main style={{ position: "relative", zIndex: 1 }}>
-        {/* Header */}
-        <section style={{ maxWidth: gridMaxWidth, margin: "0 auto", padding: "120px 20px 60px" }}>
+      <main style={{ position: "relative", zIndex: 1, margin: 0, padding: 0 }}>
+        {/* Cinematic hero header — image flush to viewport top (no inset gap) */}
+        <section
+          ref={heroRef}
+          className="lightpaint-hero"
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "70vh",
+            background: "#050507",
+            overflow: "hidden",
+            margin: 0,
+            padding: 0,
+          }}
+        >
+          <motion.img
+            src="/work/lightpaint/header.jpg"
+            alt="Lightpainting gear"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: enableParallax ? "112%" : "100%",
+              minHeight: "100%",
+              objectFit: "cover",
+              objectPosition: "center center",
+              animation: "lightReveal 3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+              y: enableParallax ? parallaxY : 0,
+              zIndex: 0,
+            }}
+          />
+
+          {/* Red glow pulse (light wand powering on) */}
           <div
             style={{
-              maxWidth: headerMaxWidth,
-              margin: "0 auto",
+              position: "absolute",
+              top: "20%",
+              left: "25%",
+              width: "40%",
+              height: "30%",
+              background: "radial-gradient(ellipse at center, rgba(255, 40, 20, 0.25) 0%, transparent 70%)",
+              filter: "blur(40px)",
+              animation: "redPulse 3s ease-out forwards",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Bottom gradient — sits below title in stacking order so type stays pure white */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "40%",
+              background: "linear-gradient(to bottom, transparent 0%, #050507 100%)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          />
+
+          {/* Title overlay — above gradient */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "15%",
+              left: 0,
+              right: 0,
               textAlign: "center",
+              animation: "titleFadeIn 1.5s ease-out 1.8s both",
+              padding: "0 20px",
+              zIndex: 3,
             }}
           >
-            <div style={{ fontFamily: FONT.mono, fontSize: 10, letterSpacing: 4, color: "rgba(255,255,255,0.25)", textTransform: "uppercase" }}>
-              LIGHTPAINTING
-            </div>
-            <h1 style={{ fontFamily: FONT.display, fontSize: 42, fontWeight: 400, fontStyle: "italic", color: "rgba(255,255,255,0.85)", marginTop: 14, marginBottom: 12 }}>
-              Automotive Light Studies
-            </h1>
-            <p
+            <div
               style={{
-                fontFamily: FONT.body,
-                fontSize: 14,
-                lineHeight: 1.7,
-                color: "rgba(255,255,255,0.35)",
-                margin: 0,
+                fontFamily: FONT.mono,
+                fontSize: 10,
+                letterSpacing: 4,
+                textTransform: "uppercase",
+                color: "#ffffff",
+                marginBottom: 12,
+                opacity: 0.85,
               }}
             >
-              Long exposure lightpainting on automotive subjects. Each image is a single continuous exposure with handheld light sources.
-            </p>
+              LIGHTPAINTING
+            </div>
+            <h1
+              style={{
+                fontFamily: FONT.display,
+                fontSize: 48,
+                fontWeight: 400,
+                fontStyle: "italic",
+                color: "#ffffff",
+                margin: 0,
+                textShadow: "0 1px 24px rgba(0,0,0,0.35)",
+              }}
+            >
+              Automotive Light Studies
+            </h1>
           </div>
         </section>
 
@@ -663,7 +673,6 @@ export default function LightpaintGallery() {
             item={selected}
             glowColor={selected.glowColor}
             onClose={() => setSelected(null)}
-            canHover={canHover}
           />
         )}
       </AnimatePresence>

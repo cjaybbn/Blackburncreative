@@ -51,27 +51,14 @@ export default function GlassButton({
     }
   }, [flushPending]);
 
-  const handleWrapperMouseMove = useCallback((e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    pendingMousePos.current = {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    };
-    scheduleFlush();
-  }, [scheduleFlush]);
-
-  const handleWrapperMouseEnter = useCallback(() => setIsHovered(true), []);
-  const handleWrapperMouseLeave = useCallback(() => {
-    setIsHovered(false);
-    pendingMousePos.current = { x: 50, y: 50 };
-    pendingTilt.current = { rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 };
-    setMousePos({ x: 50, y: 50 });
-  }, []);
-
   const handleButtonMouseMove = useCallback((e) => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
+    pendingMousePos.current = {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
     const cx = x - 0.5;
@@ -87,8 +74,13 @@ export default function GlassButton({
     scheduleFlush();
   }, [scheduleFlush]);
 
+  const handleButtonMouseEnter = useCallback(() => setIsHovered(true), []);
+
   const handleButtonMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    pendingMousePos.current = { x: 50, y: 50 };
     pendingTilt.current = { rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 };
+    setMousePos({ x: 50, y: 50 });
     setTilt({ rx: 0, ry: 0, tx: 0, ty: 0, mx: 50, my: 50 });
   }, []);
 
@@ -139,7 +131,9 @@ export default function GlassButton({
       textDecoration: "none",
       userSelect: "none",
       WebkitUserSelect: "none",
+      pointerEvents: "auto",
     },
+    onMouseEnter: handleButtonMouseEnter,
     onMouseMove: handleButtonMouseMove,
     onMouseLeave: handleButtonMouseLeave,
     ...(isLink ? linkProps : { onClick }),
@@ -191,19 +185,15 @@ export default function GlassButton({
   return (
     <div
       ref={wrapperRef}
-      onMouseMove={handleWrapperMouseMove}
-      onMouseEnter={handleWrapperMouseEnter}
-      onMouseLeave={handleWrapperMouseLeave}
       style={{
         position: "relative",
-        padding: 40,
-        margin: -40,
         display: "inline-flex",
         overflow: "hidden",
         borderRadius: BORDER_RADIUS,
         opacity: 0,
         animation: "buttonMaterialize 3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
         animationDelay: `${animationDelay}s`,
+        pointerEvents: "none",
       }}
     >
       {isLink ? (

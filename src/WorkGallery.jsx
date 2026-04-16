@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import logoImg from "./logo.png";
 import SiteNav from "./Nav.jsx";
+import SeoHead from "./SeoHead.jsx";
+import { SEO } from "./seoConstants.js";
 
 /*
  * WorkGallery — Filtered portfolio gallery page
@@ -49,7 +51,7 @@ const WORK_ITEMS = [
     id: 1,
     category: "photography",
     title: "Italy — Flickering Faith",
-    description: "Shortlisted at the International Photography Awards. Shot during a family trip to Italy, December 2023.",
+    description: "Taken at the top of a moutain in a small town called Castel Nuovo, Naples, Italy. 2024 IPA award shortlisted.",
     image: "/work/photo-1.jpg",   // Replace with your actual file
     aspectRatio: "3/4",           // portrait
     featured: true,
@@ -58,7 +60,7 @@ const WORK_ITEMS = [
     id: 2,
     category: "photography",
     title: "Architectural Study",
-    description: "Exploring geometry and light in Italian architectural spaces.",
+    description: "Exploring geometry and light in Italian architectural spaces. - Rome, Italy",
     image: "/work/photo-3.jpg",
     aspectRatio: "3/4",          // landscape
   },
@@ -164,6 +166,28 @@ const WORK_ITEMS = [
     image: "/work/print-4.jpg",
     aspectRatio: "1/1",
   },
+  // ── CASE STUDIES ──
+  {
+    id: 15,
+    category: "caseStudies",
+    title: "TedX Faurot Park",
+    description: "Branding and marketing materials for the TedX Faurot Park event. Created in the GIT design agency at ASU in collaboration with fellow students.",
+    image: "/work/TedX.png",
+    aspectRatio: "4/3",
+    featured: true,
+    isCaseStudy: true,
+    embedUrl: "https://www.behance.net/embed/project/245479745?ilo0=1",
+  },
+  {
+    id: 16,
+    category: "caseStudies",
+    title: "Coffee and Protein Branding Project",
+    description: "Placeholder description — add final case study summary here.",
+    image: "",
+    aspectRatio: "4/3",
+    isCaseStudy: true,
+    embedUrl: "https://www.behance.net/embed/project/223615507?ilo0=1",
+  },
 ];
 
 const CATEGORIES = [
@@ -171,6 +195,7 @@ const CATEGORIES = [
   { id: "photography", label: "Photography" },
   { id: "brand", label: "Brand Identity" },
   { id: "print", label: "Print Design" },
+  { id: "caseStudies", label: "Case Studies" },
 ];
 
 // ─── REVEAL WRAPPER ───────────────────────────────────────────────────
@@ -250,7 +275,78 @@ const GalleryItem = ({ item, index, onOpen }) => {
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Image or placeholder */}
-        {imageError ? (
+        {item.isCaseStudy && !item.image ? (
+          <div
+            style={{
+              width: "100%",
+              aspectRatio: item.aspectRatio,
+              borderRadius: 12,
+              border: "1px solid rgba(0, 0, 0, 0.12)",
+              background:
+                "linear-gradient(140deg, rgba(26,24,20,0.06) 0%, rgba(224,91,91,0.10) 52%, rgba(26,24,20,0.08) 100%)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              padding: 20,
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 9,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                color: "rgba(26, 24, 20, 0.65)",
+              }}
+            >
+              Case Study Preview
+            </div>
+            <div
+              style={{
+                borderRadius: 8,
+                border: "1px solid rgba(0, 0, 0, 0.12)",
+                background: "rgba(255, 255, 255, 0.75)",
+                padding: "16px 14px",
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: FONT.display,
+                  fontStyle: "italic",
+                  fontSize: 20,
+                  color: C.ink,
+                  marginBottom: 6,
+                }}
+              >
+                {item.title}
+              </div>
+              <div
+                style={{
+                  fontFamily: FONT.body,
+                  fontSize: 12,
+                  lineHeight: 1.55,
+                  color: C.inkMuted,
+                }}
+              >
+                {item.description}
+              </div>
+            </div>
+            <div
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: C.accent,
+              }}
+            >
+              Click to open →
+            </div>
+          </div>
+        ) : imageError ? (
           <PlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
         ) : (
           <img
@@ -261,6 +357,7 @@ const GalleryItem = ({ item, index, onOpen }) => {
               width: "100%",
               aspectRatio: item.aspectRatio,
               objectFit: "cover",
+              objectPosition: item.isCaseStudy ? "100% center" : "center",
               display: "block",
               borderRadius: 12,
               transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
@@ -436,14 +533,45 @@ const Lightbox = ({ item, onClose }) => {
           width: "100%",
           display: "flex",
           gap: 40,
-          alignItems: "center",
+          alignItems: "flex-start",
           cursor: "default",
         }}
         className="lightbox-inner"
       >
-        {/* Image: photography = full treatment (flip, tilt, corner); other = simple image */}
+        {/* Image: case study embed / photography treatment / simple image */}
         <div style={{ flex: "1 1 60%", maxHeight: "80vh" }}>
-          {imageError ? (
+          {item.isCaseStudy ? (
+            <div
+              style={{
+                width: "100%",
+                maxHeight: "80vh",
+                borderRadius: 12,
+                overflow: "hidden",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "rgba(255,255,255,0.02)",
+                boxShadow: "0 12px 36px rgba(0,0,0,0.25)",
+              }}
+            >
+              <iframe
+                src={item.embedUrl}
+                title={item.title}
+                height="540"
+                width="100%"
+                allowFullScreen
+                loading="lazy"
+                frameBorder="0"
+                allow="clipboard-write"
+                referrerPolicy="strict-origin-when-cross-origin"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: "540px",
+                  border: "none",
+                  background: "#fff",
+                }}
+              />
+            </div>
+          ) : imageError ? (
             <PlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
           ) : isPhotography ? (
             <div style={{ perspective: "1200px", width: "100%", position: "relative" }}>
@@ -533,33 +661,6 @@ const Lightbox = ({ item, onClose }) => {
                         transition: "background 0.2s ease-out",
                       }}
                     />
-                    {/* Corner fold — only on hover; unfurls from corner; rounded to match photo; tap when visible */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        right: 0,
-                        width: 44,
-                        height: 44,
-                        transformOrigin: "bottom right",
-                        transform: tilt.hovered ? "scale(1)" : "scale(0)",
-                        opacity: tilt.hovered ? 1 : 0,
-                        transition: "transform 0.35s ease-out, opacity 0.3s ease-out",
-                        pointerEvents: "none",
-                        zIndex: 2,
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          background: "linear-gradient(135deg, transparent 15%, rgba(255,255,255,0.14) 40%, rgba(255,255,255,0.08) 60%, rgba(255,255,255,0.03) 85%, transparent 100%)",
-                          boxShadow: "inset 1px 1px 2px rgba(255,255,255,0.08)",
-                          borderRadius: "0 0 8px 0",
-                          animation: tilt.hovered ? "cornerTap 5s ease-in-out infinite" : "none",
-                        }}
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -801,6 +902,7 @@ export default function WorkGallery() {
     photography: WORK_ITEMS.filter(i => i.category === "photography").length,
     brand: WORK_ITEMS.filter(i => i.category === "brand").length,
     print: WORK_ITEMS.filter(i => i.category === "print").length,
+    caseStudies: WORK_ITEMS.filter(i => i.category === "caseStudies").length,
   };
 
   return (
@@ -809,6 +911,7 @@ export default function WorkGallery() {
       minHeight: "100vh",
       color: C.ink,
     }}>
+      <SeoHead title={SEO.work.title} description={SEO.work.description} path={SEO.work.path} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -822,19 +925,9 @@ export default function WorkGallery() {
         @media (min-width: 769px) and (max-width: 1024px) {
           .masonry-grid { columns: 2 !important; }
         }
-        @keyframes cornerTap {
-          0% { transform: scale(1) translate(0px, 0px); }
-          4% { transform: scale(1.15) translate(-2px, -2px); }
-          8% { transform: scale(1) translate(0px, 0px); }
-          12% { transform: scale(1.15) translate(-2px, -2px); }
-          16% { transform: scale(1) translate(0px, 0px); }
-          20% { transform: scale(1.12) translate(-1.5px, -1.5px); }
-          24% { transform: scale(1) translate(0px, 0px); }
-          100% { transform: scale(1) translate(0px, 0px); }
-        }
       `}</style>
 
-      <SiteNav mode="page" pageLabel="Work" darkBackground={false} />
+      <SiteNav />
 
       {/* ── Header ── */}
       <header style={{
@@ -909,9 +1002,7 @@ export default function WorkGallery() {
         maxWidth: 1200,
         margin: "0 auto",
         padding: "0 40px 40px",
-        position: "sticky",
-        top: 64,
-        zIndex: 100,
+        position: "relative",
       }}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}

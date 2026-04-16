@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LiquidGlassContainer } from "@tinymomentum/liquid-glass-react";
 import "@tinymomentum/liquid-glass-react/dist/components/LiquidGlassBase.css";
 import logoImg from "./logo.png";
@@ -17,7 +17,7 @@ const C = {
   accent: "#E05B5B",
 };
 
-const DARK_SECTION_IDS = ["realcopy"];
+const DARK_SECTION_IDS = ["dealerdeck"];
 
 const MAX_SCALE = 1.08;
 const MAX_DISTANCE = 140; // px — subtle dock magnification
@@ -57,7 +57,7 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
   }, []);
 
-  const displayScale = isActive ? Math.max(scale, 1.02) : scale;
+  const displayScale = isActive ? Math.max(scale, 1.045) : scale;
 
   const handleMouseDown = () => {
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
@@ -99,13 +99,15 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
     padding: `8px ${NAV_SPACING}px`,
     borderRadius: 8,
     cursor: "pointer",
-    transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease",
+    transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease, box-shadow 0.2s ease",
     background: isActive
-      ? "transparent"
+      ? "rgba(224, 91, 91, 0.12)"
       : shouldTint
         ? "rgba(224, 91, 91, 0.035)"
         : "transparent",
+    boxShadow: isActive ? "0 0 0 1px rgba(224, 91, 91, 0.28), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
     display: "inline-flex",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     whiteSpace: "nowrap",
@@ -132,19 +134,9 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
       onMouseLeave={handleMouseLeave}
     >
       {href ? (
-        <Link to={href} style={innerStyle}>
-          {label}
-        </Link>
-      ) : (
-        <span
-          onClick={() => scrollTo(id)}
-          style={{ ...innerStyle, flexDirection: "column" }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
-        >
-          {label}
-          {isActive && (
+        <Link to={href} style={innerStyle} aria-current={isActive ? "page" : undefined}>
+          <span style={{ lineHeight: 1.2 }}>{label}</span>
+          {isActive ? (
             <div
               style={{
                 width: 4,
@@ -152,8 +144,35 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
                 borderRadius: "50%",
                 background: "#E05B5B",
                 margin: "4px auto 0",
+                flexShrink: 0,
               }}
             />
+          ) : (
+            <span style={{ height: 4, marginTop: 4, display: "block" }} aria-hidden />
+          )}
+        </Link>
+      ) : (
+        <span
+          onClick={() => scrollTo(id)}
+          style={innerStyle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
+        >
+          <span style={{ lineHeight: 1.2 }}>{label}</span>
+          {isActive ? (
+            <div
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: "50%",
+                background: "#E05B5B",
+                margin: "4px auto 0",
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <span style={{ height: 4, marginTop: 4, display: "block" }} aria-hidden />
           )}
         </span>
       )}
@@ -161,24 +180,32 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
   );
 }
 
-export default function Nav({
-  // mode:
-  // - "home": full multi-section nav (used by /)
-  // - "page": slim nav for gallery routes (/work and /lightpainting)
-  mode = "home",
-  activeSection,
-  pageLabel,
-  backHref = "/",
-  darkBackground = false,
-}) {
+/** Sentinel for “scroll to top” when navigating home from another route */
+export const NAV_SCROLL_ROOT = "__root__";
+
+export default function Nav() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pathname = location.pathname;
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [navMouseX, setNavMouseX] = useState(null);
   const [navLeft, setNavLeft] = useState(0);
-  const [navOverDark, setNavOverDark] = useState(darkBackground);
+  /** Section id while viewing `/` (from IntersectionObserver) */
+  const [scrollSection, setScrollSection] = useState("about");
+  const [navOverDarkFromScroll, setNavOverDarkFromScroll] = useState(false);
   const navRef = useRef(null);
   const logoRef = useRef(null);
   const [logoScale, setLogoScale] = useState(1);
+
+  const activeSection = useMemo(() => {
+    if (pathname === "/work") return "work";
+    if (pathname === "/lightpainting") return "lightpainting";
+    return scrollSection;
+  }, [pathname, scrollSection]);
+
+  const navOverDark = pathname === "/lightpainting" || navOverDarkFromScroll;
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -187,25 +214,50 @@ export default function Nav({
   }, []);
 
   useEffect(() => {
-    setNavOverDark(darkBackground);
-  }, [darkBackground]);
+    if (pathname !== "/") return;
+
+    const sectionIds = ["about", "pillars", "dealerdeck", "experience", "process", "work", "contact"];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setScrollSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-30% 0px -60% 0px" }
+    );
+
+    const t = setTimeout(() => {
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    }, 200);
+
+    return () => {
+      clearTimeout(t);
+      observer.disconnect();
+    };
+  }, [pathname]);
 
   useEffect(() => {
-    if (mode !== "home") return;
+    if (pathname !== "/") {
+      setNavOverDarkFromScroll(false);
+      return;
+    }
 
     const checkSection = () => {
       const navCenterY = 50;
-      const sectionIds = ["about", "realcopy", "experience", "process", "work", "contact"];
+      const sectionIds = ["about", "pillars", "dealerdeck", "experience", "process", "work", "contact"];
       for (const id of sectionIds) {
         const el = document.getElementById(id);
         if (!el) continue;
         const rect = el.getBoundingClientRect();
         if (rect.top <= navCenterY && rect.bottom >= navCenterY) {
-          setNavOverDark(DARK_SECTION_IDS.includes(id));
+          setNavOverDarkFromScroll(DARK_SECTION_IDS.includes(id));
           return;
         }
       }
-      setNavOverDark(false);
+      setNavOverDarkFromScroll(false);
     };
 
     checkSection();
@@ -215,29 +267,40 @@ export default function Nav({
       window.removeEventListener("scroll", checkSection);
       window.removeEventListener("resize", checkSection);
     };
-  }, [mode]);
+  }, [pathname]);
 
-  const scrollTo = (id) => {
+  const scrollTo = useCallback(
+    (id) => {
+      setMenuOpen(false);
+      if (pathname !== "/") {
+        navigate("/", { state: { scrollToId: id == null || id === "about" ? NAV_SCROLL_ROOT : id } });
+        return;
+      }
+      if (id && id !== "about") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [navigate, pathname]
+  );
+
+  const goHomeTop = useCallback(() => {
     setMenuOpen(false);
-    if (id && id !== "about") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    else window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+    if (pathname !== "/") {
+      navigate("/", { state: { scrollToId: NAV_SCROLL_ROOT } });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [navigate, pathname]);
 
   const handleNavMouseMove = useCallback((e) => {
-    if (mode !== "home") return;
     if (window.innerWidth <= 768) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setNavMouseX(e.clientX - rect.left);
     setNavLeft(rect.left);
-  }, [mode]);
+  }, []);
 
   const handleNavMouseLeave = useCallback(() => setNavMouseX(null), []);
 
   useEffect(() => {
-    if (mode !== "home") {
-      setLogoScale(1);
-      return;
-    }
     if (navMouseX === null || !navRef?.current || !logoRef.current) {
       setLogoScale(1);
       return;
@@ -248,14 +311,16 @@ export default function Nav({
     const distance = Math.abs(navMouseX - logoCenter);
     const maxDist = 120;
     setLogoScale(distance > 120 ? 1 : 1 + 0.06 * Math.pow(1 - distance / maxDist, 2));
-  }, [navMouseX, mode]);
+  }, [navMouseX]);
 
   const links = [
     { id: "about", label: "About" },
-    { id: "realcopy", label: "RealCopy" },
+    { id: "pillars", label: "Practice" },
+    { id: "dealerdeck", label: "DealerDeck" },
     { id: "experience", label: "Experience" },
     { id: "process", label: "Process" },
     { id: "work", label: "Work", href: "/work" },
+    { id: "lightpainting", label: "Lightpaint", href: "/lightpainting" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -357,7 +422,7 @@ export default function Nav({
         }}
         className="nav-pill"
       >
-        <div className={`nav-glass-wrap${mode !== "home" ? " nav-glass-wrap--page" : ""}`}>
+        <div className="nav-glass-wrap">
         {/* Fallback surface: sits behind LiquidGlassContainer and is visible
             when backdrop-filter fails — ensures nav is never fully transparent */}
         <div
@@ -388,7 +453,7 @@ export default function Nav({
           width={960}
           height={52}
           style={{
-            width: mode === "home" ? "max-content" : "100%",
+            width: "max-content",
             maxWidth: "min(960px, calc(100vw - 24px))",
             minWidth: 0,
             borderRadius: 50,
@@ -451,19 +516,18 @@ export default function Nav({
               alignItems: "center",
               gap: NAV_SPACING,
               padding: `8px ${NAV_SPACING}px`,
-              width: mode === "home" ? "max-content" : "100%",
+              width: "max-content",
               maxWidth: "min(960px, calc(100vw - 24px))",
-              justifyContent: mode === "home" ? "center" : "flex-start",
+              justifyContent: "center",
               position: "relative",
               zIndex: 2,
             }}
           >
-            {mode === "home" ? (
-              <>
-                {/* Logo — always original coral; dock magnification on home only */}
+            <>
+                {/* Logo — dock magnification */}
                 <div
                   ref={logoRef}
-                  onClick={() => scrollTo(null)}
+                  onClick={goHomeTop}
                   style={{
                     cursor: "pointer",
                     display: "flex",
@@ -474,7 +538,7 @@ export default function Nav({
                   }}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && scrollTo(null)}
+                  onKeyDown={(e) => e.key === "Enter" && goHomeTop()}
                 >
                   <img
                     src={logoImg}
@@ -561,82 +625,13 @@ export default function Nav({
                     }}
                   />
                 </div>
-              </>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  gap: NAV_SPACING,
-                  alignItems: "center",
-                  width: "100%",
-                  justifyContent: "flex-start",
-                }}
-              >
-                <Link
-                  to={backHref}
-                  style={{
-                    fontFamily: FONT.mono,
-                    fontSize: 11,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    color: navOverDark ? "rgba(255, 255, 255, 0.92)" : "rgba(26, 24, 20, 0.78)",
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                    transition: "opacity 0.2s ease",
-                    padding: "8px 0",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = "0.75";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = "1";
-                  }}
-                >
-                  ← Back
-                </Link>
-
-                <Link
-                  to="/"
-                  aria-label="Home"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    lineHeight: 0,
-                  }}
-                >
-                  <img
-                    src={logoImg}
-                    alt=""
-                    style={{
-                      height: 28,
-                      width: "auto",
-                      display: "block",
-                    }}
-                  />
-                </Link>
-
-                <div
-                  style={{
-                    fontFamily: FONT.mono,
-                    fontSize: 11,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    color: navOverDark ? "rgba(255, 255, 255, 0.92)" : "rgba(26, 24, 20, 0.78)",
-                    padding: "8px 0",
-                    whiteSpace: "nowrap",
-                    marginLeft: "auto",
-                  }}
-                >
-                  {pageLabel}
-                </div>
-              </div>
-            )}
+            </>
           </div>
         </LiquidGlassContainer>
         </div>
       </nav>
 
-      {mode === "home" && menuOpen && (
+      {menuOpen && (
         <div
           style={{
             position: "fixed",
@@ -678,42 +673,59 @@ export default function Nav({
           >
             <span style={{ fontSize: 32, lineHeight: 1 }}>×</span>
           </button>
-          {links.map((l) =>
-            l.href ? (
+          {links.map((l) => {
+            const isOn = activeSection === l.id;
+            const baseMobile = {
+              fontFamily: FONT.display,
+              fontSize: 28,
+              fontStyle: "italic",
+              cursor: "pointer",
+              textDecoration: "none",
+              padding: "8px 20px",
+              borderRadius: 12,
+              transition: "background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease",
+            };
+            const activeMobile = {
+              color: "#E05B5B",
+              background: "rgba(224, 91, 91, 0.12)",
+              boxShadow: "0 0 0 1px rgba(224, 91, 91, 0.35)",
+            };
+            const idleMobile = {
+              color: "#E05B5B",
+              background: "transparent",
+              boxShadow: "none",
+            };
+            return l.href ? (
               <Link
                 key={l.id}
                 to={l.href}
                 onClick={() => setMenuOpen(false)}
-                style={{
-                  fontFamily: FONT.display,
-                  fontSize: 28,
-                  fontStyle: "italic",
-                  color: "#E05B5B",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                }}
+                style={{ ...baseMobile, ...(isOn ? activeMobile : idleMobile) }}
               >
                 {l.label}
               </Link>
             ) : (
               <span
                 key={l.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => {
                   scrollTo(l.id);
                   setMenuOpen(false);
                 }}
-                style={{
-                  fontFamily: FONT.display,
-                  fontSize: 28,
-                  fontStyle: "italic",
-                  color: "#E05B5B",
-                  cursor: "pointer",
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    scrollTo(l.id);
+                    setMenuOpen(false);
+                  }
                 }}
+                style={{ ...baseMobile, ...(isOn ? activeMobile : idleMobile) }}
               >
                 {l.label}
               </span>
-            )
-          )}
+            );
+          })}
         </div>
       )}
     </>
