@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { C, FONT, viewport, staggerContainer, staggerItem } from "./theme.js";
 
+/** Ms per character for process-detail typewriter (single source for delay math). */
+const PROCESS_DETAIL_TYPED_MS = 38;
+
 function AnimatedNumber({ value, suffix = "", prefix = "", duration = 1.5 }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -30,6 +33,61 @@ function AnimatedNumber({ value, suffix = "", prefix = "", duration = 1.5 }) {
       {isInView ? display.toLocaleString() : "0"}
       {suffix}
     </span>
+  );
+}
+
+/** Coral headline with typewriter reveal — used when KPI count-up is not appropriate. */
+function TypedCoralHeading({ text, runKey, charDelayMs = PROCESS_DETAIL_TYPED_MS }) {
+  const full = text || "";
+  const [visibleLen, setVisibleLen] = useState(0);
+
+  useEffect(() => {
+    setVisibleLen(0);
+    if (!full.length) return;
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setVisibleLen(Math.min(i, full.length));
+      if (i >= full.length) window.clearInterval(id);
+    }, charDelayMs);
+    return () => window.clearInterval(id);
+  }, [full, runKey, charDelayMs]);
+
+  if (!full.length) return null;
+
+  const done = visibleLen >= full.length;
+  const slice = full.slice(0, visibleLen);
+
+  return (
+    <div
+      aria-live="polite"
+      style={{
+        fontFamily: FONT.display,
+        fontSize: "clamp(26px, 3.6vw, 34px)",
+        fontWeight: 700,
+        fontStyle: "italic",
+        color: "#E05B5B",
+        lineHeight: 1.2,
+        marginBottom: 6,
+        minHeight: "1.15em",
+      }}
+    >
+      {slice}
+      {!done ? (
+        <span
+          aria-hidden
+          style={{
+            display: "inline-block",
+            marginLeft: 2,
+            fontWeight: 400,
+            fontStyle: "normal",
+            animation: "typedCaretBlink 0.95s steps(1, end) infinite",
+          }}
+        >
+          |
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -105,6 +163,10 @@ export default function CaseStudyLayout({
           15% { color: #E05B5B; text-shadow: 0 0 24px rgba(224, 91, 91, 0.5); }
           35% { color: #E05B5B; text-shadow: 0 0 16px rgba(224, 91, 91, 0.35); }
           100% { color: inherit; text-shadow: none; }
+        }
+        @keyframes typedCaretBlink {
+          0%, 45% { opacity: 1; }
+          50%, 100% { opacity: 0; }
         }
         .case-study--inline .two-col {
           margin-bottom: clamp(28px, 5vw, 48px);
@@ -328,71 +390,91 @@ export default function CaseStudyLayout({
             }}
           >
             <div style={{ maxWidth: 600 }}>
-              {process.map((step, i) => (
-                <Reveal key={i} delay={0.08 * i}>
-                  <div
-                    onMouseEnter={() => setActiveStep(i)}
-                    onFocus={() => setActiveStep(i)}
-                    style={{
-                      display: "flex",
-                      gap: 24,
-                      position: "relative",
-                      marginBottom: i < process.length - 1 ? 8 : 0,
-                      padding: "16px 20px",
-                      borderRadius: 8,
-                      transition: "all 0.3s ease",
-                      cursor: "default",
-                      borderLeft: activeStep === i ? "2px solid #E05B5B" : "2px solid transparent",
-                      background: activeStep === i ? "rgba(224, 91, 91, 0.05)" : "transparent",
-                    }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 20 }}>
-                      <div
-                        style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          background: C.accent,
-                          border: `2px solid ${C.inkOnDark}`,
-                          boxShadow: `0 0 0 2px ${C.accent}`,
-                          zIndex: 1,
-                        }}
-                      />
-                      {i < process.length - 1 && (
-                        <div style={{ width: 1, flex: 1, background: "rgba(224, 91, 91, 0.2)", marginTop: 4 }} />
-                      )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontFamily: FONT.mono,
-                          fontSize: 10,
-                          fontWeight: 600,
-                          letterSpacing: 2,
-                          textTransform: "uppercase",
-                          color: C.accent,
-                          marginBottom: 6,
-                        }}
-                      >
-                        {String(i + 1).padStart(2, "0")} — {step.phase}
-                      </div>
-                      <Reveal glowText delay={0.08 * i}>
-                        <p
+              {process.map((step, i) => {
+                const isActive = activeStep === i;
+                return (
+                  <Reveal key={i} delay={0.08 * i}>
+                    <div
+                      onMouseEnter={() => setActiveStep(i)}
+                      onFocus={() => setActiveStep(i)}
+                      style={{
+                        display: "flex",
+                        gap: 24,
+                        position: "relative",
+                        marginBottom: i < process.length - 1 ? 8 : 0,
+                        padding: "16px 20px",
+                        borderRadius: 8,
+                        transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
+                        cursor: "default",
+                        borderLeft: isActive ? "3px solid #E05B5B" : "3px solid transparent",
+                        background: isActive ? "rgba(224, 91, 91, 0.08)" : "transparent",
+                        boxShadow: isActive ? "inset 0 0 0 1px rgba(224, 91, 91, 0.12)" : "none",
+                      }}
+                    >
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 20 }}>
+                        <div
                           style={{
-                            fontFamily: FONT.body,
-                            fontSize: 14,
-                            lineHeight: 1.7,
-                            color: C.inkOnDarkMuted,
-                            margin: 0,
+                            width: isActive ? 12 : 10,
+                            height: isActive ? 12 : 10,
+                            borderRadius: "50%",
+                            background: isActive ? "#E05B5B" : C.accent,
+                            border: `2px solid ${C.inkOnDark}`,
+                            boxShadow: isActive
+                              ? "0 0 0 2px #E05B5B, 0 0 14px rgba(224, 91, 91, 0.45)"
+                              : `0 0 0 2px ${C.accent}`,
+                            zIndex: 1,
+                            transition: "width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+                          }}
+                        />
+                        {i < process.length - 1 && (
+                          <div
+                            style={{
+                              width: 1,
+                              flex: 1,
+                              background: isActive ? "rgba(224, 91, 91, 0.45)" : "rgba(224, 91, 91, 0.2)",
+                              marginTop: 4,
+                              transition: "background 0.25s ease",
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            fontFamily: FONT.mono,
+                            fontSize: 10,
+                            fontWeight: isActive ? 700 : 600,
+                            letterSpacing: 2,
+                            textTransform: "uppercase",
+                            marginBottom: 6,
+                            transition: "color 0.2s ease",
                           }}
                         >
-                          {step.detail}
-                        </p>
-                      </Reveal>
+                          <span style={{ color: isActive ? "rgba(255,255,255,0.5)" : C.accent }}>
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span style={{ color: "rgba(255,255,255,0.35)" }}> — </span>
+                          <span style={{ color: isActive ? "#E05B5B" : C.accent }}>{step.phase}</span>
+                        </div>
+                        <Reveal glowText delay={0.08 * i}>
+                          <p
+                            style={{
+                              fontFamily: FONT.body,
+                              fontSize: 14,
+                              lineHeight: 1.7,
+                              color: isActive ? "rgba(255, 255, 255, 0.88)" : C.inkOnDarkMuted,
+                              margin: 0,
+                              transition: "color 0.2s ease",
+                            }}
+                          >
+                            {step.detail}
+                          </p>
+                        </Reveal>
+                      </div>
                     </div>
-                  </div>
-                </Reveal>
-              ))}
+                  </Reveal>
+                );
+              })}
             </div>
 
             <div
@@ -403,13 +485,49 @@ export default function CaseStudyLayout({
                 background: "rgba(255, 255, 255, 0.04)",
                 border: "1px solid rgba(255, 255, 255, 0.08)",
                 borderRadius: 16,
-                padding: 36,
-                minHeight: 280,
+                padding: "28px 32px",
+                minHeight: 300,
               }}
             >
               {(() => {
                 const item = processDetails[activeStep];
                 if (!item) return null;
+                const stepRow = process[activeStep];
+
+                const useCountUp =
+                  item.countUp === true &&
+                  item.omitMetric !== true &&
+                  typeof item.statValue === "number";
+
+                const hasStaticStat =
+                  !useCountUp &&
+                  item.omitMetric !== true &&
+                  (typeof item.statValue === "number" ||
+                    (item.stat != null && String(item.stat).trim() !== ""));
+
+                const staticStatDisplay =
+                  hasStaticStat && typeof item.statValue === "number"
+                    ? `${item.statPrefix ?? ""}${item.statValue}${item.statSuffix ?? ""}`
+                    : hasStaticStat
+                      ? String(item.stat).trim()
+                      : "";
+
+                const headlineText =
+                  (item.title && String(item.title).trim()) ||
+                  (stepRow?.phase ? String(stepRow.phase) : "");
+
+                const statLabelText =
+                  useCountUp || hasStaticStat ? (item.statLabel || "").trim() : "";
+
+                const detailDelay = useCountUp
+                  ? 0.22
+                  : Math.min(
+                      0.08 + (headlineText.length * PROCESS_DETAIL_TYPED_MS) / 1000 + 0.16,
+                      2.4
+                    );
+
+                const countUpScale = item.statEntranceScale !== false;
+
                 return (
                   <motion.div
                     key={activeStep}
@@ -417,84 +535,140 @@ export default function CaseStudyLayout({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
                   >
-                    {item.statEntranceScale ? (
-                      <motion.div
-                        key={`${activeStep}-stat-scale`}
-                        initial={{ scale: 0.7, opacity: 0.85 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        style={{
-                          fontFamily: FONT.display,
-                          fontSize: 48,
-                          fontWeight: 800,
-                          color: "#E05B5B",
-                          marginBottom: 4,
-                          transformOrigin: "left center",
-                        }}
-                      >
-                        {typeof item.statValue === "number" ? (
-                          <AnimatedNumber
-                            value={item.statValue}
-                            prefix={item.statPrefix || ""}
-                            suffix={item.statSuffix || ""}
-                          />
+                    {useCountUp ? (
+                      <>
+                        {countUpScale ? (
+                          <motion.div
+                            key={`${activeStep}-countup`}
+                            initial={{ scale: 0.82, opacity: 0.88 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                            style={{
+                              fontFamily: FONT.display,
+                              fontSize: 48,
+                              fontWeight: 800,
+                              color: "#E05B5B",
+                              marginBottom: 4,
+                              transformOrigin: "left center",
+                            }}
+                          >
+                            <AnimatedNumber
+                              value={item.statValue}
+                              prefix={item.statPrefix || ""}
+                              suffix={item.statSuffix || ""}
+                            />
+                          </motion.div>
                         ) : (
-                          item.stat
+                          <div
+                            style={{
+                              fontFamily: FONT.display,
+                              fontSize: 48,
+                              fontWeight: 800,
+                              color: "#E05B5B",
+                              marginBottom: 4,
+                            }}
+                          >
+                            <AnimatedNumber
+                              value={item.statValue}
+                              prefix={item.statPrefix || ""}
+                              suffix={item.statSuffix || ""}
+                            />
+                          </div>
                         )}
-                      </motion.div>
+                        {statLabelText ? (
+                          <div
+                            style={{
+                              fontFamily: FONT.mono,
+                              fontSize: 12,
+                              textTransform: "uppercase",
+                              letterSpacing: 2,
+                              color: C.inkOnDarkSubtle,
+                              marginBottom: 24,
+                            }}
+                          >
+                            {statLabelText}
+                          </div>
+                        ) : null}
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.18, ease: "easeOut" }}
+                          style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: "rgba(255, 255, 255, 0.92)",
+                            marginBottom: 12,
+                          }}
+                        >
+                          {item.title}
+                        </motion.div>
+                      </>
+                    ) : hasStaticStat ? (
+                      <>
+                        <motion.div
+                          key={`${activeStep}-static-stat`}
+                          initial={{ scale: 0.92, opacity: 0.9 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                          style={{
+                            fontFamily: FONT.display,
+                            fontSize: 44,
+                            fontWeight: 800,
+                            color: "#E05B5B",
+                            marginBottom: 4,
+                            lineHeight: 1.05,
+                            transformOrigin: "left center",
+                          }}
+                        >
+                          {staticStatDisplay}
+                        </motion.div>
+                        {statLabelText ? (
+                          <div
+                            style={{
+                              fontFamily: FONT.mono,
+                              fontSize: 12,
+                              textTransform: "uppercase",
+                              letterSpacing: 2,
+                              color: C.inkOnDarkSubtle,
+                              marginBottom: 10,
+                            }}
+                          >
+                            {statLabelText}
+                          </div>
+                        ) : null}
+                        <TypedCoralHeading
+                          text={headlineText}
+                          runKey={activeStep}
+                          charDelayMs={PROCESS_DETAIL_TYPED_MS}
+                        />
+                      </>
                     ) : (
-                      <div
-                        style={{
-                          fontFamily: FONT.display,
-                          fontSize: 48,
-                          fontWeight: 800,
-                          color: "#E05B5B",
-                          marginBottom: 4,
-                        }}
-                      >
-                        {typeof item.statValue === "number" ? (
-                          <AnimatedNumber
-                            value={item.statValue}
-                            prefix={item.statPrefix || ""}
-                            suffix={item.statSuffix || ""}
-                          />
-                        ) : (
-                          item.stat
-                        )}
-                      </div>
+                      <TypedCoralHeading
+                        text={headlineText}
+                        runKey={activeStep}
+                        charDelayMs={PROCESS_DETAIL_TYPED_MS}
+                      />
                     )}
-                    <div
-                      style={{
-                        fontFamily: FONT.mono,
-                        fontSize: 12,
-                        textTransform: "uppercase",
-                        letterSpacing: 2,
-                        color: C.inkOnDarkSubtle,
-                        marginBottom: 28,
+
+                    <motion.p
+                      key={`detail-${activeStep}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.42,
+                        delay: detailDelay,
+                        ease: [0.22, 1, 0.36, 1],
                       }}
-                    >
-                      {item.statLabel}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: "rgba(255, 255, 255, 0.92)",
-                        marginBottom: 12,
-                      }}
-                    >
-                      {item.title}
-                    </div>
-                    <p
                       style={{
                         fontSize: 14,
-                        lineHeight: 1.7,
+                        lineHeight: 1.75,
                         color: C.inkOnDarkSubtle,
                         margin: 0,
+                        marginTop: 2,
                       }}
                     >
                       {item.detail}
-                    </p>
+                    </motion.p>
                   </motion.div>
                 );
               })()}

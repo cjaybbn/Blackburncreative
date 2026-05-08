@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
 import HeroBackground from "./HeroBackground";
+import PortraitCard from "./PortraitCard.jsx";
 import GlassButton from "./GlassButton";
 import AIChatBubble from "./AIChatBubble";
 import SiteNav, { NAV_SCROLL_ROOT } from "./Nav.jsx";
@@ -33,18 +34,16 @@ const SITE_DATA = {
   school: "Arizona State University — B.S. Graphic Information Technology",
   graduation: "Summer 2026",
 
-  intro: `I operate as a product founder and system architect: framing problems, sequencing bets, and shipping MVPs with teams and agents side-by-side. My workflow is AI-native — Gemini, Vertex AI, Cursor, and disciplined prompts are part of the stack, not a slide deck afterthought.
+  intro: `I work as a product founder and system designer: framing problems, shipping MVPs, and building design languages with teams. Active projects include RealCopy (AI-assisted workflows for real estate marketing and listing context), DealerDeck LLC (automotive SaaS), BirdsEye (drone orthomosaic and construction visualization), the ASU Polytechnic campus visual system, and selected client brand engagements.
 
-A concrete proof point: Google's Gemini design leadership reached out after learning how I build in production with their tools. The working sessions that followed shaped how I give structured product and UX feedback upstream — directly informing priorities on a product used at global scale. That collaboration is the standard I hold for every engagement: research-backed, specific, and tied to ship cycles.
-
-Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lead systems-level programs — including the ASU Polytechnic design language — and technical innovation such as BirdsEye (drone orthomosaic mapping and interactive construction maps). I'm completing my GIT degree at ASU and partner with teams that care about accessibility, performance, and narrative as much as velocity.`,
+I use AI tools where they improve research, build speed, and quality — alongside design and engineering judgment. I am completing a B.S. in Graphic Information Technology at Arizona State University.`,
 
   aiPhilosophy: {
     title: "How I Use AI",
     paragraphs: [
-      "I don't use AI to skip the work. I use it to do work that wouldn't exist otherwise. Before AI-assisted development, I had product ideas and design skills but no way to build them. Now I can take a concept from napkin sketch to working beta in weeks — not because AI does it for me, but because it amplifies what I already bring: taste, judgment, and an obsessive focus on the user experience.",
-      "My workflow treats AI as a collaborator at every stage: Gemini for research and content architecture, Claude for strategic thinking and complex problem-solving, Cursor for prompt-engineered development, and Midjourney for rapid visual exploration. The skill isn't in using any one tool — it's in knowing which tool to reach for, what to ask it, and when to override its suggestions with your own judgment.",
-      "Structured feedback to Google's Gemini design leaders on real-world product use reinforced a lesson I lead with: builders who live in the workflow often see constraints and opportunities that don't surface in lab conditions. I carry that lens into every system I architect.",
+      "I don't use AI to skip the work. I use it to extend what I can ship: research, prototyping, and iteration alongside taste and product judgment.",
+      "Tools in the stack include models and assistants for research and drafting, prompt-driven development environments, and image generation for exploration — used deliberately, with clear acceptance criteria.",
+      "The skill is knowing when to rely on a tool and when to override it with constraints from users, brand, accessibility, and production reality.",
     ],
   },
 
@@ -53,28 +52,28 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
     {
       title: "Entrepreneurship",
       description:
-        "DealerDeck LLC (automotive SaaS) and RealCopy (AI for realtors). Problem-to-MVP journeys, feasibility gates, and iteration loops grounded in customer evidence — not slideware.",
+        "DealerDeck LLC (automotive SaaS) and RealCopy (real estate). Founder-led problem framing, MVP delivery, and iteration with pilot users.",
     },
     {
       title: "Systems Architecture",
       description:
-        "ASU Polytechnic design system — 6×6 isometric grid construction, Mother Shape narrative, and PM-owned orchestration across brand, digital, and environmental touchpoints.",
+        "ASU Polytechnic design system — isometric grid construction, Mother Shape narrative, and coordination across environmental, digital, and print applications.",
     },
     {
       title: "Technical Innovation",
       description:
-        "BirdsEye — drone orthomosaic pipelines, 3D models, and interactive construction maps that turn aerial capture into operational clarity for stakeholders.",
+        "BirdsEye — drone orthomosaic workflows, 3D reconstruction, and web-based maps for construction and site stakeholders.",
     },
     {
       title: "Creative Excellence",
       description:
-        "IPA-shortlisted photography and automotive lightpainting — editorial craft, composition, and lighting discipline that inform how I shape product and brand systems.",
+        "Photography and automotive lightpainting — composition and lighting discipline that inform product and brand work.",
     },
   ],
 
   designWork: [
     { title: "Brand Identity Systems", description: "Logo design, visual identity, brand guidelines for small businesses and personal projects." },
-    { title: "Photography", description: "Shortlisted at the International Photography Awards. Architectural, automotive, and travel photography." },
+    { title: "Photography", description: "Architectural, automotive, and travel photography." },
     { title: "Social Media Design", description: "Campaign graphics, story templates, and content systems for real estate and lifestyle brands." },
     { title: "Generative AI Art", description: "Prompt-engineered visual concepts using Midjourney and DALL-E for brand exploration and rapid prototyping." },
     { title: "Graphic Design", description: "Print and digital design including posters, marketing materials, and editorial layouts." },
@@ -126,7 +125,7 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
       description:
         "Campus-wide design language on a 6×6 isometric grid with Mother Shape narrative — signage, digital, and environmental graphics under PM delivery.",
       tags: ["Design System", "Grid Logic", "PM"],
-      status: "In Progress",
+      status: "Completed",
       caseStudyId: "polytechnic",
     },
     {
@@ -144,7 +143,7 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
       context: "Client Project",
       description: "Full brand redesign: logo, typography, UX research, and website — research through delivery for an established print company.",
       tags: ["Brand Redesign", "UX Research", "Web Design", "Logo"],
-      status: "In Progress",
+      status: "Completed",
       caseStudyId: "southwest",
     },
   ],
@@ -155,20 +154,20 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
       name: "RealCopy",
       status: "Beta — TestFlight",
       description:
-        "RealCopy started as a copywriting tool and evolved into a full marketing and data platform for real estate agents. It generates listing descriptions, social media content, and marketing copy — but it also pulls live market data to give agents property snapshots with comparable sales, pricing analysis, and neighborhood context. One app replaces a copywriter, a data analyst, and a social media manager.",
+        "RealCopy combines AI-assisted listing and marketing copy with property and market context so agents can draft content and reference comps and neighborhood signals in one mobile-first flow. Distributed via TestFlight; stack and integrations are listed below.",
       process: [
-        { phase: "Problem", detail: "Real estate agents waste 3-5 hours per listing juggling marketing content and market research across multiple tools. Most end up with generic copy and outdated comps." },
-        { phase: "Research", detail: "Interviewed agents, analyzed competitors like Jasper and Copy.ai. Found that no tool combined AI content generation with real property data — comps, sale prices, neighborhood stats." },
-        { phase: "Design", detail: "Designed for agents working between showings — every flow is under 3 taps. Property snapshots surface comps, recently sold prices, and comparable listings alongside the generated content." },
-        { phase: "Build", detail: "Expo/React Native frontend, Railway backend, Supabase for data. Integrated Gemini and Vertex AI for content generation, Rentcast for property valuations and comps, Google Places for neighborhood data, and web queries for market context." },
-        { phase: "Ship", detail: "Deployed to TestFlight via EAS Build. Currently onboarding beta testers and iterating on content quality, data accuracy, and the market comps feature based on real agent feedback." },
+        { phase: "Problem", detail: "Real estate agents often maintain listing copy, social posts, and market context using separate tools and manual steps." },
+        { phase: "Research", detail: "Compared tools that emphasize copy generation versus those that emphasize MLS-style data, to define a single-flow experience." },
+        { phase: "Design", detail: "Mobile-first flows aimed at use between showings: property context and generated content accessible together." },
+        { phase: "Build", detail: "Expo/React Native, Supabase, Railway, and the service integrations listed in the stack." },
+        { phase: "Ship", detail: "TestFlight builds and iteration from beta feedback." },
       ],
       processDetails: [
-        { title: "The Pain Point", detail: "Agents juggle 10-15 active listings, each needing unique descriptions, social posts, market analysis, and comps. They use separate tools for writing, data, and social — or just copy-paste from old listings.", stat: "3-5 hrs", statLabel: "per listing on marketing + research", statPrefix: "3-", statValue: 5, statSuffix: " hrs" },
-        { title: "Competitive Gap", detail: "Existing AI writing tools generate generic copy. MLS platforms show data but don't write content. No product combined both — property-aware AI content plus live market intelligence in one interface.", stat: "0", statLabel: "competitors combining AI content + market data", statValue: 0 },
-        { title: "Speed-First UX", detail: "Agents work from their cars between showings. Property snapshots show comps, recent sales, and pricing analysis in a single scrollable view. Content generation is 3 taps: select listing, choose type, generate.", stat: "< 3", statLabel: "taps to generate or pull data", statPrefix: "< ", statValue: 3 },
-        { title: "Full-Stack AI Platform", detail: "Seven APIs working together. Gemini and Vertex AI handle content generation. Rentcast provides comp data and property valuations. Google Places adds neighborhood context. The prompt engineering layer makes each API's data available to the AI when generating content.", stat: "7", statLabel: "APIs integrated", statValue: 7 },
-        { title: "Beta & Iteration", detail: "Live on TestFlight. Iterating weekly based on agent feedback. Current focus: improving comp data accuracy, adding bulk content generation for agents with 10+ listings, and refining the property snapshot feature.", stat: "Live", statLabel: "on TestFlight" },
+        { title: "Scope", detail: "The product keeps listing narratives, social-ready snippets, and property-aware context in one surface so agents are not bouncing between a writing tool, a maps tab, and a spreadsheet of comps. The goal is a single place to sanity-check tone and facts before anything goes live.", omitMetric: true },
+        { title: "Differentiation", detail: "Most assistants stop at generic copy; MLS-style tools stop at raw fields. RealCopy is positioned where those meet: generated language that can still lean on structured property and neighborhood signals, so the output feels specific to the address instead of interchangeable filler.", omitMetric: true },
+        { title: "Interaction model", detail: "Flows assume interruptions: short sessions between showings, one hand on the wheel, and no patience for deep menus. Primary jobs are surfaced up front, with fast paths back to the last listing and predictable places for edits before sharing.", omitMetric: true },
+        { title: "Integrations", detail: "The stack combines mobile delivery with managed backends and third-party APIs for maps, valuations, and enrichment. Wiring is treated as part of the product: failures, rate limits, and stale data need clear handling in the UI, not silent wrong answers.", omitMetric: true },
+        { title: "Delivery", detail: "Ships through TestFlight so real agents can stress content quality, data freshness, and edge cases on their own listings. Feedback tightens prompts, fallbacks, and which fields are safe to emphasize in marketing versus disclosure-heavy contexts.", omitMetric: true },
       ],
       stack: ["Expo / React Native", "Supabase", "Railway", "Gemini API", "Vertex AI", "Google Places API", "Rentcast API", "Cursor AI"],
     },
@@ -176,47 +175,47 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
       name: "DealerDeck LLC",
       status: "In Progress — MVP",
       description:
-        "Implmented and created SaaS solutions while working as Valet at BMW North Scottsdale. Developed a deep understanding of front end problems and used AI tools and methods to build solutions with foresight, integration into existing systems (CRM). and scalability in mind.",
+        "SaaS exploration shaped by front-line dealership experience (including time as valet at BMW North Scottsdale): sales-centric workflows, CRM handoffs, and AI-assisted capture — with integration and scale dependent on each dealer’s stack and pilots.",
       stack: ["Product strategy", "React / web", "APIs", "Cursor AI", "Gemini", "Customer pilots"],
       process: [
-        { phase: "Problem", detail: "Sales representatives spend hours typing into CRM software, a tool designed for managers and rarely effectively utilized by the representative. Customer information is often incomplete, incorrect, or absent alltogether." },
-        { phase: "Research", detail: "Spoke in depth with the sales team, managers, and the different facets and departments of the dealership. This gave me a bottom up understanding of the entire dealership ecosystem." },
-        { phase: "Design", detail: "Sales centric UI and workflow design, voice first app interaction enabling hands free mobile usage, encouraging data logging with zero friction. AI generated summaries and coaching notes, live accurate inventory recommendations and search tools, plug and play into any CRM system, curated feedback, followup reminders, and more. " },
-        { phase: "Build", detail: "Built using Claude code, cursor agentic AI, Gemini API, built in react native for android and ios, launched on apple testflight, constantly iterated based on realtime feedback, waiting for CRM swap to determine integration technique with the GM." },
-        { phase: "MVP", detail: "Pilot cohort onboarding, success metrics on time-to-publish and rep adoption; roadmap for compliance and multi-rooftop scale." },
+        { phase: "Problem", detail: "Sales staff often face CRM workflows tuned to management reporting rather than fast, accurate logging at the point of conversation." },
+        { phase: "Research", detail: "Conversations across sales, management, and dealership operations to map how data moves today." },
+        { phase: "Design", detail: "Mobile-first, low-friction logging (including voice where appropriate), summaries, and prompts aligned to dealership vocabulary — exact feature set depends on pilot agreements." },
+        { phase: "Build", detail: "React Native builds for iOS/Android, TestFlight distribution, AI-assisted development tools; CRM integration approach follows each dealer’s system of record." },
+        { phase: "MVP", detail: "Pilot onboarding and roadmap for compliance and multi-location scale." },
       ],
       processDetails: [
-        { title: "CRM Compliance", detail: "Dealers rely on accurate and updated data based on sales to customer interactions to close deals and foster customer relationships.", stat: "70%", statLabel: "of sales missuse CRM software", statValue: 70, statSuffix: "%", statEntranceScale: true },
-        { title: "Disconnected", detail: "CRM software is not built with the sales rep in mind, requiring tedious manually entry of info and copy paste from email threads to keep track of customer information - providing little to no value to the sales rep.", stat: "6", statLabel: "per week salesman waste on CRM", statValue: 6, statSuffix: " hours" },
-        { title: "Frictionless", detail: "Designed to be used on the fly, use voice to log and AI takes care of the rest.", stat: "10", statLabel: "To log new data", statValue: 10, statSuffix: " seconds" },
-        { title: "AI guardrails", detail: "Editable content at every stop, deep AI understanding of dealership and brand lingo, and contextually aware AI to help the sales rep at every step.", stat: "99%", statLabel: "CRM adoption", statValue: 99, statSuffix: "%", statEntranceScale: true },
-        { title: "North star", detail: "Designing a better future for not only sales, but customer satisfaction, dealership metrics, and CRM compliance.", stat: "< 15", statLabel: "minutes sales should spend on CRM", statPrefix: "< ", statValue: 15 },
+        { title: "Context", detail: "DealerDeck is grounded in observed dealership operations and front-line sales workflows—not abstract “auto industry” slides. Time on the lot and in handoffs made it obvious where CRM friction actually shows up for reps versus what leadership dashboards celebrate.", omitMetric: true },
+        { title: "CRM reality", detail: "Most CRMs are sold on compliance and forecasting, but day-to-day value for reps is about fast, accurate touch logging without derailing a conversation. The work prioritizes rep-side usefulness and data quality over manager-only reporting views that never get corrected at the source.", omitMetric: true },
+        { title: "Capture UX", detail: "Capture is designed for the lot and the curb: minimal taps, voice where it helps, and immediate confirmation so reps trust what was saved. The objective is to lower the activation energy of good notes so incomplete records are the exception, not the norm.", omitMetric: true },
+        { title: "AI use", detail: "Models assist with drafting and summarization, but humans stay in control: edits are always available, prompts respect dealership vocabulary, and outputs are framed as starting points rather than immutable truth. That balance matters when a note might surface in a trade appraisal or a compliance review.", omitMetric: true },
+        { title: "Roadmap", detail: "Rollout stays pilot-driven: each dealer brings a different CRM, roster, and risk tolerance. Integration paths, audit expectations, and success criteria are negotiated per rooftop so the roadmap stays tied to measurable adoption instead of a generic feature checklist.", omitMetric: true },
       ],
     },
     birdseye: {
       name: "BirdsEye",
       status: "Case study",
       description:
-        "Drone orthomosaic and 3D reconstruction for construction and site operations: repeatable flight plans, GCP-backed accuracy, and browser-based maps for supers and owners — not just pretty tiles, but decision surfaces.",
+        "Drone orthomosaic and 3D reconstruction for construction and site operations: flight planning, control-point discipline where used, and browser-based maps for field and office stakeholders.",
       stack: ["Photogrammetry", "Pix4D / ODM", "GIS", "Three.js / web GL", "Python tooling"],
       process: [
-        { phase: "Problem", detail: "Site teams relied on disjointed photo dumps and static PDFs; progress disputes slowed pay apps and safety walkthroughs." },
-        { phase: "Research", detail: "Compared capture frequencies, accuracy tolerances for earthwork, and how supers consume map data on tablets in the field." },
-        { phase: "Design", detail: "Layered orthomosaics with measurement, cut/fill overlays, and time-slider compare; WCAG-aware contrast for outdoor glare." },
-        { phase: "Build", detail: "Pipeline from RAW to tiles; 3D mesh for stakeholder flythroughs; export hooks for CAD/GIS handoff." },
-        { phase: "Deliver", detail: "Playbooks for flight ops, QA checklists, and client handoff packages — repeatable per site phase." },
+        { phase: "Problem", detail: "Site documentation often lives in disconnected photos and static exports instead of a single map surface." },
+        { phase: "Research", detail: "Capture frequency, accuracy needs, and how teams review maps on site." },
+        { phase: "Design", detail: "Layered orthomosaics, measurement and comparison views, contrast suited to outdoor screens." },
+        { phase: "Build", detail: "Pipeline from capture to tiles and meshes; exports for CAD/GIS where required." },
+        { phase: "Deliver", detail: "Repeatable flight and QA notes per project, with client-facing packages as agreed." },
       ],
       processDetails: [
-        { title: "Accuracy", detail: "GCP layout and camera model checks before sign-off on quantity disputes.", stat: "~5 cm", statLabel: "typical site accuracy band" },
-        { title: "Cadence", detail: "Weekly or milestone flights tied to schedule of values.", stat: "1×", statLabel: "min flights per active phase", statValue: 1 },
-        { title: "Stakeholder map", detail: "Owner, GC, subs, and safety leads each get filtered layers — same base ortho, different questions.", stat: "4", statLabel: "role-based views", statValue: 4 },
-        { title: "3D value", detail: "Mesh and contour exports for clash avoidance and as-built documentation.", stat: "3D", statLabel: "deliverable modes" },
-        { title: "Field UX", detail: "Offline-tolerant viewers where LTE is thin; large tap targets for gloved use.", stat: "60m", statLabel: "typical field review session" },
+        { title: "Accuracy", detail: "Where quantities or disputes matter, control points and camera checks back the orthomosaic before anyone bets a pay app on eyeballing tiles alone. The workflow leaves an explainable trail: what was flown, how it was referenced, and what assumptions still belong in a surveyor’s lane.", omitMetric: true },
+        { title: "Cadence", detail: "Flight rhythm follows the job, not a calendar template: earthwork, vertical work, and closeout all need different evidence. Scheduling captures against phase milestones keeps the map aligned with what supers and owners are actually arguing about that week.", omitMetric: true },
+        { title: "Stakeholders", detail: "Owners, GCs, subs, and safety leads ask different questions from the same ortho base. Layers, filters, and exports are tuned so each group gets legible answers without maintaining four unrelated photo dumps that drift out of sync.", omitMetric: true },
+        { title: "3D outputs", detail: "Meshes, contours, and derived linework support coordination and as-built documentation when the engagement calls for them—not as vanity reels, but as artifacts that plug into how the team already reviews work in CAD or GIS.", omitMetric: true },
+        { title: "Field use", detail: "Review happens on phones and tablets in glare and dust, often with uneven connectivity. Interaction targets, contrast, and offline-tolerant viewing patterns are part of the product, not an afterthought mocked up only on a desktop monitor.", omitMetric: true },
       ],
     },
     polytechnic: {
       name: "ASU Polytechnic Design System",
-      status: "In Progress",
+      status: "Completed",
       description:
         "Campus-scale visual system: 6×6 isometric construction grid, Mother Shape as the unifying mark logic, and PM-led rollout across environmental, digital, and print. Balances institutional restraint with polytechnic craft identity.",
       stack: ["Grid systems", "Figma libraries", "Environmental graphics", "PM / Agile", "Brand narrative"],
@@ -228,11 +227,11 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
         { phase: "Ship", detail: "Phased adoption with training decks, office hours for college partners, and versioned asset drops." },
       ],
       processDetails: [
-        { title: "Grid logic", detail: "6×6 isometric module scales from poster to building placemaking without arbitrary stretching.", stat: "6×6", statLabel: "isometric base module" },
-        { title: "Mother Shape", detail: "Single rhetorical anchor — all sub-brands resolve to the core silhouette language.", stat: "1", statLabel: "unifying form system", statValue: 1 },
-        { title: "PM scope", detail: "Cross-team sequencing: facilities, web, recruitment events, and student portfolio shows.", stat: "12+", statLabel: "stakeholder groups engaged", statValue: 12 },
-        { title: "Accessibility", detail: "Type scale and contrast tested for exterior signage and low-light kiosks.", stat: "AA", statLabel: "contrast target (body text)" },
-        { title: "Adoption", detail: "Template downloads and office hours reduced one-off off-brand files.", stat: "↓", statLabel: "off-brand incidents (qualitative)" },
+        { title: "Grid logic", detail: "The isometric module scales from posters and digital templates to environmental applications without ad-hoc stretching. That discipline keeps student makerspace outputs and official communications feeling like one family instead of a pile of one-off lockups.", omitMetric: true },
+        { title: "Mother Shape", detail: "Mother Shape is the rhetorical spine: sub-brands and campaigns resolve back to a shared silhouette language so diversity reads as intentional, not accidental. The system document explains when to lean full mark, wordmark, or pattern—and when restraint is the right flex.", omitMetric: true },
+        { title: "Coordination", detail: "Campus work crosses facilities, web, recruitment events, and student showcases. Sequencing deliverables and ownership prevents the classic trap where signage ships before web templates exist, or vice versa, and the public sees two different schools.", omitMetric: true },
+        { title: "Accessibility", detail: "Type scale, stroke weights, and contrast are checked for exterior signage in sun, kiosk screens in shade, and long-form reading on the web. Outdoor legibility and digital AA-minded pairings are treated as constraints to design into, not polish at the end.", omitMetric: true },
+        { title: "Rollout", detail: "Templates, short training, and office hours give partners a path off of rogue InDesign files. Versioned drops and clear naming reduce “closest enough” exports that slowly erode the system the semester after launch.", omitMetric: true },
       ],
     },
     tedx: {
@@ -249,16 +248,16 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
         { phase: "Deliver", detail: "Handoff session with organizers; file naming and folder structure for volunteer editors." },
       ],
       processDetails: [
-        { title: "Legibility", detail: "Tested mark at 24px and on projection mockups before approval.", stat: "24px", statLabel: "min digital mark size", statValue: 24 },
-        { title: "Volunteer-ready", detail: "Non-designers could swap speaker photos without breaking grid.", stat: "100%", statLabel: "templates with safe zones", statValue: 100 },
-        { title: "Deliverables", detail: "Programs, wayfinding, stage lower-thirds, and social sets.", stat: "20+", statLabel: "asset families", statValue: 20 },
-        { title: "Timeline", detail: "Agency course cadence with client reviews every sprint.", stat: "4", statLabel: "review cycles", statValue: 4 },
-        { title: "Outcome", detail: "Cohesive event presence; foundation for future year refreshes.", stat: "Live", statLabel: "event deployment" },
+        { title: "Legibility", detail: "The mark and type are stressed at tiny social avatars, mid-size web headers, and projected stage treatments before anything is locked. That range catches awkward stroke weights and shimmer-prone color pairs early, when fixes are cheap.", omitMetric: true },
+        { title: "Templates", detail: "Volunteers rotate; design literacy does not. Layouts bake in safe zones, minimum clear space, and locked layers so speaker swaps or sponsor additions do not accidentally nudge the grid into a different event altogether.", omitMetric: true },
+        { title: "Deliverables", detail: "Deliverables span print programs, directional pieces, stage lower-thirds, and social sets so promotion and day-of signage feel like one brand. File bundles are grouped the way organizers actually ship work: by channel, by deadline, and by vendor.", omitMetric: true },
+        { title: "Process", detail: "Reviews track the agency course cadence and the organizers’ own milestones—budget checks, speaker confirmations, and venue constraints—so creative rounds stay tied to decisions that unblock production, not abstract taste debates.", omitMetric: true },
+        { title: "Outcome", detail: "The outcome is a coherent on-site and promotional presence that reads as TEDx without fighting the venue architecture or the volunteer workflow. The kit also sets up a cleaner refresh next cycle because foundations and naming are already rational.", omitMetric: true },
       ],
     },
     southwest: {
       name: "Southwest Label & Print",
-      status: "In Progress",
+      status: "Completed",
       description:
         "Full brand redesign for a legacy print shop: new mark, typography system, UX research on quote and reorder flows, and a website that reflects craft while converting B2B leads.",
       stack: ["Brand", "UX research", "Web design", "Print production"],
@@ -270,11 +269,11 @@ Alongside RealCopy (AI for realtors) and DealerDeck LLC (automotive SaaS), I lea
         { phase: "Ship", detail: "Rollout checklist: fleet graphics, stationery, and sales one-pagers — phased to production downtime." },
       ],
       processDetails: [
-        { title: "Research depth", detail: "Mixed methods: qualitative interviews plus funnel metrics.", stat: "12", statLabel: "stakeholder touchpoints", statValue: 12 },
-        { title: "Web goals", detail: "Clear service taxonomy and faster quote intent.", stat: "−40%", statLabel: "target form abandonment drop" },
-        { title: "Brand system", detail: "Logo, palette, type, voice — documented for external vendors.", stat: "1", statLabel: "single source PDF + Figma", statValue: 1 },
-        { title: "Print truth", detail: "Design respects die lines, ink limits, and shop jargon customers actually use.", stat: "✓", statLabel: "production-aware specs" },
-        { title: "Status", detail: "Website and fleet phases staggered around press maintenance windows.", stat: "Phased", statLabel: "rollout" },
+        { title: "Research", detail: "Research mixed interviews and shop-floor observation with analytics on quote and reorder flows. The aim was to see where enterprise buyers lost confidence—usually not at the hero image, but at ambiguous capabilities, opaque timelines, or forms that demanded information they did not yet have.", omitMetric: true },
+        { title: "Web", detail: "The site restructure foregrounds service taxonomy and a straighter path to “talk to us about this job,” with language that matches how customers describe work in email. Secondary pages carry proof: equipment, materials, and process cues that justify premium positioning without sounding generic.", omitMetric: true },
+        { title: "Brand system", detail: "Logo, palette, typography, and voice live in a single reference for internal teams and outside vendors. That reduces one-off interpretations when fleet graphics, trade-show panels, or subcontractor sheets need to stay on brand under deadline pressure.", omitMetric: true },
+        { title: "Print", detail: "Print specifications respect die lines, ink limits, and finishing steps the shop actually runs—so sales promises in the PDF match what production will sign off. Jargon on the floor is translated for customers without dumbing down the craft.", omitMetric: true },
+        { title: "Rollout", detail: "Launch phases respect press downtime, fleet installation windows, and sales’ need for consistent story during the switch. Staggering stationery, digital, and vehicle updates avoids the half-old identity that undermines trust right when leads are peaking.", omitMetric: true },
       ],
     },
   },
@@ -751,11 +750,7 @@ export default function CamdenPortfolio() {
   const navigate = useNavigate();
   const [heroReady, setHeroReady] = useState(false);
   const [openCaseStudyId, setOpenCaseStudyId] = useState(null);
-  const [headshotTilt, setHeadshotTilt] = useState({ x: 0, y: 0 });
-  const [headshotHovered, setHeadshotHovered] = useState(false);
-  const [headshotMouse, setHeadshotMouse] = useState({ x: 50, y: 50 });
   const aboutRef = useRef(null);
-  const headshotRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: aboutRef,
     offset: ["start end", "end start"],
@@ -773,7 +768,7 @@ export default function CamdenPortfolio() {
     navigate(location.pathname, { replace: true, state: {} });
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (scrollToId === NAV_SCROLL_ROOT || scrollToId === "about") {
+        if (scrollToId === NAV_SCROLL_ROOT || scrollToId === "about" || scrollToId === "home") {
           window.scrollTo({ top: 0, behavior: "smooth" });
         } else {
           document.getElementById(scrollToId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -789,27 +784,6 @@ export default function CamdenPortfolio() {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
   }, [openCaseStudyId]);
-
-  const headshotMouseMove = useCallback((e) => {
-    const el = headshotRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const w = rect.width;
-    const h = rect.height;
-    setHeadshotMouse({ x: (x / w) * 100, y: (y / h) * 100 });
-    const nx = (x / w - 0.5) * 2;
-    const ny = (y / h - 0.5) * 2;
-    setHeadshotTilt({
-      x: Math.max(-8, Math.min(8, ny * 8)),
-      y: Math.max(-8, Math.min(8, -nx * 8)),
-    });
-  }, []);
-  const headshotMouseLeave = useCallback(() => {
-    setHeadshotHovered(false);
-    setHeadshotTilt({ x: 0, y: 0 });
-  }, []);
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.ink, width: "100%", maxWidth: "100vw", overflowX: "clip" }}>
@@ -1055,67 +1029,8 @@ export default function CamdenPortfolio() {
                 alignItems: "center",
               }}
             >
-              <div
-                ref={headshotRef}
-                className="hero-headshot-inner"
-                onMouseEnter={() => setHeadshotHovered(true)}
-                onMouseLeave={headshotMouseLeave}
-                onMouseMove={headshotMouseMove}
-                style={{
-                  width: "85%",
-                  maxWidth: 420,
-                  aspectRatio: "1/1",
-                  borderRadius: headshotHovered ? "50%" : 20,
-                  overflow: "hidden",
-                  position: "relative",
-                  border: headshotHovered ? "1px solid rgba(224, 91, 91, 0.2)" : "1px solid rgba(0, 0, 0, 0.06)",
-                  boxShadow: headshotHovered
-                    ? "0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1)"
-                    : "0 8px 32px rgba(0, 0, 0, 0.08)",
-                  transform: headshotHovered
-                    ? `perspective(800px) rotateX(${headshotTilt.x}deg) rotateY(${headshotTilt.y}deg) scale(1.03)`
-                    : "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)",
-                  transition: "transform 0.3s cubic-bezier(0.03, 0.98, 0.52, 0.99), border-color 0.3s ease, box-shadow 0.3s ease, border-radius 0.35s ease",
-                }}
-              >
-                <img
-                  src="/headshot.png"
-                  alt="Camden Blackburn"
-                  loading="eager"
-                  fetchPriority="high"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                    transform: headshotHovered ? "scale(1.05)" : "scale(1)",
-                    filter: headshotHovered ? "grayscale(20%) contrast(1) brightness(1)" : "grayscale(100%) contrast(1.05) brightness(1.02)",
-                    transition: "filter 0.6s ease, transform 0.35s ease",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(224, 91, 91, 0.12)",
-                    mixBlendMode: "color",
-                    opacity: headshotHovered ? 0.15 : 0,
-                    pointerEvents: "none",
-                    borderRadius: headshotHovered ? "50%" : 20,
-                    transition: "opacity 0.6s ease, border-radius 0.35s ease",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: headshotHovered ? "50%" : 20,
-                    background: `radial-gradient(ellipse 60% 60% at ${headshotMouse.x}% ${headshotMouse.y}%, rgba(255,255,255,0.12) 0%, transparent 60%)`,
-                    pointerEvents: "none",
-                    opacity: headshotHovered ? 1 : 0,
-                    transition: "opacity 0.3s ease, border-radius 0.35s ease",
-                  }}
-                />
+              <div style={{ width: "85%", maxWidth: 420 }}>
+                <PortraitCard src="/headshot.png" alt="Camden Blackburn" />
               </div>
             </div>
           </Reveal>
@@ -1708,7 +1623,7 @@ export default function CamdenPortfolio() {
                   fontFamily: FONT.body, fontSize: 16, lineHeight: 1.7,
                   color: C.inkSoft, maxWidth: 440,
                 }}>
-                  I'm looking for founder-track product roles, system architecture leadership, and AI-native teams where research, accessibility, and ship velocity share a roadmap. Open to full-time opportunities starting now {SITE_DATA.graduation}.
+                  I'm looking for founder-track product roles, system architecture leadership, and teams where research, accessibility, and ship velocity share a roadmap. Open to full-time opportunities starting {SITE_DATA.graduation}.
                 </p>
               </Reveal>
             </motion.div>

@@ -5,7 +5,7 @@ export const SEO = {
   home: {
     title: "Camden J Blackburn | Product Founder & System Architect | Blackburn Creative Studio",
     description:
-      "Product founder and system architect building scalable systems through AI-native collaboration. RealCopy, DealerDeck, design systems, BirdsEye mapping, and IPA-shortlisted photography.",
+      "Product founder and system designer: RealCopy, DealerDeck, ASU Polytechnic design system, BirdsEye mapping, brand and photography work.",
     path: "/",
   },
   work: {

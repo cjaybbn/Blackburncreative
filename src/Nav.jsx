@@ -89,29 +89,39 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
   const shouldTint = scale > 1.035;
   const shouldBold = scale > 1.055;
 
+  const activeTextColor = darkBackground && isActive ? "rgba(255, 255, 255, 0.96)" : coral;
+  const inactiveHoverBg = darkBackground ? "rgba(255, 255, 255, 0.1)" : "rgba(224, 91, 91, 0.035)";
+
   const innerStyle = {
     fontFamily: FONT.mono,
     fontSize: 11,
     fontWeight: isActive ? 600 : shouldBold ? 500 : 400,
     letterSpacing: 1.5,
     textTransform: "uppercase",
-    color: isActive ? coral : f > 0 ? subtleHoverColor : defaultInactiveColor,
-    padding: `8px ${NAV_SPACING}px`,
+    color: isActive ? activeTextColor : f > 0 ? subtleHoverColor : defaultInactiveColor,
+    padding: `6px ${NAV_SPACING}px`,
     borderRadius: 8,
     cursor: "pointer",
     transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease, box-shadow 0.2s ease",
     background: isActive
-      ? "rgba(224, 91, 91, 0.12)"
+      ? darkBackground
+        ? "rgba(224, 91, 91, 0.45)"
+        : "rgba(224, 91, 91, 0.12)"
       : shouldTint
-        ? "rgba(224, 91, 91, 0.035)"
+        ? inactiveHoverBg
         : "transparent",
-    boxShadow: isActive ? "0 0 0 1px rgba(224, 91, 91, 0.28), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
+    boxShadow: isActive
+      ? darkBackground
+        ? "0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.14)"
+        : "0 0 0 1px rgba(224, 91, 91, 0.28), inset 0 1px 0 rgba(255,255,255,0.06)"
+      : "none",
     display: "inline-flex",
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     whiteSpace: "nowrap",
     textDecoration: "none",
+    lineHeight: 1,
   };
 
   const wrapperStyle = {
@@ -135,21 +145,7 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
     >
       {href ? (
         <Link to={href} style={innerStyle} aria-current={isActive ? "page" : undefined}>
-          <span style={{ lineHeight: 1.2 }}>{label}</span>
-          {isActive ? (
-            <div
-              style={{
-                width: 4,
-                height: 4,
-                borderRadius: "50%",
-                background: "#E05B5B",
-                margin: "4px auto 0",
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <span style={{ height: 4, marginTop: 4, display: "block" }} aria-hidden />
-          )}
+          {label}
         </Link>
       ) : (
         <span
@@ -159,21 +155,7 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
         >
-          <span style={{ lineHeight: 1.2 }}>{label}</span>
-          {isActive ? (
-            <div
-              style={{
-                width: 4,
-                height: 4,
-                borderRadius: "50%",
-                background: "#E05B5B",
-                margin: "4px auto 0",
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <span style={{ height: 4, marginTop: 4, display: "block" }} aria-hidden />
-          )}
+          {label}
         </span>
       )}
     </span>
@@ -192,18 +174,19 @@ export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navMouseX, setNavMouseX] = useState(null);
   const [navLeft, setNavLeft] = useState(0);
-  /** Section id while viewing `/` (from IntersectionObserver) */
-  const [scrollSection, setScrollSection] = useState("about");
+  /** True when `#contact` is in view on the home page */
+  const [contactInView, setContactInView] = useState(false);
   const [navOverDarkFromScroll, setNavOverDarkFromScroll] = useState(false);
   const navRef = useRef(null);
   const logoRef = useRef(null);
   const [logoScale, setLogoScale] = useState(1);
 
   const activeSection = useMemo(() => {
-    if (pathname === "/work") return "work";
-    if (pathname === "/lightpainting") return "lightpainting";
-    return scrollSection;
-  }, [pathname, scrollSection]);
+    if (pathname === "/work" || pathname === "/lightpainting") return "work";
+    if (pathname === "/" && contactInView) return "contact";
+    if (pathname === "/") return "home";
+    return "";
+  }, [pathname, contactInView]);
 
   const navOverDark = pathname === "/lightpainting" || navOverDarkFromScroll;
 
@@ -214,25 +197,24 @@ export default function Nav() {
   }, []);
 
   useEffect(() => {
-    if (pathname !== "/") return;
+    if (pathname !== "/") {
+      setContactInView(false);
+      return;
+    }
 
-    const sectionIds = ["about", "pillars", "dealerdeck", "experience", "process", "work", "contact"];
+    const el = document.getElementById("contact");
+    if (!el) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) setScrollSection(entry.target.id);
+          setContactInView(entry.isIntersecting);
         });
       },
-      { rootMargin: "-30% 0px -60% 0px" }
+      { rootMargin: "-35% 0px -50% 0px" }
     );
 
-    const t = setTimeout(() => {
-      sectionIds.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) observer.observe(el);
-      });
-    }, 200);
-
+    const t = setTimeout(() => observer.observe(el), 200);
     return () => {
       clearTimeout(t);
       observer.disconnect();
@@ -245,27 +227,37 @@ export default function Nav() {
       return;
     }
 
-    const checkSection = () => {
-      const navCenterY = 50;
-      const sectionIds = ["about", "pillars", "dealerdeck", "experience", "process", "work", "contact"];
-      for (const id of sectionIds) {
+    const rectOverlaps = (a, b) =>
+      a.bottom > b.top && a.top < b.bottom && a.right > b.left && a.left < b.right;
+
+    const darkRectsUnderNav = () => {
+      const rects = [];
+      for (const id of DARK_SECTION_IDS) {
         const el = document.getElementById(id);
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= navCenterY && rect.bottom >= navCenterY) {
-          setNavOverDarkFromScroll(DARK_SECTION_IDS.includes(id));
-          return;
-        }
+        if (el) rects.push(el.getBoundingClientRect());
       }
-      setNavOverDarkFromScroll(false);
+      document.querySelectorAll('[id^="pro-work-panel-"]').forEach((el) => {
+        rects.push(el.getBoundingClientRect());
+      });
+      return rects;
     };
 
-    checkSection();
-    window.addEventListener("scroll", checkSection, { passive: true });
-    window.addEventListener("resize", checkSection);
+    const checkOverlap = () => {
+      const navEl = navRef.current;
+      if (!navEl) return;
+      const nr = navEl.getBoundingClientRect();
+      const hit = darkRectsUnderNav().some((r) => r.width > 0 && r.height > 0 && rectOverlaps(nr, r));
+      setNavOverDarkFromScroll(hit);
+    };
+
+    checkOverlap();
+    const t = setTimeout(checkOverlap, 100);
+    window.addEventListener("scroll", checkOverlap, { passive: true });
+    window.addEventListener("resize", checkOverlap);
     return () => {
-      window.removeEventListener("scroll", checkSection);
-      window.removeEventListener("resize", checkSection);
+      clearTimeout(t);
+      window.removeEventListener("scroll", checkOverlap);
+      window.removeEventListener("resize", checkOverlap);
     };
   }, [pathname]);
 
@@ -273,10 +265,10 @@ export default function Nav() {
     (id) => {
       setMenuOpen(false);
       if (pathname !== "/") {
-        navigate("/", { state: { scrollToId: id == null || id === "about" ? NAV_SCROLL_ROOT : id } });
+        navigate("/", { state: { scrollToId: id == null || id === "home" ? NAV_SCROLL_ROOT : id } });
         return;
       }
-      if (id && id !== "about") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (id && id !== "home") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
       else window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [navigate, pathname]
@@ -314,13 +306,8 @@ export default function Nav() {
   }, [navMouseX]);
 
   const links = [
-    { id: "about", label: "About" },
-    { id: "pillars", label: "Practice" },
-    { id: "dealerdeck", label: "DealerDeck" },
-    { id: "experience", label: "Experience" },
-    { id: "process", label: "Process" },
+    { id: "home", label: "Home", href: "/" },
     { id: "work", label: "Work", href: "/work" },
-    { id: "lightpainting", label: "Lightpaint", href: "/lightpainting" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -359,9 +346,9 @@ export default function Nav() {
           transform: none !important;
           display: flex !important;
           justify-content: center !important;
-          align-items: flex-start !important;
+          align-items: center !important;
           overflow: visible !important;
-          padding: 10px 12px 14px !important;
+          padding: 10px 12px !important;
           box-sizing: border-box !important;
         }
         .nav-glass-wrap {
@@ -390,7 +377,7 @@ export default function Nav() {
 
         @media (max-width: 768px) {
           .nav-pill {
-            padding: 10px 12px 16px !important;
+            padding: 10px 12px !important;
           }
           .nav-pill-inner-row {
             width: max-content !important;
@@ -432,10 +419,10 @@ export default function Nav() {
             position: "absolute",
             inset: 0,
             borderRadius: 50,
-            background: "rgba(248, 244, 240, 0.82)",
-            backdropFilter: "blur(10px) saturate(1.3)",
-            WebkitBackdropFilter: "blur(10px) saturate(1.3)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 20px rgba(0,0,0,0.07)",
+            background: "rgba(248, 244, 240, 0.72)",
+            backdropFilter: "blur(32px) saturate(1.35)",
+            WebkitBackdropFilter: "blur(32px) saturate(1.35)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 32px rgba(0,0,0,0.08)",
             zIndex: 0,
             pointerEvents: "none",
           }}
@@ -446,12 +433,12 @@ export default function Nav() {
           innerShadowBlur={20}
           innerShadowSpread={-5}
           glassTintColor="#ffffff"
-          glassTintOpacity={scrolled ? 14 : 10}
-          frostBlurRadius={2}
+          glassTintOpacity={scrolled ? 22 : 18}
+          frostBlurRadius={28}
           noiseFrequency={0.009}
           noiseStrength={80}
           width={960}
-          height={52}
+          height={46}
           style={{
             width: "max-content",
             maxWidth: "min(960px, calc(100vw - 24px))",
@@ -460,9 +447,9 @@ export default function Nav() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(255, 255, 255, 0.08)",
-            backdropFilter: "none",
-            WebkitBackdropFilter: "none",
+            background: "rgba(255, 255, 255, 0.14)",
+            backdropFilter: "blur(24px) saturate(1.2)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.2)",
             border: "none",
             boxShadow: "none",
             position: "relative",
@@ -515,7 +502,7 @@ export default function Nav() {
               display: "flex",
               alignItems: "center",
               gap: NAV_SPACING,
-              padding: `8px ${NAV_SPACING}px`,
+              padding: `4px ${NAV_SPACING}px`,
               width: "max-content",
               maxWidth: "min(960px, calc(100vw - 24px))",
               justifyContent: "center",
