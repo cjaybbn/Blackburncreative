@@ -51,7 +51,7 @@ const WORK_ITEMS = [
     id: 1,
     category: "photography",
     title: "Italy — Flickering Faith",
-    description: "Taken at the top of a moutain in a small town called Castel Nuovo, Naples, Italy. 2024 IPA award shortlisted.",
+    description: "Castel Nuovo above Naples during an ASU Italy trip—one frame from that series was shortlisted in the IPA awards.",
     image: "/work/photo-1.jpg",   // Replace with your actual file
     aspectRatio: "3/4",           // portrait
     featured: true,
@@ -76,7 +76,7 @@ const WORK_ITEMS = [
     id: 4,
     category: "photography",
     title: "Automotive Detail",
-    description: "Proffesional stylistic dark photography of new cars with natural lighting.",
+    description: "Natural-light car study; most of my automotive work lives in the lightpainting gallery—long exposure, tripod, and a light bar at meets with other shooters.",
     image: "/work/Photo-6.jpg",
     aspectRatio: "21/9",
   },
@@ -126,10 +126,26 @@ const WORK_ITEMS = [
   {
     id: 10,
     category: "brand",
-    title: "Client Brand Package",
-    description: "Complete visual identity system for a local business — logo, business cards, letterhead, signage.",
+    title: "AZHype — Volleyball Club",
+    description: "Full identity for a funded volleyball club and training company—sole designer under Cre8tive Influence, live iteration with the owner, guidelines and launch collateral they still use.",
     image: "/work/azhype.jpg",
     aspectRatio: "4/3",
+  },
+  {
+    id: 17,
+    category: "brand",
+    title: "Alara Aquatics",
+    description: "Freelance logo and brand collateral for my dad’s company—web- and print-ready exports.",
+    image: "/Alara-dad-picture.png",
+    aspectRatio: "1/1",
+  },
+  {
+    id: 18,
+    category: "brand",
+    title: "Accuracy Solutions",
+    description: "Freelance brand refresh and mockups for my uncle’s company—simple usage notes and vendor-ready files.",
+    image: "/work/accuracy-solutions-brand.jpg",
+    aspectRatio: "1/1",
   },
 
   // ── PRINT DESIGN ──
@@ -170,8 +186,8 @@ const WORK_ITEMS = [
   {
     id: 15,
     category: "caseStudies",
-    title: "TedX Faurot Park",
-    description: "Branding and marketing materials for the TedX Faurot Park event. Created in the GIT design agency at ASU in collaboration with fellow students.",
+    title: "TEDx Faurot Park 2026",
+    description: "GIT agency cohort work: meetings and FigJam sessions, plus a repeatable event pattern I built from the logo branch (AI exploration, then hand-finished art).",
     image: "/work/TedX.png",
     aspectRatio: "4/3",
     featured: true,
@@ -191,7 +207,6 @@ const WORK_ITEMS = [
 ];
 
 const CATEGORIES = [
-  { id: "all", label: "All Work" },
   { id: "photography", label: "Photography" },
   { id: "brand", label: "Brand Identity" },
   { id: "print", label: "Print Design" },
@@ -887,18 +902,15 @@ const Lightbox = ({ item, onClose }) => {
 
 // ─── MAIN GALLERY PAGE ───────────────────────────────────────────────
 export default function WorkGallery() {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState(CATEGORIES[0].id);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => { setLoaded(true); }, []);
 
-  const filtered = activeFilter === "all"
-    ? WORK_ITEMS
-    : WORK_ITEMS.filter(item => item.category === activeFilter);
+  const filtered = WORK_ITEMS.filter(item => item.category === activeFilter);
 
   const counts = {
-    all: WORK_ITEMS.length,
     photography: WORK_ITEMS.filter(i => i.category === "photography").length,
     brand: WORK_ITEMS.filter(i => i.category === "brand").length,
     print: WORK_ITEMS.filter(i => i.category === "print").length,
@@ -981,7 +993,7 @@ export default function WorkGallery() {
                 maxWidth: 500,
                 lineHeight: 1.6,
               }}>
-                A curated selection of work across photography, brand identity, and print design — the visual foundation beneath everything I build.
+                Photography from ASU and travel (including an IPA-shortlisted frame), brand systems like AZHype and my app identities, print pieces, and Behance case studies from the GIT agency studio.
               </p>
             </div>
 
@@ -991,7 +1003,7 @@ export default function WorkGallery() {
               color: C.inkFaint,
               whiteSpace: "nowrap",
             }}>
-              {WORK_ITEMS.length} pieces
+              {filtered.length} in {CATEGORIES.find((c) => c.id === activeFilter)?.label ?? "category"}
             </div>
           </div>
         </motion.div>

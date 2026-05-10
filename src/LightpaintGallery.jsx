@@ -644,6 +644,23 @@ export default function LightpaintGallery() {
           </div>
         </section>
 
+        <section
+          style={{
+            maxWidth: 640,
+            margin: "0 auto",
+            padding: "48px 20px 8px",
+            fontFamily: FONT.body,
+            fontSize: 15,
+            lineHeight: 1.65,
+            color: C.inkSoft,
+            textAlign: "center",
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            I shoot car meets with other enthusiasts: tripod, long exposure, a light bar, and post work so the streaks read clean on body lines—not a filter stack, just deliberate technique.
+          </p>
+        </section>
+
         {/* Gallery grid */}
         <div
           style={{

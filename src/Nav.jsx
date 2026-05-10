@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LiquidGlassContainer } from "@tinymomentum/liquid-glass-react";
 import "@tinymomentum/liquid-glass-react/dist/components/LiquidGlassBase.css";
+import GlowCanvas from "./GlowCanvas";
 import logoImg from "./logo.png";
 
 const FONT = {
@@ -17,20 +18,36 @@ const C = {
   accent: "#E05B5B",
 };
 
-const DARK_SECTION_IDS = ["dealerdeck"];
+const DARK_SECTION_IDS = [];
+
+/** Home scroll-spy order (top → bottom) */
+const HOME_SECTION_IDS = ["hero", "bio", "experience", "process", "contact"];
 
 const MAX_SCALE = 1.08;
 const MAX_DISTANCE = 140; // px — subtle dock magnification
 /** Inside the glass: same value for side padding and gaps between items */
 const NAV_SPACING = 12;
 
-function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, darkBackground }) {
+function NavLink({
+  label,
+  id,
+  href,
+  isActive,
+  navMouseX,
+  navLeft,
+  scrollTo,
+  darkBackground,
+  compact,
+  noiseIndex = 0,
+}) {
   const linkRef = useRef(null);
+  const pillGlowRef = useRef(null);
   const leaveTimerRef = useRef(null);
   const [scale, setScale] = useState(1);
   const [magnificationFactor, setMagnificationFactor] = useState(0);
   const [isPressed, setIsPressed] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
+  const [pillGlowMouse, setPillGlowMouse] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     if (navMouseX === null || !linkRef.current) {
@@ -94,12 +111,12 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
 
   const innerStyle = {
     fontFamily: FONT.mono,
-    fontSize: 11,
+    fontSize: compact ? 9.5 : 11,
     fontWeight: isActive ? 600 : shouldBold ? 500 : 400,
-    letterSpacing: 1.5,
+    letterSpacing: compact ? 1.1 : 1.5,
     textTransform: "uppercase",
     color: isActive ? activeTextColor : f > 0 ? subtleHoverColor : defaultInactiveColor,
-    padding: `6px ${NAV_SPACING}px`,
+    padding: compact ? `5px ${Math.max(5, NAV_SPACING - 4)}px` : `6px ${NAV_SPACING}px`,
     borderRadius: 8,
     cursor: "pointer",
     transition: "color 0.2s ease, background 0.2s ease, fontWeight 0.2s ease, box-shadow 0.2s ease",
@@ -124,6 +141,35 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
     lineHeight: 1,
   };
 
+  const showPillNoise =
+    typeof window !== "undefined" &&
+    window.innerWidth > 768 &&
+    !compact &&
+    (isActive || shouldTint);
+
+  const handlePillGlowMove = useCallback((e) => {
+    const el = pillGlowRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return;
+    setPillGlowMouse({
+      x: ((e.clientX - r.left) / r.width) * 100,
+      y: ((e.clientY - r.top) / r.height) * 100,
+    });
+  }, []);
+
+  const handlePillGlowLeave = useCallback(() => {
+    setPillGlowMouse({ x: 50, y: 50 });
+  }, []);
+
+  const layeredLabelStyle = {
+    ...innerStyle,
+    background: "transparent",
+    boxShadow: "none",
+    position: "relative",
+    zIndex: 2,
+  };
+
   const wrapperStyle = {
     transformOrigin: "center center",
     display: "inline-block",
@@ -135,6 +181,79 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
         }),
   };
 
+  const pillShell = showPillNoise ? (
+    <span
+      ref={pillGlowRef}
+      onMouseMove={handlePillGlowMove}
+      onMouseLeave={handlePillGlowLeave}
+      style={{ position: "relative", display: "inline-block", verticalAlign: "middle" }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 8,
+          overflow: "hidden",
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <GlowCanvas
+          wrapperRef={pillGlowRef}
+          mouseX={pillGlowMouse.x}
+          mouseY={pillGlowMouse.y}
+          isHovered={showPillNoise}
+          seed={noiseIndex * 19}
+          startDelayMs={0}
+          borderRadius={8}
+          skipEntranceAnimation
+          stackZIndex={0}
+        />
+      </span>
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 8,
+          zIndex: 1,
+          pointerEvents: "none",
+          background: innerStyle.background,
+          boxShadow: innerStyle.boxShadow,
+        }}
+      />
+      {href ? (
+        <Link to={href} style={layeredLabelStyle} aria-current={isActive ? "page" : undefined}>
+          {label}
+        </Link>
+      ) : (
+        <span
+          onClick={() => scrollTo(id)}
+          style={layeredLabelStyle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
+        >
+          {label}
+        </span>
+      )}
+    </span>
+  ) : href ? (
+    <Link to={href} style={innerStyle} aria-current={isActive ? "page" : undefined}>
+      {label}
+    </Link>
+  ) : (
+    <span
+      onClick={() => scrollTo(id)}
+      style={innerStyle}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
+    >
+      {label}
+    </span>
+  );
+
   return (
     <span
       ref={linkRef}
@@ -143,21 +262,7 @@ function NavLink({ label, id, href, isActive, navMouseX, navLeft, scrollTo, dark
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
-      {href ? (
-        <Link to={href} style={innerStyle} aria-current={isActive ? "page" : undefined}>
-          {label}
-        </Link>
-      ) : (
-        <span
-          onClick={() => scrollTo(id)}
-          style={innerStyle}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
-        >
-          {label}
-        </span>
-      )}
+      {pillShell}
     </span>
   );
 }
@@ -174,21 +279,33 @@ export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navMouseX, setNavMouseX] = useState(null);
   const [navLeft, setNavLeft] = useState(0);
-  /** True when `#contact` is in view on the home page */
-  const [contactInView, setContactInView] = useState(false);
+  /** Which `#section` anchor is active on `/` (scroll spy) */
+  const [scrollSection, setScrollSection] = useState("hero");
   const [navOverDarkFromScroll, setNavOverDarkFromScroll] = useState(false);
   const navRef = useRef(null);
   const logoRef = useRef(null);
   const [logoScale, setLogoScale] = useState(1);
 
   const activeSection = useMemo(() => {
-    if (pathname === "/work" || pathname === "/lightpainting") return "work";
-    if (pathname === "/" && contactInView) return "contact";
-    if (pathname === "/") return "home";
+    if (pathname === "/work") return "gallery";
+    if (pathname === "/lightpainting") return "lights";
+    if (pathname === "/") return scrollSection;
     return "";
-  }, [pathname, contactInView]);
+  }, [pathname, scrollSection]);
 
   const navOverDark = pathname === "/lightpainting" || navOverDarkFromScroll;
+
+  /** Glass dock: on dark pages/sections, pull luminance down so it matches light-section subtlety. */
+  const glassTintOpacityLight = scrolled ? 22 : 18;
+  const glassTintOpacityDark = scrolled ? 10 : 8;
+  const glassSurfaceLight = "rgba(255, 255, 255, 0.14)";
+  const glassSurfaceDark = "rgba(255, 255, 255, 0.055)";
+  const glassFallbackLight = "rgba(248, 244, 240, 0.72)";
+  const glassFallbackDark = "rgba(22, 22, 24, 0.58)";
+  const glassSpecularLight =
+    "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)";
+  const glassSpecularDark =
+    "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 42%, transparent 72%)";
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -198,26 +315,30 @@ export default function Nav() {
 
   useEffect(() => {
     if (pathname !== "/") {
-      setContactInView(false);
+      setScrollSection("");
       return;
     }
 
-    const el = document.getElementById("contact");
-    if (!el) return;
+    const updateScrollSection = () => {
+      const marker = window.scrollY + Math.min(96, window.innerHeight * 0.2);
+      let current = "hero";
+      for (const sid of HOME_SECTION_IDS) {
+        const el = document.getElementById(sid);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        if (top <= marker + 1) current = sid;
+      }
+      setScrollSection(current);
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          setContactInView(entry.isIntersecting);
-        });
-      },
-      { rootMargin: "-35% 0px -50% 0px" }
-    );
-
-    const t = setTimeout(() => observer.observe(el), 200);
+    updateScrollSection();
+    const t = setTimeout(updateScrollSection, 150);
+    window.addEventListener("scroll", updateScrollSection, { passive: true });
+    window.addEventListener("resize", updateScrollSection);
     return () => {
       clearTimeout(t);
-      observer.disconnect();
+      window.removeEventListener("scroll", updateScrollSection);
+      window.removeEventListener("resize", updateScrollSection);
     };
   }, [pathname]);
 
@@ -264,12 +385,20 @@ export default function Nav() {
   const scrollTo = useCallback(
     (id) => {
       setMenuOpen(false);
-      if (pathname !== "/") {
-        navigate("/", { state: { scrollToId: id == null || id === "home" ? NAV_SCROLL_ROOT : id } });
+      if (id === "home") {
+        if (pathname !== "/") navigate("/", { state: { scrollToId: NAV_SCROLL_ROOT } });
+        else window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      if (id && id !== "home") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-      else window.scrollTo({ top: 0, behavior: "smooth" });
+      if (pathname !== "/") {
+        navigate("/", { state: { scrollToId: id } });
+        return;
+      }
+      if (id === "hero") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
     [navigate, pathname]
   );
@@ -305,11 +434,24 @@ export default function Nav() {
     setLogoScale(distance > 120 ? 1 : 1 + 0.06 * Math.pow(1 - distance / maxDist, 2));
   }, [navMouseX]);
 
-  const links = [
-    { id: "home", label: "Home", href: "/" },
-    { id: "work", label: "Work", href: "/work" },
-    { id: "contact", label: "Contact" },
-  ];
+  const links = useMemo(() => {
+    if (pathname === "/") {
+      return [
+        { id: "hero", label: "Intro" },
+        { id: "bio", label: "About" },
+        { id: "experience", label: "Cases" },
+        { id: "process", label: "AI" },
+        { id: "gallery", label: "Gallery", href: "/work" },
+        { id: "contact", label: "Contact" },
+      ];
+    }
+    return [
+      { id: "home", label: "Home", href: "/" },
+      { id: "gallery", label: "Gallery", href: "/work" },
+      { id: "Lightpainting", label: "Lightpainting", href: "/lightpainting" },
+      { id: "contact", label: "Contact" },
+    ];
+  }, [pathname]);
 
   return (
     <>
@@ -335,6 +477,11 @@ export default function Nav() {
             border: 1px solid rgba(0, 0, 0, 0.10) !important;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10) !important;
           }
+          .nav-glass-fallback-surface.nav-glass-fallback-surface--dark {
+            background: rgba(28, 28, 30, 0.92) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+          }
         }
 
         /* Centered dock; width hugs content; cap so it never overflows viewport */
@@ -348,12 +495,12 @@ export default function Nav() {
           justify-content: center !important;
           align-items: center !important;
           overflow: visible !important;
-          padding: 10px 12px !important;
+          padding: 10px clamp(16px, 2.5vw, 22px) !important;
           box-sizing: border-box !important;
         }
         .nav-glass-wrap {
           width: max-content !important;
-          max-width: min(960px, calc(100vw - 24px)) !important;
+          max-width: min(960px, calc(100vw - 48px)) !important;
           flex: 0 1 auto !important;
           min-width: 0 !important;
           overflow: visible !important;
@@ -361,30 +508,55 @@ export default function Nav() {
         }
         .nav-glass-wrap > * {
           width: max-content !important;
-          max-width: min(960px, calc(100vw - 24px)) !important;
+          max-width: min(960px, calc(100vw - 48px)) !important;
           box-sizing: border-box !important;
           overflow: visible !important;
         }
         /* Gallery routes: bar spans cap width so label can sit on the right */
         .nav-glass-wrap--page {
-          width: min(960px, calc(100vw - 24px)) !important;
-          max-width: min(960px, calc(100vw - 24px)) !important;
+          width: min(960px, calc(100vw - 48px)) !important;
+          max-width: min(960px, calc(100vw - 48px)) !important;
         }
         .nav-glass-wrap--page > * {
           width: 100% !important;
-          max-width: min(960px, calc(100vw - 24px)) !important;
+          max-width: min(960px, calc(100vw - 48px)) !important;
         }
 
         @media (max-width: 768px) {
+          /* Full-width bar with horizontal inset; logo left, menu right */
           .nav-pill {
-            padding: 10px 12px !important;
+            padding: 10px clamp(18px, 5.5vw, 28px) !important;
+            justify-content: stretch !important;
+          }
+          .nav-glass-wrap {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 1 1 auto !important;
+          }
+          .nav-glass-wrap > * {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          .nav-glass-wrap .liquid-glass-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .nav-glass-wrap .liquid-glass-container > .liquid-glass {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
           }
           .nav-pill-inner-row {
-            width: max-content !important;
+            width: 100% !important;
+            max-width: 100% !important;
             min-width: 0 !important;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
+            box-sizing: border-box !important;
+            padding-left: clamp(12px, 3.5vw, 22px) !important;
+            padding-right: clamp(12px, 3.5vw, 22px) !important;
           }
           .nav-glass-wrap--page .nav-pill-inner-row {
             width: 100% !important;
@@ -414,46 +586,53 @@ export default function Nav() {
             when backdrop-filter fails — ensures nav is never fully transparent */}
         <div
           aria-hidden="true"
-          className="nav-glass-fallback-surface"
+          className={`nav-glass-fallback-surface${navOverDark ? " nav-glass-fallback-surface--dark" : ""}`}
           style={{
             position: "absolute",
             inset: 0,
             borderRadius: 50,
-            background: "rgba(248, 244, 240, 0.72)",
+            background: navOverDark ? glassFallbackDark : glassFallbackLight,
             backdropFilter: "blur(32px) saturate(1.35)",
             WebkitBackdropFilter: "blur(32px) saturate(1.35)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 32px rgba(0,0,0,0.08)",
+            boxShadow: navOverDark
+              ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 36px rgba(0,0,0,0.42)"
+              : "inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 32px rgba(0,0,0,0.08)",
             zIndex: 0,
             pointerEvents: "none",
+            transition: "background 0.35s ease, box-shadow 0.35s ease",
           }}
         />
         <LiquidGlassContainer
           borderRadius={50}
-          innerShadowColor="rgba(255, 255, 255, 0.5)"
+          innerShadowColor={
+            navOverDark ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.5)"
+          }
           innerShadowBlur={20}
           innerShadowSpread={-5}
-          glassTintColor="#ffffff"
-          glassTintOpacity={scrolled ? 22 : 18}
+          glassTintColor={navOverDark ? "#c4c2be" : "#ffffff"}
+          glassTintOpacity={navOverDark ? glassTintOpacityDark : glassTintOpacityLight}
           frostBlurRadius={28}
           noiseFrequency={0.009}
-          noiseStrength={80}
+          noiseStrength={navOverDark ? 48 : 80}
           width={960}
           height={46}
           style={{
             width: "max-content",
-            maxWidth: "min(960px, calc(100vw - 24px))",
+            maxWidth: "min(960px, calc(100vw - 48px))",
             minWidth: 0,
             borderRadius: 50,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(255, 255, 255, 0.14)",
-            backdropFilter: "blur(24px) saturate(1.2)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.2)",
+            background: navOverDark ? glassSurfaceDark : glassSurfaceLight,
+            backdropFilter: navOverDark ? "blur(28px) saturate(1.05)" : "blur(24px) saturate(1.2)",
+            WebkitBackdropFilter: navOverDark ? "blur(28px) saturate(1.05)" : "blur(24px) saturate(1.2)",
             border: "none",
             boxShadow: "none",
             position: "relative",
             overflow: "hidden",
+            transition:
+              "background 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease",
           }}
         >
           {/* Specular highlight at the top edge */}
@@ -464,9 +643,9 @@ export default function Nav() {
               inset: 0,
               borderRadius: 50,
               pointerEvents: "none",
-              background:
-                "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)",
+              background: navOverDark ? glassSpecularDark : glassSpecularLight,
               zIndex: 1,
+              transition: "background 0.35s ease",
             }}
           />
 
@@ -479,8 +658,9 @@ export default function Nav() {
               borderRadius: 50,
               overflow: "hidden",
               pointerEvents: "none",
-              opacity: 0.04,
+              opacity: navOverDark ? 0.025 : 0.04,
               zIndex: 0,
+              transition: "opacity 0.35s ease",
             }}
           >
             <div
@@ -502,9 +682,9 @@ export default function Nav() {
               display: "flex",
               alignItems: "center",
               gap: NAV_SPACING,
-              padding: `4px ${NAV_SPACING}px`,
+              padding: `6px ${NAV_SPACING + 8}px`,
               width: "max-content",
-              maxWidth: "min(960px, calc(100vw - 24px))",
+              maxWidth: "min(960px, calc(100vw - 48px))",
               justifyContent: "center",
               position: "relative",
               zIndex: 2,
@@ -551,7 +731,7 @@ export default function Nav() {
                 />
                 {/* Desktop links */}
                 <div style={{ display: "flex", gap: NAV_SPACING, alignItems: "center" }} className="desktop-nav">
-                  {links.map((l) => (
+                  {links.map((l, i) => (
                     <NavLink
                       key={l.id}
                       id={l.id}
@@ -562,6 +742,7 @@ export default function Nav() {
                       navLeft={navLeft}
                       scrollTo={scrollTo}
                       darkBackground={navOverDark}
+                      noiseIndex={i}
                     />
                   ))}
                 </div>

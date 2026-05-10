@@ -16,6 +16,10 @@ export default function GlowCanvas({
   seed = 0,
   startDelayMs = 1200,
   borderRadius = 24,
+  /** If true, skip the 3s opacity entrance (e.g. nav hover overlay). */
+  skipEntranceAnimation = false,
+  /** Default -1 sits behind glass button label; use 0 for nav shell overlay. */
+  stackZIndex = -1,
 }) {
   const radiusPx = typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius;
   const canvasRef = useRef(null);
@@ -203,10 +207,11 @@ export default function GlowCanvas({
         inset: 0,
         overflow: "hidden",
         borderRadius: radiusPx,
-        zIndex: -1,
+        zIndex: stackZIndex,
         pointerEvents: "none",
-        opacity: 0,
-        animation: "glowCanvasReveal 3s ease-out forwards",
+        ...(skipEntranceAnimation
+          ? { opacity: 1 }
+          : { opacity: 0, animation: "glowCanvasReveal 3s ease-out forwards" }),
       }}
     >
       <canvas

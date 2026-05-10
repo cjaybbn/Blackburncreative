@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
 import HeroBackground from "./HeroBackground";
@@ -26,123 +26,181 @@ const SITE_DATA = {
   /** Legal / schema name */
   fullName: "Camden J Blackburn",
   name: "Camden Blackburn",
-  tagline: "Building Scalable Systems through AI-Native Collaboration.",
-  heroMono: "SYSTEM DESIGN · ENTREPRENEURSHIP · AI-NATIVE BUILD",
+  tagline:
+    "Vision-driven Product Manager and AI Builder bridging the gap between human-centered UX and technical execution.",
+  heroMono: "PRODUCT · DESIGN · AI SYSTEMS · AUTOMOTIVE",
   email: "Blackburncamden@gmail.com",
   phone: "(206) 321-6087",
-  location: "Phoenix, AZ",
-  school: "Arizona State University — B.S. Graphic Information Technology",
-  graduation: "Summer 2026",
+  location: "Scottsdale, AZ",
+  school: "Arizona State University — B.S. Graphic Information Technology (UX Focus)",
+  graduation: "August 2026",
+  /** About section nav/label */
+  aboutSectionLabel: "The Approach",
+  /** Shown under About — school line + graduation */
+  aboutGraduationLine:
+    "Arizona State University — B.S. Graphic Information Technology (UX Focus) · Graduating August 2026",
 
-  intro: `I work as a product founder and system designer: framing problems, shipping MVPs, and building design languages with teams. Active projects include RealCopy (AI-assisted workflows for real estate marketing and listing context), DealerDeck LLC (automotive SaaS), BirdsEye (drone orthomosaic and construction visualization), the ASU Polytechnic campus visual system, and selected client brand engagements.
+  intro: `My work lives at the intersection of what I see in the field and what I can build at a keyboard. I don’t believe in building software in a vacuum. RealCopy started by talking to real estate agents about their fragmented workflows while I was already on-site doing drone mapping and photography. When I hit the limits of no-code tools, I moved to a full Expo and Supabase stack using AI to accelerate the build without sacrificing the "human" feel of the UX.
 
-I use AI tools where they improve research, build speed, and quality — alongside design and engineering judgment. I am completing a B.S. in Graphic Information Technology at Arizona State University.`,
+DealerDeck came directly from my time on the floor at BMW North Scottsdale. I watched sales reps struggle to balance customer face-time with the administrative weight of CRM logging. I’m building a voice-first solution that turns a quick walk-around into structured data, ensuring the CRM stays updated without the rep ever having to leave the showroom floor.
+
+At ASU Polytechnic, I’ve moved from being a student to a project manager. Leading the TPS design system for the TEM program taught me how to manage stakeholders and steer a cross-functional team toward a cohesive vision. It wasn't just about a logo; it was about creating a system that future cohorts could actually use and scale.
+
+When I'm not shipping code, I'm usually behind a lens or under a hood. Whether it's lightpainting a ZL1 at a midnight meet or experimenting with high-performance modifications on an E36 M3, I apply the same "relentless iteration" mindset to automotive photography and engineering as I do to my apps.
+
+AI is my most effective collaborator. I use it to handle the boilerplate and bridge technical gaps, but the direction—the "why" behind the product—is always human-driven. If a tool doesn't solve a tangible problem for a user standing right in front of me, it isn't finished.`,
 
   aiPhilosophy: {
     title: "How I Use AI",
     paragraphs: [
-      "I don't use AI to skip the work. I use it to extend what I can ship: research, prototyping, and iteration alongside taste and product judgment.",
-      "Tools in the stack include models and assistants for research and drafting, prompt-driven development environments, and image generation for exploration — used deliberately, with clear acceptance criteria.",
-      "The skill is knowing when to rely on a tool and when to override it with constraints from users, brand, accessibility, and production reality.",
+      "I view AI as a force multiplier. It allows me to act as a PM, designer, and developer simultaneously, accelerating the path from a \"floor-side\" observation to a functional prototype.",
     ],
   },
 
-  /** Practice pillars — narrative IA for founder / architect positioning */
-  practicePillars: [
-    {
-      title: "Entrepreneurship",
-      description:
-        "DealerDeck LLC (automotive SaaS) and RealCopy (real estate). Founder-led problem framing, MVP delivery, and iteration with pilot users.",
-    },
-    {
-      title: "Systems Architecture",
-      description:
-        "ASU Polytechnic design system — isometric grid construction, Mother Shape narrative, and coordination across environmental, digital, and print applications.",
-    },
-    {
-      title: "Technical Innovation",
-      description:
-        "BirdsEye — drone orthomosaic workflows, 3D reconstruction, and web-based maps for construction and site stakeholders.",
-    },
-    {
-      title: "Creative Excellence",
-      description:
-        "Photography and automotive lightpainting — composition and lighting discipline that inform product and brand work.",
-    },
-  ],
-
-  designWork: [
-    { title: "Brand Identity Systems", description: "Logo design, visual identity, brand guidelines for small businesses and personal projects." },
-    { title: "Photography", description: "Architectural, automotive, and travel photography." },
-    { title: "Social Media Design", description: "Campaign graphics, story templates, and content systems for real estate and lifestyle brands." },
-    { title: "Generative AI Art", description: "Prompt-engineered visual concepts using Midjourney and DALL-E for brand exploration and rapid prototyping." },
-    { title: "Graphic Design", description: "Print and digital design including posters, marketing materials, and editorial layouts." },
-    { title: "Photo Composition", description: "Composite imagery blending photography with digital manipulation for creative and commercial applications." },
-  ],
+  /** Contact section lead paragraph */
+  contactBody: `I am currently finishing my B.S. in Graphic Information Technology at ASU (graduating August 2026). If you're looking for a Product Manager who isn't afraid to get into the technical weeds or a builder who starts with the user, let’s talk.`,
 
   skills: [
-    { category: "Product", items: ["Product Strategy", "Founder-Led MVP", "Systems Thinking", "UX Design", "User Research", "Rapid Prototyping", "Beta Testing"] },
-    { category: "AI Tools", items: ["Gemini / Vertex AI", "Claude", "Cursor AI", "Midjourney", "Prompt Engineering"] },
-    { category: "Development", items: ["React Native / Expo", "Supabase", "Railway", "Node.js", "REST APIs"] },
-    { category: "Design", items: ["Figma", "Adobe Creative Suite", "Photography", "Brand Identity", "Typography"] },
+    {
+      category: "Product",
+      items: [
+        "Product Roadmap Planning",
+        "Prompt Engineering",
+        "Gemini/Vertex AI",
+        "User Research",
+        "Agile Development",
+      ],
+    },
+    {
+      category: "AI & dev assist",
+      items: [],
+    },
+    {
+      category: "Development",
+      items: ["React Native", "Expo", "Supabase"],
+    },
+    {
+      category: "Design",
+      items: ["Figma", "Adobe Creative Suite", "FAA Drone Mapping"],
+    },
+  ],
+
+  /** Group headers for Professional Work (order preserved in UI). */
+  workCategoryGroups: [
+    {
+      id: "agency",
+      title: "Design Agency",
+      description:
+        "Work from ASU’s GIT agency studio—you apply, they take a small cohort, and you’re on real client teams with deadlines and faculty critiques, not hypothetical briefs.",
+    },
+    {
+      id: "entrepreneurial",
+      title: "Entrepreneurial",
+      description:
+        "Products I started and still run: talking to users, wiring the stack, fixing what breaks, and re-cutting copy when testers tell me I’m wrong.",
+    },
+    {
+      id: "branding",
+      title: "Branding",
+      description:
+        "Systems for my own apps plus client launches: AZHype (volleyball club through Cre8tive Influence—guidelines, social templates, collateral they still run today), and freelance marks for shops like Alara Aquatics and Accuracy Solutions.",
+    },
   ],
 
   professionalWork: [
     {
+      workCategory: "entrepreneurial",
       client: "RealCopy",
-      role: "Founder",
-      context: "PropTech / AI",
+      role: "Founder & Lead Product Builder",
+      context: "iPhone app · TestFlight",
       description:
-        "AI-powered marketing and market intelligence for real estate agents — property-aware copy, live comps, and social content in one mobile-first flow (TestFlight).",
-      tags: ["AI", "PropTech", "React Native"],
+        "Spearheaded the 0-to-1 lifecycle of an AI marketing platform for realtors. Managed everything from initial user research to a TestFlight Beta launch, integrating 7+ APIs to turn a single address into a full market intelligence suite.",
+      tags: ["React Native", "Supabase", "Beta"],
       status: "Beta",
       caseStudyId: "realcopy",
     },
     {
+      workCategory: "entrepreneurial",
       client: "DealerDeck LLC",
-      role: "Founder",
-      context: "Automotive SaaS",
+      role: "Founder & Technical Lead",
+      context: "Dealership sales tools",
       description:
-        "Problem framing through MVP: dealer workflows, data handoffs, and roadmap sequencing for an automotive SaaS surface — feasibility, pilots, and AI-native build practices.",
-      tags: ["Entrepreneurship", "SaaS", "Automotive"],
+        "A voice-led showroom intelligence tool born from BMW floor experience. It captures live transcripts and vehicle context, allowing reps to sync notes to the CRM in seconds instead of hours.",
+      tags: ["Automotive", "CRM", "MVP"],
       status: "In Progress",
       caseStudyId: "dealerdeck",
     },
     {
+      workCategory: "entrepreneurial",
       client: "BirdsEye",
       role: "Technical Lead",
-      context: "Geospatial / Construction Tech",
+      context: "Construction & sites",
       description:
-        "Drone orthomosaic capture, 3D reconstruction, and interactive construction maps — aerial data as stakeholder-ready operational views.",
-      tags: ["Drones", "3D", "Mapping"],
+        "Fly the site, stitch an orthomosaic, and hand supers or owners a link they can open on a phone in the dirt—not a zip of random JPEGs.",
+      tags: ["Drone", "Pix4D", "Web map"],
       status: "Case study",
       caseStudyId: "birdseye",
     },
     {
+      workCategory: "agency",
       client: "ASU Polytechnic Design System",
-      role: "Project Manager & Systems Architect",
-      context: "ASU Partnership",
+      role: "Project Manager & Brand Designer",
+      context: "ASU Polytechnic campus",
       description:
-        "Campus-wide design language on a 6×6 isometric grid with Mother Shape narrative — signage, digital, and environmental graphics under PM delivery.",
-      tags: ["Design System", "Grid Logic", "PM"],
+        "Directed a cross-functional team to build a comprehensive brand system for the TEM program. Managed timelines and stakeholder reviews, ultimately presenting the 3D-inspired isometric grid system solo to the career advisory board.",
+      tags: ["Campus signage", "Figma library", "Training"],
       status: "Completed",
       caseStudyId: "polytechnic",
     },
     {
-      client: "TEDx Faurot Park",
-      role: "Brand Designer",
-      context: "ASU Design Agency Course",
-      description: "Visual brand identity: logo, event collateral, and guidelines within an agency team — creative direction, client presentations, iterative rounds.",
-      tags: ["Branding", "Logo Design", "Event Identity"],
+      workCategory: "agency",
+      client: "TEDx Faurot Park 2026",
+      role: "Lead Designer",
+      context: "Event branding · ASU GIT agency",
+      description:
+        "Agency-studio cadence in FigJam and critiques; I built the repeatable event pattern from the logo’s branch (AI exploration, then hand-finished art), plus programs, slides, and social templates volunteers could edit without breaking the grid.",
+      tags: ["Pattern system", "Print", "Event"],
       status: "Completed",
       caseStudyId: "tedx",
     },
     {
+      workCategory: "branding",
+      client: "AZHype",
+      role: "Lead Designer",
+      context: "Cre8tive Influence · Volleyball club",
+      description:
+        "Full identity for a funded volleyball club and training company—sole designer reporting through Cre8tive Influence, live iteration with the owner, guidelines, collateral, and social templates they still run today.",
+      tags: ["Identity", "Guidelines", "Launch"],
+      status: "Completed",
+    },
+    {
+      workCategory: "branding",
+      client: "Alara Aquatics",
+      role: "Freelance Designer",
+      context: "Family business · Branding",
+      description:
+        "Logo and brand collateral for my dad’s company—tight scope, fast turnaround, files ready for web and print vendors.",
+      tags: ["Logo", "Freelance"],
+      status: "Completed",
+    },
+    {
+      workCategory: "branding",
+      client: "Accuracy Solutions",
+      role: "Freelance Designer",
+      context: "Family business · Branding",
+      description:
+        "Brand refresh and mockups for my uncle’s company—clear mark, simple usage notes, and export-ready assets.",
+      tags: ["Logo", "Freelance"],
+      status: "Completed",
+    },
+    {
+      workCategory: "agency",
       client: "Southwest Label & Print",
       role: "Lead Designer",
-      context: "Client Project",
-      description: "Full brand redesign: logo, typography, UX research, and website — research through delivery for an established print company.",
-      tags: ["Brand Redesign", "UX Research", "Web Design", "Logo"],
+      context: "ASU GIT agency cohort",
+      description:
+        "Rebrand and B2B web direction after shop-floor interviews—new mark, type, and clearer paths for quote requests so buyers see what the presses actually run.",
+      tags: ["Print", "Web", "B2B"],
       status: "Completed",
       caseStudyId: "southwest",
     },
@@ -154,126 +212,414 @@ I use AI tools where they improve research, build speed, and quality — alongsi
       name: "RealCopy",
       status: "Beta — TestFlight",
       description:
-        "RealCopy combines AI-assisted listing and marketing copy with property and market context so agents can draft content and reference comps and neighborhood signals in one mobile-first flow. Distributed via TestFlight; stack and integrations are listed below.",
+        "An iPhone app built for the \"in-between\" moments of a realtor's day. I architected a mobile-first experience that optimizes complex data retrieval—pulling from Rentcast, Google Places, and Gemini—to ensure core tasks are completed in under three taps.",
       process: [
-        { phase: "Problem", detail: "Real estate agents often maintain listing copy, social posts, and market context using separate tools and manual steps." },
-        { phase: "Research", detail: "Compared tools that emphasize copy generation versus those that emphasize MLS-style data, to define a single-flow experience." },
-        { phase: "Design", detail: "Mobile-first flows aimed at use between showings: property context and generated content accessible together." },
-        { phase: "Build", detail: "Expo/React Native, Supabase, Railway, and the service integrations listed in the stack." },
-        { phase: "Ship", detail: "TestFlight builds and iteration from beta feedback." },
+        {
+          phase: "Problem",
+          detail:
+            "Realtors were losing hours to \"context switching\" between MLS data and AI writing tools. I saw the friction firsthand while shooting property videos.",
+        },
+        { phase: "Prototype", detail: "First pass in Glide to test flows; hit limits on layout, data modeling, and the API hooks I needed, so I stopped fighting the no-code shell." },
+        { phase: "Rebuild", detail: "Rebuilt in Expo with Cursor and Claude: own the UI, wire my own API bridges, and iterate prompts without a template ceiling." },
+        { phase: "Design", detail: "One property at a time, big type, obvious copy actions, room to edit before anything ships to a listing." },
+        { phase: "Ship", detail: "TestFlight builds; agents send screenshots when a line reads wrong or a comp looks off." },
       ],
       processDetails: [
-        { title: "Scope", detail: "The product keeps listing narratives, social-ready snippets, and property-aware context in one surface so agents are not bouncing between a writing tool, a maps tab, and a spreadsheet of comps. The goal is a single place to sanity-check tone and facts before anything goes live.", omitMetric: true },
-        { title: "Differentiation", detail: "Most assistants stop at generic copy; MLS-style tools stop at raw fields. RealCopy is positioned where those meet: generated language that can still lean on structured property and neighborhood signals, so the output feels specific to the address instead of interchangeable filler.", omitMetric: true },
-        { title: "Interaction model", detail: "Flows assume interruptions: short sessions between showings, one hand on the wheel, and no patience for deep menus. Primary jobs are surfaced up front, with fast paths back to the last listing and predictable places for edits before sharing.", omitMetric: true },
-        { title: "Integrations", detail: "The stack combines mobile delivery with managed backends and third-party APIs for maps, valuations, and enrichment. Wiring is treated as part of the product: failures, rate limits, and stale data need clear handling in the UI, not silent wrong answers.", omitMetric: true },
-        { title: "Delivery", detail: "Ships through TestFlight so real agents can stress content quality, data freshness, and edge cases on their own listings. Feedback tightens prompts, fallbacks, and which fields are safe to emphasize in marketing versus disclosure-heavy contexts.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "Realtors were losing hours to context switching between MLS data and AI writing tools—I saw it while shooting property videos and in interviews.",
+          omitMetric: true,
+        },
+        {
+          title: "Prototype",
+          detail:
+            "First Glide pass proved the flow but broke on layout and API depth—enough signal to commit to a real codebase.",
+          omitMetric: true,
+        },
+        {
+          title: "Rebuild",
+          detail:
+            "Expo + Cursor + Claude so I own UI, bridges, and prompts—no template ceiling when guardrails need to change.",
+          omitMetric: true,
+        },
+        {
+          title: "Design",
+          detail:
+            "One property at a time: big type, obvious copy actions, room to edit before anything ships to a listing.",
+          omitMetric: true,
+          image: {
+            src: "/RealCopy-Logo-design.png",
+            alt: "RealCopy logo and identity exploration",
+            caption: "Early mark and UI language before the live product and marketing site.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
+        {
+          title: "Ship",
+          detail: "Widening beta only after repeated fixes on guardrails and source citations for numbers.",
+          omitMetric: true,
+          image: {
+            src: "/Realcopy-website-screenshot.png",
+            alt: "RealCopy marketing site and product preview",
+            caption: "Public-facing site and beta flow—one address in, listing-ready copy and context out.",
+          },
+        },
       ],
       stack: ["Expo / React Native", "Supabase", "Railway", "Gemini API", "Vertex AI", "Google Places API", "Rentcast API", "Cursor AI"],
+      links: [{ label: "App preview", href: "https://realcopylanding.vercel.app/" }],
     },
     dealerdeck: {
       name: "DealerDeck LLC",
-      status: "In Progress — MVP",
+      status: "In Progress — pilot",
       description:
-        "SaaS exploration shaped by front-line dealership experience (including time as valet at BMW North Scottsdale): sales-centric workflows, CRM handoffs, and AI-assisted capture — with integration and scale dependent on each dealer’s stack and pilots.",
-      stack: ["Product strategy", "React / web", "APIs", "Cursor AI", "Gemini", "Customer pilots"],
+        "Developed at BMW North Scottsdale to solve the \"I'll do the CRM later\" problem. It uses domain-specific tables for BMW trims and zones to ensure the AI-generated summaries match the specific language of the dealership lot.",
+      stack: ["React Native", "Supabase", "Inventory APIs", "Custom BMW reference tables", "Cursor", "Gemini", "Live pilot feedback"],
+      links: [{ label: "App preview", href: "https://www.dealerdeckapp.com" }],
       process: [
-        { phase: "Problem", detail: "Sales staff often face CRM workflows tuned to management reporting rather than fast, accurate logging at the point of conversation." },
-        { phase: "Research", detail: "Conversations across sales, management, and dealership operations to map how data moves today." },
-        { phase: "Design", detail: "Mobile-first, low-friction logging (including voice where appropriate), summaries, and prompts aligned to dealership vocabulary — exact feature set depends on pilot agreements." },
-        { phase: "Build", detail: "React Native builds for iOS/Android, TestFlight distribution, AI-assisted development tools; CRM integration approach follows each dealer’s system of record." },
-        { phase: "MVP", detail: "Pilot onboarding and roadmap for compliance and multi-location scale." },
+        {
+          phase: "Problem",
+          detail:
+            "Note-taking and CRM updates slip when the next up is already walking over—voice memos and half-filled fields don’t help finance or follow-up.",
+        },
+        {
+          phase: "Research",
+          detail:
+            "Worked the lot, watched how inventory is tracked, and asked which CRM fields actually get read vs which are checkbox theater.",
+        },
+        {
+          phase: "Design",
+          detail:
+            "Voice capture with instant transcript, obvious edit/stop controls, and on-screen proof of what will sync so reps trust it over sticky notes.",
+        },
+        {
+          phase: "Build",
+          detail:
+            "React Native client, Supabase where it helps, inventory API ingestion, domain tables for model/trim language, AI assist only for formatting—not for auto-texting customers.",
+        },
+        {
+          phase: "Pilot",
+          detail:
+            "Rolling with real ups: GM and sales manager signed off, reps give weekly friction notes while I harden CRM export rules per store policy.",
+        },
       ],
       processDetails: [
-        { title: "Context", detail: "DealerDeck is grounded in observed dealership operations and front-line sales workflows—not abstract “auto industry” slides. Time on the lot and in handoffs made it obvious where CRM friction actually shows up for reps versus what leadership dashboards celebrate.", omitMetric: true },
-        { title: "CRM reality", detail: "Most CRMs are sold on compliance and forecasting, but day-to-day value for reps is about fast, accurate touch logging without derailing a conversation. The work prioritizes rep-side usefulness and data quality over manager-only reporting views that never get corrected at the source.", omitMetric: true },
-        { title: "Capture UX", detail: "Capture is designed for the lot and the curb: minimal taps, voice where it helps, and immediate confirmation so reps trust what was saved. The objective is to lower the activation energy of good notes so incomplete records are the exception, not the norm.", omitMetric: true },
-        { title: "AI use", detail: "Models assist with drafting and summarization, but humans stay in control: edits are always available, prompts respect dealership vocabulary, and outputs are framed as starting points rather than immutable truth. That balance matters when a note might surface in a trade appraisal or a compliance review.", omitMetric: true },
-        { title: "Roadmap", detail: "Rollout stays pilot-driven: each dealer brings a different CRM, roster, and risk tolerance. Integration paths, audit expectations, and success criteria are negotiated per rooftop so the roadmap stays tied to measurable adoption instead of a generic feature checklist.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "Started while parking cars and hearing “I’ll fix CRM later.” If it fails at the curb in front of a customer, the feature doesn’t ship.",
+          omitMetric: true,
+        },
+        {
+          title: "Research",
+          detail:
+            "Worked the lot and tied answers to the same inventory feeds the website uses—plus dealer-specific naming—so “where’s that X3?” matches the map employees expect.",
+          omitMetric: true,
+        },
+        {
+          title: "Design",
+          detail:
+            "Voice capture with instant transcript, obvious edit/stop controls, and on-screen proof of what will sync so reps trust it over sticky notes.",
+          omitMetric: true,
+          image: {
+            src: "/Dealerdeck-Design.PNG",
+            alt: "DealerDeck voice capture and transcript UI",
+            caption: "In-app capture: live transcript and structured handoff before anything hits the CRM.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
+        {
+          title: "Build",
+          detail:
+            "React Native + Supabase + domain tables: structured payloads for the CRM, compliance-aware boundaries on what stays on-device vs server-side.",
+          omitMetric: true,
+        },
+        {
+          title: "Pilot",
+          detail:
+            "Pilot users are active; leadership buy-in is there; next milestone is dependable CRM integrations instead of one-off exports.",
+          omitMetric: true,
+          image: {
+            src: "/DealerDeck-Website-Screenshot.png",
+            alt: "DealerDeck product website",
+            caption: "Product surface for dealers—same story as the app, built for quick trust and sign-up.",
+          },
+        },
       ],
     },
     birdseye: {
       name: "BirdsEye",
       status: "Case study",
       description:
-        "Drone orthomosaic and 3D reconstruction for construction and site operations: flight planning, control-point discipline where used, and browser-based maps for field and office stakeholders.",
-      stack: ["Photogrammetry", "Pix4D / ODM", "GIS", "Three.js / web GL", "Python tooling"],
+        "Construction teams were trading folders of drone stills. BirdsEye is the boring-but-useful version: fly a grid, stitch an orthomosaic, host a zoomable map supers can open next to the trench.",
+      stack: ["Pix4D / ODM", "Ground control when needed", "QGIS", "Three.js / WebGL", "Python helpers"],
       process: [
-        { phase: "Problem", detail: "Site documentation often lives in disconnected photos and static exports instead of a single map surface." },
-        { phase: "Research", detail: "Capture frequency, accuracy needs, and how teams review maps on site." },
-        { phase: "Design", detail: "Layered orthomosaics, measurement and comparison views, contrast suited to outdoor screens." },
-        { phase: "Build", detail: "Pipeline from capture to tiles and meshes; exports for CAD/GIS where required." },
-        { phase: "Deliver", detail: "Repeatable flight and QA notes per project, with client-facing packages as agreed." },
+        { phase: "Problem", detail: "Supers were screenshotting Google Earth or emailing JPEGs named “final_FINAL2” and still arguing about square footage." },
+        { phase: "Research", detail: "Asked how often they needed fresh passes—grading vs pour vs punch—and what accuracy actually changed a decision." },
+        { phase: "Design", detail: "High-contrast map tiles, simple measure/compare, nothing that requires a GIS degree to pan around." },
+        { phase: "Build", detail: "Process raw imagery to tiles/mesh; export DXF/geo when the engineer asks for it." },
+        { phase: "Deliver", detail: "Hand off a link + a short flight log (date, altitude, control points) so disputes have a paper trail." },
       ],
       processDetails: [
-        { title: "Accuracy", detail: "Where quantities or disputes matter, control points and camera checks back the orthomosaic before anyone bets a pay app on eyeballing tiles alone. The workflow leaves an explainable trail: what was flown, how it was referenced, and what assumptions still belong in a surveyor’s lane.", omitMetric: true },
-        { title: "Cadence", detail: "Flight rhythm follows the job, not a calendar template: earthwork, vertical work, and closeout all need different evidence. Scheduling captures against phase milestones keeps the map aligned with what supers and owners are actually arguing about that week.", omitMetric: true },
-        { title: "Stakeholders", detail: "Owners, GCs, subs, and safety leads ask different questions from the same ortho base. Layers, filters, and exports are tuned so each group gets legible answers without maintaining four unrelated photo dumps that drift out of sync.", omitMetric: true },
-        { title: "3D outputs", detail: "Meshes, contours, and derived linework support coordination and as-built documentation when the engagement calls for them—not as vanity reels, but as artifacts that plug into how the team already reviews work in CAD or GIS.", omitMetric: true },
-        { title: "Field use", detail: "Review happens on phones and tablets in glare and dust, often with uneven connectivity. Interaction targets, contrast, and offline-tolerant viewing patterns are part of the product, not an afterthought mocked up only on a desktop monitor.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "Supers were screenshotting Google Earth or emailing JPEGs named “final_FINAL2”—if quantity is in dispute, we set ground targets and re-fly instead of guessing from uncorrected tiles.",
+          omitMetric: true,
+        },
+        {
+          title: "Research",
+          detail:
+            "Matched flight cadence to what changes decisions: earthwork wants weekly; closeout might need one last pass.",
+          omitMetric: true,
+        },
+        {
+          title: "Design",
+          detail:
+            "High-contrast tiles and layers so owner, GC, and safety stay on one map instead of three Dropbox folders—nothing that needs a GIS degree to pan around.",
+          omitMetric: true,
+        },
+        {
+          title: "Build",
+          detail:
+            "Process raw imagery to tiles/mesh; meshes and contours only when the job actually uses them in CAD—otherwise it’s noise.",
+          omitMetric: true,
+        },
+        {
+          title: "Deliver",
+          detail:
+            "Hand off a link plus a short flight log; UI tested on phones in Arizona sun—bigger buttons, darker basemap, don’t assume Wi‑Fi.",
+          omitMetric: true,
+        },
       ],
     },
     polytechnic: {
-      name: "ASU Polytechnic Design System",
+      name: "ASU Polytechnic Design System (TPS)",
       status: "Completed",
       description:
-        "Campus-scale visual system: 6×6 isometric construction grid, Mother Shape as the unifying mark logic, and PM-led rollout across environmental, digital, and print. Balances institutional restraint with polytechnic craft identity.",
-      stack: ["Grid systems", "Figma libraries", "Environmental graphics", "PM / Agile", "Brand narrative"],
+        "Began when ASU’s Technology, Entrepreneurship, and Management (TEM) program wanted branding that didn’t read as generic ASU. Our professor pushed us past a one-off logo into a real design system so future cohorts couldn’t each invent a new look—we studied MIT-style systematic lab branding, iterated as a team, and landed on a hex-based isometric grid with a 3D-reading cuboid language. That framework scales to the whole Polytechnic while each program keeps a distinct mark inside the family. As project manager I built the grid, shaped the visual language and guidelines, ran timelines and critiques, and was the sole student presenter when we showed the system to employers and ASU faculty on the career advisory board.",
+      links: [
+        {
+          label: "TPS Design System on Behance",
+          href: "https://www.behance.net/gallery/249030461/TPS-Design-System-Proposal-Design-Agency",
+        },
+      ],
+      heroAsideMedia: {
+        src: "/TPS-logo-example.png",
+        alt: "TPS logo lockups and grid construction example",
+        caption:
+          "Logo construction and 6×6 grid snaps from the system spec—companion to the Mother Shape motion in the timeline.",
+        maxWidth: "min(132px, 34vw)",
+        maxHeight: "min(92px, 17vh)",
+      },
+      stack: ["6×6 isometric grid", "Figma components", "Signage specs", "Printed templates", "Faculty training decks"],
       process: [
-        { phase: "Problem", detail: "Fragmented vendor art and one-off campaigns weakened wayfinding and digital cohesion across Polytechnic sites." },
-        { phase: "Research", detail: "Audited touchpoints: signage, web templates, event graphics; synthesized constraints from facilities and communications." },
-        { phase: "Design", detail: "Defined Mother Shape rules, isometric module usage, typography tiers, and color accessibility checks for outdoor contrast." },
-        { phase: "Build", detail: "Component library, specimen docs, and templates for student makerspace outputs and official comms." },
-        { phase: "Ship", detail: "Phased adoption with training decks, office hours for college partners, and versioned asset drops." },
+        { phase: "Problem", detail: "TEM needed its own voice; without rules, every future class risked another mismatched flyer stack across Polytechnic." },
+        { phase: "Research", detail: "Audited what communications and facilities already published, compared MIT-style identity systems, and pressure-tested what a grid could enforce." },
+        { phase: "Design", detail: "Defined the hex isometric grid, Mother Shape relationships, color for Arizona outdoor media, and allowable remixes for student makers." },
+        { phase: "Build", detail: "Packaged Figma libraries, signage specs, InDesign/Canva templates, and training decks for partners." },
+        { phase: "Ship", detail: "Presented outcomes to the career advisory board, then handed off versioned zips and office hours so the system survives real use." },
       ],
       processDetails: [
-        { title: "Grid logic", detail: "The isometric module scales from posters and digital templates to environmental applications without ad-hoc stretching. That discipline keeps student makerspace outputs and official communications feeling like one family instead of a pile of one-off lockups.", omitMetric: true },
-        { title: "Mother Shape", detail: "Mother Shape is the rhetorical spine: sub-brands and campaigns resolve back to a shared silhouette language so diversity reads as intentional, not accidental. The system document explains when to lean full mark, wordmark, or pattern—and when restraint is the right flex.", omitMetric: true },
-        { title: "Coordination", detail: "Campus work crosses facilities, web, recruitment events, and student showcases. Sequencing deliverables and ownership prevents the classic trap where signage ships before web templates exist, or vice versa, and the public sees two different schools.", omitMetric: true },
-        { title: "Accessibility", detail: "Type scale, stroke weights, and contrast are checked for exterior signage in sun, kiosk screens in shade, and long-form reading on the web. Outdoor legibility and digital AA-minded pairings are treated as constraints to design into, not polish at the end.", omitMetric: true },
-        { title: "Rollout", detail: "Templates, short training, and office hours give partners a path off of rogue InDesign files. Versioned drops and clear naming reduce “closest enough” exports that slowly erode the system the semester after launch.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "TEM needed its own voice; without rules, every future class risked another mismatched flyer stack across Polytechnic.",
+          omitMetric: true,
+          image: {
+            src: "/TPS-Problem.png",
+            alt: "TPS design system problem framing and context",
+            caption: "Problem framing—why Polytechnic needed its own system instead of generic ASU defaults.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
+        {
+          title: "Research",
+          detail:
+            "Audited published comms, compared MIT-style systems, and ran team critiques in FigJam so priorities and file drops stayed visible.",
+          omitMetric: true,
+          image: {
+            src: "/Figjam-TPS-Screenshot.png",
+            alt: "FigJam board for TPS design system planning",
+            caption: "Research and alignment—async and live FigJam before locking the grid and marks.",
+          },
+        },
+        {
+          title: "Design",
+          detail:
+            "Defined the 6×6 iso grid, Mother Shape language, and outdoor color—snap-to-grid means on-brand; motion shows how the silhouette flexes across formats.",
+          omitMetric: true,
+          image: {
+            type: "video",
+            src: "/TPS-Animation-video.mp4",
+            poster: "/TPS-picture.png",
+            alt: "Motion study for the TPS Mother Shape and grid system",
+            caption: "Mother Shape motion study—paired with grid lockups in the spec (see logo construction stills in the Behance deck).",
+          },
+        },
+        {
+          title: "Build",
+          detail:
+            "Packaged Figma libraries, signage specs, and production vectors—export presets so vendors and student makers don’t guess at trim or color.",
+          omitMetric: true,
+          image: {
+            src: "/TPS-Illustrator-screenshot.png",
+            alt: "TPS assets in Adobe Illustrator",
+            caption: "Illustrator production files and presets aligned to the shipped template bundle.",
+          },
+        },
+        {
+          title: "Ship",
+          detail:
+            "Presented to the career advisory board and handed off versioned zips plus office hours so the system survives real use.",
+          omitMetric: true,
+          image: {
+            src: "/MeSpeaking.jpg",
+            alt: "Camden Blackburn presenting the new ASU Polytechnic campus design system to ASU faculty and career board members",
+            caption:
+              "Presenting the system to faculty and the career board—explaining how student work and official comms share the same grid.",
+            zoom: 1.5,
+            zoomOrigin: "center 38%",
+          },
+        },
       ],
     },
     tedx: {
       name: "TEDx Faurot Park",
       status: "Completed",
       description:
-        "Brand system for a TEDx signature event: mark, collateral, social templates, and guidelines usable by a volunteer team — tight turnaround, high legibility, and stage-ready presence.",
-      stack: ["Brand identity", "Print & digital", "Event graphics", "Guidelines"],
+        "2026 TEDx Faurot Park while I was in ASU’s GIT agency cohort. I joined client meetings, worked in shared FigJam boards, and iterated through faculty critiques like any studio engagement. My sharpest contribution is the event pattern system: starting from the branch detail in the approved logo, I used AI to explore vine-like structures, picked the strongest directions, then redrew everything into a repeatable asset volunteers can scale without breaking alignment—alongside programs, slides, and social templates.",
+      heroAsideMedia: {
+        src: "/TPSgrouppic.jpg",
+        alt: "ASU design agency class group photo with Camden Blackburn and project team peers",
+        caption: "Agency cohort—the same studio that shipped TEDx and other client work that semester.",
+        maxWidth: "min(280px, 100%)",
+        maxHeight: "min(200px, 36vh)",
+      },
+      stack: ["Logo & lockups", "Print programs", "Slide master", "Social templates"],
       process: [
-        { phase: "Problem", detail: "Needed a flexible identity that reads at arm’s length on stage and on phone screens for promotion." },
-        { phase: "Research", detail: "Mood boards aligned to speaker diversity and venue architecture; competitor scan of other TEDx marks." },
-        { phase: "Design", detail: "Wordmark, symbol lockups, color system with accessible pairs, and motion-safe static assets." },
-        { phase: "Build", detail: "Delivered print packs, slide master, and social kits; spec’d vendor color for signage." },
-        { phase: "Deliver", detail: "Handoff session with organizers; file naming and folder structure for volunteer editors." },
+        { phase: "Problem", detail: "Organizers needed one visual language for print, stage, and feed—with volunteers editing files days before showtime." },
+        { phase: "Collaboration", detail: "Standing meetings, FigJam brainstorms, and class critiques kept client feedback visible to the whole team." },
+        { phase: "Pattern", detail: "Translated the logo branch into a scalable vine motif via AI exploration, manual refinement, and repeat tests at small and large scales." },
+        { phase: "Design", detail: "Balanced two-color print defaults, legible social crops, and slide masters that non-designers could trust." },
+        { phase: "Deliver", detail: "Packaged bleed-ready PDFs, labeled template layers, and a short handoff so swaps (speakers, sponsors) didn’t break safe zones." },
       ],
       processDetails: [
-        { title: "Legibility", detail: "The mark and type are stressed at tiny social avatars, mid-size web headers, and projected stage treatments before anything is locked. That range catches awkward stroke weights and shimmer-prone color pairs early, when fixes are cheap.", omitMetric: true },
-        { title: "Templates", detail: "Volunteers rotate; design literacy does not. Layouts bake in safe zones, minimum clear space, and locked layers so speaker swaps or sponsor additions do not accidentally nudge the grid into a different event altogether.", omitMetric: true },
-        { title: "Deliverables", detail: "Deliverables span print programs, directional pieces, stage lower-thirds, and social sets so promotion and day-of signage feel like one brand. File bundles are grouped the way organizers actually ship work: by channel, by deadline, and by vendor.", omitMetric: true },
-        { title: "Process", detail: "Reviews track the agency course cadence and the organizers’ own milestones—budget checks, speaker confirmations, and venue constraints—so creative rounds stay tied to decisions that unblock production, not abstract taste debates.", omitMetric: true },
-        { title: "Outcome", detail: "The outcome is a coherent on-site and promotional presence that reads as TEDx without fighting the venue architecture or the volunteer workflow. The kit also sets up a cleaner refresh next cycle because foundations and naming are already rational.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "Organizers needed one visual language for print, stage, and feed—with volunteers editing files days before showtime.",
+          omitMetric: true,
+          image: {
+            src: "/TedX-Problem.png",
+            alt: "TEDx Faurot Park problem and brief context",
+            caption: "Brief and constraints—one system for print, stage, and feed before show week.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
+        {
+          title: "Collaboration",
+          detail:
+            "Standing meetings, FigJam boards, and critiques with the cohort—layer names and folders so organizers always knew which file was current.",
+          omitMetric: true,
+          image: {
+            src: "/Figjam-TedX-Screenshot.png",
+            alt: "FigJam board for TEDx Faurot Park branding collaboration",
+            caption: "Cohort FigJam—feedback and exploration before locking print and social templates.",
+          },
+        },
+        {
+          title: "Pattern",
+          detail:
+            "AI drafts were references only—the shipping art is hand-tuned so tessellation and contrast hold on fabric and screens.",
+          omitMetric: true,
+          image: {
+            src: "/TedX-Pattern-image.png",
+            alt: "TEDx Faurot Park repeatable pattern derived from the logo branch",
+            caption: "Final pattern system—tessellates for programs, slides, and wayfinding without breaking the mark.",
+          },
+        },
+        {
+          title: "Design",
+          detail:
+            "Two-color print defaults, legible social crops, and slide masters with safe zones so a volunteer can’t shove sponsor marks into the trim.",
+          omitMetric: true,
+          image: {
+            src: "/TedX-Design.png",
+            alt: "TEDx Faurot Park templates, slides, and print design",
+            caption: "Templates and masters—safe zones and type locks volunteers could ship under pressure.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
+        {
+          title: "Deliver",
+          detail:
+            "Bleed-ready PDFs, milestone-grouped bundles (promo, week-of print, day-of social), and a short handoff so swaps don’t break safe zones. One coherent look on stage and online; next year’s team inherits the same structure.",
+          omitMetric: true,
+          image: {
+            type: "video",
+            src: "/TedX-delivery.mp4",
+            alt: "TEDx Faurot Park delivered print and event materials",
+            caption: "Shipped bundles—programs, promos, and day-of pieces ready for volunteers and sponsors.",
+            maxHeight: "min(300px, 40vh)",
+          },
+        },
       ],
     },
     southwest: {
       name: "Southwest Label & Print",
       status: "Completed",
       description:
-        "Full brand redesign for a legacy print shop: new mark, typography system, UX research on quote and reorder flows, and a website that reflects craft while converting B2B leads.",
-      stack: ["Brand", "UX research", "Web design", "Print production"],
+        "Family print shop with heavy equipment and a dated website. They needed a mark and site that matched the quality of their presses, plus clearer paths for quote requests.",
+      stack: ["Identity", "Web redesign", "Shop-floor interviews", "Print specs"],
       process: [
-        { phase: "Problem", detail: "Outdated identity and confusing web journey hid technical capabilities; enterprise buyers bounced before understanding services." },
-        { phase: "Research", detail: "Customer interviews, shop floor observation, and analytics on quote form abandonment." },
-        { phase: "Design", detail: "Logo system, color/type, component library for web; print swatch and proofing language aligned to production reality." },
-        { phase: "Build", detail: "Responsive site build in collaboration with dev; content model for capabilities and case snippets." },
-        { phase: "Ship", detail: "Rollout checklist: fleet graphics, stationery, and sales one-pagers — phased to production downtime." },
+        { phase: "Problem", detail: "Buyers couldn’t tell what the shop actually ran; the quote form bounced people who didn’t already know print jargon." },
+        { phase: "Research", detail: "Sat on the floor for a morning, listened to phone quotes, and watched where people abandoned the old form." },
+        { phase: "Design", detail: "New logo/lockups, simple color/type rules, web pages organized by capability (labels, wide-format, fleet) instead of insider terms." },
+        { phase: "Build", detail: "Worked with their developer on a responsive build; rewrote headlines in plain English." },
+        { phase: "Ship", detail: "Phased truck wraps and stationery around press downtime so sales didn’t hand out two different business cards." },
       ],
       processDetails: [
-        { title: "Research", detail: "Research mixed interviews and shop-floor observation with analytics on quote and reorder flows. The aim was to see where enterprise buyers lost confidence—usually not at the hero image, but at ambiguous capabilities, opaque timelines, or forms that demanded information they did not yet have.", omitMetric: true },
-        { title: "Web", detail: "The site restructure foregrounds service taxonomy and a straighter path to “talk to us about this job,” with language that matches how customers describe work in email. Secondary pages carry proof: equipment, materials, and process cues that justify premium positioning without sounding generic.", omitMetric: true },
-        { title: "Brand system", detail: "Logo, palette, typography, and voice live in a single reference for internal teams and outside vendors. That reduces one-off interpretations when fleet graphics, trade-show panels, or subcontractor sheets need to stay on brand under deadline pressure.", omitMetric: true },
-        { title: "Print", detail: "Print specifications respect die lines, ink limits, and finishing steps the shop actually runs—so sales promises in the PDF match what production will sign off. Jargon on the floor is translated for customers without dumbing down the craft.", omitMetric: true },
-        { title: "Rollout", detail: "Launch phases respect press downtime, fleet installation windows, and sales’ need for consistent story during the switch. Staggering stationery, digital, and vehicle updates avoids the half-old identity that undermines trust right when leads are peaking.", omitMetric: true },
+        {
+          title: "Problem",
+          detail:
+            "Buyers couldn’t tell what the shop actually ran; the quote form bounced people who didn’t already know print jargon.",
+          omitMetric: true,
+        },
+        {
+          title: "Research",
+          detail:
+            "Sat on the floor, listened to phone quotes, and found the drop-off was “I don’t know what to upload yet”—so we surfaced a human number higher on the page.",
+          omitMetric: true,
+        },
+        {
+          title: "Design",
+          detail:
+            "New logo/lockups, simple color/type rules, and site structure by capability (labels, wide-format, fleet) instead of insider terms.",
+          omitMetric: true,
+          image: {
+            src: "/Southwestlabel-logo.png",
+            alt: "Southwest Label & Print logo redesign",
+            caption: "New mark and lockups—built to survive fleet graphics, stationery, and the shop floor.",
+          },
+        },
+        {
+          title: "Build",
+          detail:
+            "Responsive site with service pages in estimator language; Illustrator specs call out real die lines and ink limits so sales doesn’t promise a foil the press can’t run.",
+          omitMetric: true,
+          image: {
+            src: "/Southwest-illustrator-screenshot.png",
+            alt: "Southwest Label print artwork in Illustrator",
+            caption: "Production files tied to real press capabilities—paired with the web rebuild in plain English.",
+          },
+        },
+        {
+          title: "Ship",
+          detail:
+            "Phased truck wraps and stationery around press downtime so the shop never had trucks in old colors linking to a new URL.",
+          omitMetric: true,
+        },
       ],
     },
   },
@@ -385,71 +731,6 @@ const ProcessStep = ({ phase, detail, index, total }) => (
       }}>
         {detail}
       </p>
-    </div>
-  </div>
-);
-
-const DesignCard = ({ title, description, index }) => (
-  <motion.div
-    style={{
-      padding: "28px 24px", background: C.surface,
-      border: `1px solid ${C.rule}`, borderRadius: 2,
-      cursor: "default",
-      boxSizing: "border-box",
-      height: "100%",
-      minHeight: 0,
-      display: "flex",
-      flexDirection: "column",
-    }}
-    whileHover={{
-      scale: 1.02,
-      boxShadow: "0 8px 24px rgba(224, 91, 91, 0.06)",
-      borderColor: C.accent,
-      transition: { duration: 0.3, ease: "easeOut" },
-    }}
-    transition={{ duration: 0.3, ease: "easeOut" }}
-  >
-    <div style={{
-      fontFamily: FONT.mono, fontSize: 10, color: C.inkFaint,
-      letterSpacing: 2, marginBottom: 12,
-    }}>
-      {String(index + 1).padStart(2, "0")}
-    </div>
-    <h3 style={{
-      fontFamily: FONT.display, fontSize: 22, fontWeight: 400,
-      color: C.ink, margin: "0 0 8px", fontStyle: "italic",
-    }}>
-      {title}
-    </h3>
-    <p style={{
-      fontFamily: FONT.body, fontSize: 13, lineHeight: 1.6,
-      color: C.inkMuted, margin: 0,
-      flex: 1,
-    }}>
-      {description}
-    </p>
-  </motion.div>
-);
-
-const SkillCluster = ({ category, items }) => (
-  <div>
-    <div style={{
-      fontFamily: FONT.mono, fontSize: 10, fontWeight: 600,
-      letterSpacing: 2, textTransform: "uppercase", color: C.accent,
-      marginBottom: 12, paddingBottom: 8,
-      borderBottom: `1px solid ${C.accentLight}`,
-    }}>
-      {category}
-    </div>
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      {items.map(item => (
-        <span key={item} style={{
-          fontFamily: FONT.body, fontSize: 14, color: C.inkSoft,
-          lineHeight: 1.5,
-        }}>
-          {item}
-        </span>
-      ))}
     </div>
   </div>
 );
@@ -768,7 +1049,7 @@ export default function CamdenPortfolio() {
     navigate(location.pathname, { replace: true, state: {} });
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (scrollToId === NAV_SCROLL_ROOT || scrollToId === "about" || scrollToId === "home") {
+        if (scrollToId === NAV_SCROLL_ROOT || scrollToId === "home") {
           window.scrollTo({ top: 0, behavior: "smooth" });
         } else {
           document.getElementById(scrollToId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -894,7 +1175,7 @@ export default function CamdenPortfolio() {
       <main id="main-content">
       {/* ═══ HERO ═══ */}
       <motion.section
-        id="about"
+        id="hero"
         aria-label="Introduction and hero"
         initial="hidden"
         animate={heroReady ? "visible" : "hidden"}
@@ -1008,11 +1289,14 @@ export default function CamdenPortfolio() {
                 <GlassButton index={0} href="mailto:Blackburncamden@gmail.com">
                   Get in touch
                 </GlassButton>
-                <GlassButton index={1} animationDelay={0.15} onClick={() => document.getElementById("dealerdeck")?.scrollIntoView({ behavior: "smooth" })}>
-                  View case studies →
+                <GlassButton index={1} animationDelay={0.12} onClick={() => document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" })}>
+                  Case studies →
                 </GlassButton>
-                <GlassButton index={2} href="/camden-blackburn-resume.pdf" download>
-                  Download Resume ↓
+                <GlassButton index={2} animationDelay={0.2} href="/work" sameTab>
+                  Gallery
+                </GlassButton>
+                <GlassButton index={3} animationDelay={0.28} href="/Resume.pdf" download sameTab>
+                  Resume ↓
                 </GlassButton>
               </motion.div>
               </Reveal>
@@ -1039,6 +1323,7 @@ export default function CamdenPortfolio() {
 
       {/* ═══ ABOUT (intro on light background) ═══ */}
       <motion.section
+        id="bio"
         ref={aboutRef}
         initial="hidden"
         whileInView="visible"
@@ -1063,7 +1348,7 @@ export default function CamdenPortfolio() {
         >
           <Reveal direction="left">
             <motion.div variants={staggerItem} style={{ y: aboutLabelY }}>
-              <SectionLabel>About</SectionLabel>
+              <SectionLabel>{SITE_DATA.aboutSectionLabel}</SectionLabel>
             </motion.div>
           </Reveal>
           <motion.div variants={staggerItem}>
@@ -1077,82 +1362,24 @@ export default function CamdenPortfolio() {
                 </p>
               </Reveal>
             ))}
-          </motion.div>
-        </motion.div>
-      </motion.section>
-
-      {/* ═══ PRACTICE PILLARS ═══ */}
-      <motion.section
-        id="pillars"
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionVariants}
-        aria-label="Practice areas"
-        style={{
-          maxWidth: 1200, margin: "0 auto", padding: "0 40px 100px",
-        }}
-        className="section-padding"
-      >
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewport}
-        >
-          <Reveal>
-            <motion.div variants={staggerItem}>
-              <SectionLabel>Practice</SectionLabel>
-              <h2 style={{
-                fontFamily: FONT.display, fontSize: 42, fontWeight: 400,
-                fontStyle: "italic", lineHeight: 1.15, marginBottom: 12, color: C.ink,
-              }}>
-                Founder, systems, and craft
-              </h2>
-              <p style={{
-                fontFamily: FONT.body, fontSize: 15, lineHeight: 1.6,
-                color: C.inkMuted, marginBottom: 40, maxWidth: 560,
-              }}>
-                How work is organized — from zero-to-one products to campus-scale design languages and field capture.
+            <Reveal delay={0.22} glowText>
+              <p
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                  textTransform: "uppercase",
+                  color: C.inkMuted,
+                  marginBottom: 20,
+                  maxWidth: 680,
+                  lineHeight: 1.6,
+                }}
+              >
+                {SITE_DATA.aboutGraduationLine}
               </p>
-            </motion.div>
-          </Reveal>
-          <motion.div
-            variants={staggerItem}
-            className="three-col design-card-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 16,
-              rowGap: 16,
-              columnGap: 16,
-              alignItems: "stretch",
-            }}
-          >
-            {SITE_DATA.practicePillars.map((pillar, i) => (
-              <Reveal key={pillar.title} delay={0.06 * i} gridCell>
-                <DesignCard title={pillar.title} description={pillar.description} index={i} />
-              </Reveal>
-            ))}
+            </Reveal>
           </motion.div>
         </motion.div>
-      </motion.section>
-
-      {/* ═══ FEATURED CASE STUDY — DealerDeck ═══ */}
-      <motion.section
-        id="dealerdeck"
-        aria-label="DealerDeck case study"
-        initial={{ opacity: 0, scale: 0.98 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={viewport}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        style={{ margin: 0 }}
-      >
-        <CaseStudyLayout
-          study={SITE_DATA.caseStudyById.dealerdeck}
-          badgeLabel="Featured Project"
-          embedded
-        />
       </motion.section>
 
       {/* ═══ PROFESSIONAL WORK ═══ */}
@@ -1163,7 +1390,9 @@ export default function CamdenPortfolio() {
         viewport={viewport}
         variants={sectionVariants}
         style={{
-          maxWidth: 1200, margin: "0 auto", padding: "80px 40px",
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "80px clamp(20px, 5vw, 48px)",
         }}
         className="section-padding"
       >
@@ -1183,13 +1412,57 @@ export default function CamdenPortfolio() {
               variants={staggerItem}
               style={{
                 fontFamily: FONT.display, fontSize: 42, fontWeight: 400,
-                fontStyle: "italic", lineHeight: 1.15, marginBottom: 40,
+                fontStyle: "italic", lineHeight: 1.15, marginBottom: 16,
               }}
             >
               Projects and Case Studies
             </motion.h2>
+            <motion.p
+              variants={staggerItem}
+              style={{
+                fontFamily: FONT.body,
+                fontSize: 15,
+                lineHeight: 1.65,
+                color: C.inkMuted,
+                maxWidth: 640,
+                marginBottom: 40,
+              }}
+            >
+              Grouped by how the work happened—things I’m building myself, client studio semesters at ASU, and big branding rollouts.
+            </motion.p>
           </Reveal>
-          {SITE_DATA.professionalWork.map((project, i) => {
+          {SITE_DATA.workCategoryGroups.map((cat) => {
+            const projects = SITE_DATA.professionalWork.filter((p) => p.workCategory === cat.id);
+            if (projects.length === 0) return null;
+            return (
+              <div key={cat.id} style={{ marginBottom: "clamp(40px, 6vw, 56px)" }}>
+                <Reveal>
+                  <h3
+                    style={{
+                      fontFamily: FONT.display,
+                      fontSize: 26,
+                      fontWeight: 400,
+                      fontStyle: "italic",
+                      color: C.ink,
+                      marginBottom: 10,
+                    }}
+                  >
+                    {cat.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: FONT.body,
+                      fontSize: 14,
+                      lineHeight: 1.65,
+                      color: C.inkMuted,
+                      maxWidth: 720,
+                      marginBottom: 28,
+                    }}
+                  >
+                    {cat.description}
+                  </p>
+                </Reveal>
+                {projects.map((project, i) => {
             const caseStudy = project.caseStudyId ? SITE_DATA.caseStudyById[project.caseStudyId] : null;
             const isOpen = Boolean(caseStudy && openCaseStudyId === project.caseStudyId);
             const toggleCaseStudy = caseStudy
@@ -1197,7 +1470,7 @@ export default function CamdenPortfolio() {
               : undefined;
 
             return (
-            <Reveal key={project.client} delay={0.1 * i}>
+            <Reveal key={`${cat.id}-${project.client}`} delay={0.06 * i}>
               <div
                 id={project.caseStudyId ? `pro-work-${project.caseStudyId}` : undefined}
                 className="pro-work-expandable"
@@ -1234,16 +1507,15 @@ export default function CamdenPortfolio() {
                     width: "100%",
                     background: "rgba(0, 0, 0, 0.02)",
                     border: "1px solid rgba(0, 0, 0, 0.05)",
-                    borderRadius: isOpen ? "16px 16px 0 0" : 16,
-                    padding: "clamp(20px, 4vw, 32px)",
+                    borderRadius: 20,
+                    padding: "clamp(22px, 4.5vw, 36px)",
                     marginBottom: 0,
-                    transition: "border-color 0.3s ease, box-shadow 0.3s ease, border-radius 0.25s ease",
+                    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
                     cursor: caseStudy ? "pointer" : "default",
                     ...(isOpen
                       ? {
-                          borderBottom: "none",
-                          borderColor: "rgba(224, 91, 91, 0.22)",
-                          boxShadow: "0 4px 20px rgba(224, 91, 91, 0.06)",
+                          borderColor: "rgba(224, 91, 91, 0.24)",
+                          boxShadow: "0 8px 28px rgba(224, 91, 91, 0.08)",
                         }
                       : {}),
                   }}
@@ -1279,6 +1551,65 @@ export default function CamdenPortfolio() {
                     }}>
                       {project.description}
                     </p>
+                    {Array.isArray(project.bullets) && project.bullets.length > 0 ? (
+                      <ul
+                        style={{
+                          margin: "14px 0 0",
+                          paddingLeft: 20,
+                          maxWidth: 720,
+                        }}
+                      >
+                        {project.bullets.map((line, bi) => (
+                          <li
+                            key={bi}
+                            style={{
+                              fontFamily: FONT.body,
+                              fontSize: 13,
+                              lineHeight: 1.65,
+                              color: C.inkMuted,
+                              marginBottom: bi < project.bullets.length - 1 ? 8 : 0,
+                            }}
+                          >
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {caseStudy ? (
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginTop: 14,
+                          fontFamily: FONT.mono,
+                          fontSize: 9,
+                          letterSpacing: 1.5,
+                          textTransform: "uppercase",
+                          color: C.accent,
+                          opacity: 0.85,
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 16,
+                            height: 16,
+                            borderRadius: 4,
+                            border: "1px solid rgba(224, 91, 91, 0.35)",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            lineHeight: 1,
+                          }}
+                        >
+                          {isOpen ? "−" : "+"}
+                        </span>
+                        <span>{isOpen ? "Close case study" : "Case study"}</span>
+                      </div>
+                    ) : null}
                   </div>
                   <div style={{
                     display: "flex", flexDirection: "column", alignItems: "flex-end",
@@ -1324,16 +1655,25 @@ export default function CamdenPortfolio() {
                       id={`pro-work-panel-${project.caseStudyId}`}
                       role="region"
                       aria-labelledby={`case-study-heading-${project.caseStudyId}`}
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      initial={{ opacity: 0, scale: 0.94, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.98, y: -6 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 420,
+                        damping: 30,
+                        mass: 0.85,
+                        opacity: { duration: 0.22 },
+                      }}
                       style={{
-                        border: "1px solid rgba(224, 91, 91, 0.2)",
-                        borderTop: "none",
-                        borderRadius: "0 0 16px 16px",
+                        marginTop: "clamp(12px, 2.5vw, 18px)",
+                        border: "1px solid rgba(224, 91, 91, 0.22)",
+                        borderRadius: 24,
                         overflow: "hidden",
                         background: "#141416",
+                        boxShadow:
+                          "0 20px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 1px 0 rgba(255, 255, 255, 0.06) inset",
+                        transformOrigin: "50% 0%",
                       }}
                     >
                       <CaseStudyLayout
@@ -1348,6 +1688,9 @@ export default function CamdenPortfolio() {
                 </AnimatePresence>
               </div>
             </Reveal>
+            );
+          })}
+              </div>
             );
           })}
         </motion.div>
@@ -1452,7 +1795,7 @@ export default function CamdenPortfolio() {
             <SkillMarquee
               items={[
                 ...SITE_DATA.skills.find(s => s.category === "Product")?.items ?? [],
-                ...SITE_DATA.skills.find(s => s.category === "AI Tools")?.items ?? [],
+                ...SITE_DATA.skills.find(s => s.category === "AI & dev assist")?.items ?? [],
               ]}
               speed={30}
               direction="left"
@@ -1469,115 +1812,6 @@ export default function CamdenPortfolio() {
               label="Build & Design"
               fullWidth
             />
-          </motion.div>
-        </motion.div>
-      </motion.section>
-
-      {/* ═══ DESIGN WORK ═══ */}
-      <motion.section
-        id="work"
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionVariants}
-        style={{
-          background: C.bgAlt, padding: "100px 0",
-        }}
-      >
-        <motion.div
-          style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px" }}
-          className="section-padding"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewport}
-        >
-          <Reveal>
-            <motion.div variants={staggerItem}>
-              <SectionLabel>Design Work</SectionLabel>
-            </motion.div>
-            <motion.h2
-              variants={staggerItem}
-              style={{
-                fontFamily: FONT.display, fontSize: 42, fontWeight: 400,
-                fontStyle: "italic", lineHeight: 1.15, marginBottom: 12,
-                maxWidth: 500,
-              }}
-            >
-              The design foundation
-            </motion.h2>
-            <motion.p
-              variants={staggerItem}
-              style={{
-                fontFamily: FONT.body, fontSize: 15, lineHeight: 1.6,
-                color: C.inkMuted, marginBottom: 48, maxWidth: 500,
-              }}
-            >
-              Selected work from my Graphic Information Technology program at ASU, freelance projects, and personal explorations.
-            </motion.p>
-          </Reveal>
-
-          <motion.div
-            className="three-col design-card-grid"
-            variants={staggerItem}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 16,
-              rowGap: 16,
-              columnGap: 16,
-              alignItems: "stretch",
-            }}
-          >
-            {SITE_DATA.designWork.map((w, i) => (
-              <Reveal key={i} delay={(i % 3) * 0.1 + Math.floor(i / 3) * 0.15} gridCell>
-                <DesignCard title={w.title} description={w.description} index={i} />
-              </Reveal>
-            ))}
-          </motion.div>
-
-          <motion.div
-            variants={staggerItem}
-            style={{
-              marginTop: 40,
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <Link to="/work"
-              style={{
-                fontFamily: FONT.mono, fontSize: 12, letterSpacing: 1,
-                textTransform: "uppercase", color: C.ink,
-                padding: "14px 28px", borderRadius: 2, textDecoration: "none",
-                border: `1px solid ${C.ruleStrong}`, transition: "all 0.3s",
-                display: "inline-block",
-              }}
-              onMouseEnter={e => { e.target.style.borderColor = C.accent; e.target.style.color = C.accent; }}
-              onMouseLeave={e => { e.target.style.borderColor = C.ruleStrong; e.target.style.color = C.ink; }}
-            >
-              View full portfolio →
-            </Link>
-
-            <Link to="/lightpainting"
-              style={{
-                fontFamily: FONT.mono, fontSize: 12, letterSpacing: 1,
-                textTransform: "uppercase",
-                color: C.inkMuted,
-                padding: "14px 28px",
-                borderRadius: 2,
-                textDecoration: "none",
-                border: `1px solid ${C.ruleStrong}`,
-                transition: "all 0.3s",
-                display: "inline-block",
-              }}
-              onMouseEnter={e => { e.target.style.borderColor = C.accent; e.target.style.color = C.accent; }}
-              onMouseLeave={e => { e.target.style.borderColor = C.ruleStrong; e.target.style.color = C.inkMuted; }}
-            >
-              View Lightpainting Gallery →
-            </Link>
           </motion.div>
         </motion.div>
       </motion.section>
@@ -1623,7 +1857,7 @@ export default function CamdenPortfolio() {
                   fontFamily: FONT.body, fontSize: 16, lineHeight: 1.7,
                   color: C.inkSoft, maxWidth: 440,
                 }}>
-                  I'm looking for founder-track product roles, system architecture leadership, and teams where research, accessibility, and ship velocity share a roadmap. Open to full-time opportunities starting {SITE_DATA.graduation}.
+                  {SITE_DATA.contactBody}
                 </p>
               </Reveal>
             </motion.div>
@@ -1635,7 +1869,10 @@ export default function CamdenPortfolio() {
               { label: "Email", value: SITE_DATA.email, href: `mailto:${SITE_DATA.email}` },
               { label: "Phone", value: SITE_DATA.phone, href: `tel:${SITE_DATA.phone.replace(/[^0-9]/g, "")}` },
               { label: "Location", value: SITE_DATA.location },
-              { label: "Education", value: SITE_DATA.school },
+              {
+                label: "Education",
+                value: `${SITE_DATA.school} · ${SITE_DATA.graduation}`,
+              },
             ].map((item, i) => (
               <div key={i} style={{
                 padding: "16px 0",
@@ -1671,24 +1908,6 @@ export default function CamdenPortfolio() {
                 )}
               </div>
             ))}
-            <a
-              href="/camden-blackburn-resume.pdf"
-              download
-              style={{
-                display: "inline-block",
-                marginTop: 24,
-                fontFamily: FONT.mono,
-                fontSize: 13,
-                color: "#E05B5B",
-                textDecoration: "none",
-                textUnderlineOffset: 3,
-                transition: "text-decoration 0.2s",
-              }}
-              onMouseEnter={e => { e.target.style.textDecoration = "underline"; }}
-              onMouseLeave={e => { e.target.style.textDecoration = "none"; }}
-            >
-              Download Resume (PDF)
-            </a>
           </motion.div>
           </Reveal>
         </motion.div>

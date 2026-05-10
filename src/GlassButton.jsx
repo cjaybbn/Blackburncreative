@@ -21,6 +21,8 @@ export default function GlassButton({
   onClick,
   dark = false,
   download = false,
+  /** Internal site links: stay in same tab (default external opens new tab). */
+  sameTab = false,
   animationDelay = 0,
   index = 0,
 }) {
@@ -88,8 +90,9 @@ export default function GlassButton({
     ? {
         href,
         ...(download && { download: true }),
-        target: download || href.startsWith("mailto") ? undefined : "_blank",
-        rel: "noopener noreferrer",
+        target:
+          download || href.startsWith("mailto") || sameTab ? undefined : "_blank",
+        rel: sameTab || download || href.startsWith("mailto") ? undefined : "noopener noreferrer",
       }
     : {};
 

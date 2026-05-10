@@ -145,7 +145,23 @@ export default function CaseStudyLayout({
 }) {
   const [activeStep, setActiveStep] = useState(0);
   const process = study.process || [];
+  /** Must stay parallel to `process` (same length/order): panel uses `processDetails[activeStep]` with `process[activeStep]`. */
   const processDetails = study.processDetails || [];
+  const figures = study.figures || [];
+  const links = study.links || [];
+  const heroAsideMedia = study.heroAsideMedia;
+  const heroAsideSrc =
+    heroAsideMedia && typeof heroAsideMedia.src === "string" && heroAsideMedia.src.trim() !== ""
+      ? heroAsideMedia.src.trim()
+      : null;
+  const heroAsideMaxW =
+    typeof heroAsideMedia?.maxWidth === "string" && heroAsideMedia.maxWidth.trim() !== ""
+      ? heroAsideMedia.maxWidth.trim()
+      : null;
+  const heroAsideMaxH =
+    typeof heroAsideMedia?.maxHeight === "string" && heroAsideMedia.maxHeight.trim() !== ""
+      ? heroAsideMedia.maxHeight.trim()
+      : null;
 
   const outerPadding = inline
     ? "clamp(20px, 4vw, 36px) 0 clamp(28px, 5vw, 48px)"
@@ -153,7 +169,7 @@ export default function CaseStudyLayout({
       ? "100px 0"
       : "0";
 
-  const innerPadX = inline ? "clamp(16px, 4vw, 40px)" : "40px";
+  const innerPadX = inline ? "clamp(24px, 5.5vw, 56px)" : "40px";
 
   return (
     <>
@@ -184,14 +200,14 @@ export default function CaseStudyLayout({
           }
           .case-study--inline .process-grid {
             grid-template-columns: 1fr !important;
-            gap: 24px !important;
+            gap: 28px !important;
           }
           .case-study--inline .process-detail-panel {
             display: block !important;
             position: static !important;
             top: auto !important;
             min-height: 0 !important;
-            padding: clamp(20px, 5vw, 28px) !important;
+            padding: clamp(22px, 5.5vw, 32px) clamp(22px, 5vw, 36px) !important;
           }
         }
       `}</style>
@@ -319,7 +335,7 @@ export default function CaseStudyLayout({
                     fontSize: 16,
                     lineHeight: 1.8,
                     color: C.inkOnDarkMuted,
-                    maxWidth: 500,
+                    maxWidth: inline ? 560 : 500,
                   }}
                 >
                   {study.description}
@@ -353,7 +369,7 @@ export default function CaseStudyLayout({
                         background: "rgba(150, 150, 150, 0.2)",
                         border: "1px solid rgba(150, 150, 150, 0.25)",
                         padding: "6px 14px",
-                        borderRadius: 2,
+                        borderRadius: inline ? 8 : 2,
                       }}
                       whileHover={{ y: -2 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
@@ -362,9 +378,201 @@ export default function CaseStudyLayout({
                     </motion.span>
                   ))}
                 </div>
+
+                {heroAsideSrc ? (
+                  <div
+                    style={{
+                      marginTop: 26,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    <div
+                      style={{
+                        borderRadius: 10,
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        padding: 8,
+                        lineHeight: 0,
+                        maxWidth: "100%",
+                      }}
+                    >
+                      <img
+                        src={heroAsideSrc}
+                        alt={
+                          typeof heroAsideMedia.alt === "string" && heroAsideMedia.alt.trim() !== ""
+                            ? heroAsideMedia.alt.trim()
+                            : `${study.name} — supporting visual`
+                        }
+                        loading="lazy"
+                        decoding="async"
+                        style={{
+                          width: "auto",
+                          maxWidth: heroAsideMaxW ?? "min(200px, 100%)",
+                          maxHeight: heroAsideMaxH ?? "none",
+                          height: "auto",
+                          display: "block",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </div>
+                    {typeof heroAsideMedia.caption === "string" && heroAsideMedia.caption.trim() !== "" ? (
+                      <p
+                        style={{
+                          fontFamily: FONT.body,
+                          fontSize: 12,
+                          lineHeight: 1.55,
+                          color: C.inkOnDarkSubtle,
+                          margin: 0,
+                          maxWidth: 320,
+                        }}
+                      >
+                        {heroAsideMedia.caption.trim()}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </Reveal>
           </motion.div>
+
+          {figures.length > 0 ? (
+            <motion.div
+              variants={staggerItem}
+              style={{
+                display: "grid",
+                gap: 28,
+                marginBottom: inline ? 36 : 56,
+                maxWidth: inline ? "100%" : 920,
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              {figures.map((fig, i) => {
+                const figMaxW =
+                  typeof fig.maxWidth === "string" && fig.maxWidth.trim() !== ""
+                    ? fig.maxWidth.trim()
+                    : null;
+                const figMaxH =
+                  typeof fig.maxHeight === "string" && fig.maxHeight.trim() !== ""
+                    ? fig.maxHeight.trim()
+                    : null;
+                const figConstrain = Boolean(figMaxW || figMaxH);
+                return (
+                <Reveal key={`${fig.src}-${i}`} delay={0.06 * i}>
+                  <figure
+                    style={{
+                      margin: 0,
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      background: "rgba(0, 0, 0, 0.2)",
+                      ...(figConstrain
+                        ? {
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }
+                        : {}),
+                    }}
+                  >
+                    <img
+                      src={fig.src}
+                      alt={fig.alt}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        ...(figConstrain
+                          ? {
+                              width: "auto",
+                              maxWidth: figMaxW ?? "100%",
+                              maxHeight: figMaxH ?? "none",
+                              height: "auto",
+                              objectFit: "contain",
+                            }
+                          : {
+                              width: "100%",
+                              height: "auto",
+                            }),
+                        display: "block",
+                        verticalAlign: "middle",
+                      }}
+                    />
+                    {fig.caption ? (
+                      <figcaption
+                        style={{
+                          fontFamily: FONT.body,
+                          fontSize: 14,
+                          lineHeight: 1.65,
+                          color: C.inkOnDarkSubtle,
+                          padding: "14px 18px 16px",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                        }}
+                      >
+                        {fig.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                </Reveal>
+              );
+              })}
+            </motion.div>
+          ) : null}
+
+          {links.length > 0 ? (
+            <motion.div
+              variants={staggerItem}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+                alignItems: "center",
+                marginBottom: inline ? 28 : 40,
+                maxWidth: inline ? "100%" : 920,
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              {links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontFamily: FONT.mono,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: 1.2,
+                    textTransform: "uppercase",
+                    color: C.accent,
+                    textDecoration: "none",
+                    padding: "10px 16px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(224, 91, 91, 0.35)",
+                    background: "rgba(224, 91, 91, 0.08)",
+                    transition: "background 0.2s ease, border-color 0.2s ease, color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(224, 91, 91, 0.16)";
+                    e.currentTarget.style.borderColor = "rgba(224, 91, 91, 0.55)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(224, 91, 91, 0.08)";
+                    e.currentTarget.style.borderColor = "rgba(224, 91, 91, 0.35)";
+                  }}
+                >
+                  {link.label}
+                  <span style={{ marginLeft: 6, opacity: 0.85 }} aria-hidden>
+                    ↗
+                  </span>
+                </a>
+              ))}
+            </motion.div>
+          ) : null}
 
           <motion.div
             variants={staggerItem}
@@ -385,11 +593,11 @@ export default function CaseStudyLayout({
             style={{
               display: "grid",
               gridTemplateColumns: "55% 45%",
-              gap: 40,
+              gap: inline ? 48 : 40,
               alignItems: "start",
             }}
           >
-            <div style={{ maxWidth: 600 }}>
+            <div style={{ maxWidth: inline ? "min(100%, 640px)" : 600 }}>
               {process.map((step, i) => {
                 const isActive = activeStep === i;
                 return (
@@ -399,19 +607,24 @@ export default function CaseStudyLayout({
                       onFocus={() => setActiveStep(i)}
                       style={{
                         display: "flex",
-                        gap: 24,
+                        gap: inline ? 28 : 24,
                         position: "relative",
-                        marginBottom: i < process.length - 1 ? 8 : 0,
-                        padding: "16px 20px",
-                        borderRadius: 8,
-                        transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
+                        marginBottom: i < process.length - 1 ? 10 : 0,
+                        padding: inline ? "20px 26px 20px 24px" : "16px 20px",
+                        borderRadius: inline ? 16 : 8,
+                        transition: "background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease",
                         cursor: "default",
-                        borderLeft: isActive ? "3px solid #E05B5B" : "3px solid transparent",
-                        background: isActive ? "rgba(224, 91, 91, 0.08)" : "transparent",
-                        boxShadow: isActive ? "inset 0 0 0 1px rgba(224, 91, 91, 0.12)" : "none",
+                        border: isActive
+                          ? "1px solid rgba(224, 91, 91, 0.28)"
+                          : "1px solid transparent",
+                        background: isActive ? "rgba(224, 91, 91, 0.09)" : "transparent",
+                        boxShadow: isActive
+                          ? "0 8px 28px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04)"
+                          : "none",
+                        transform: isActive && inline ? "translateY(-1px)" : "none",
                       }}
                     >
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 20 }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 22, flexShrink: 0 }}>
                         <div
                           style={{
                             width: isActive ? 12 : 10,
@@ -460,9 +673,10 @@ export default function CaseStudyLayout({
                           <p
                             style={{
                               fontFamily: FONT.body,
-                              fontSize: 14,
-                              lineHeight: 1.7,
-                              color: isActive ? "rgba(255, 255, 255, 0.88)" : C.inkOnDarkMuted,
+                              fontSize: inline ? 15 : 14,
+                              lineHeight: 1.75,
+                              fontWeight: 400,
+                              color: isActive ? "rgba(255, 255, 255, 0.9)" : C.inkOnDarkMuted,
                               margin: 0,
                               transition: "color 0.2s ease",
                             }}
@@ -482,11 +696,14 @@ export default function CaseStudyLayout({
               style={{
                 position: "sticky",
                 top: 100,
-                background: "rgba(255, 255, 255, 0.04)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: 16,
-                padding: "28px 32px",
+                background: "rgba(255, 255, 255, 0.055)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: inline ? 22 : 16,
+                padding: inline ? "clamp(28px, 4vw, 36px) clamp(28px, 4vw, 40px)" : "28px 32px",
                 minHeight: 300,
+                boxShadow: inline
+                  ? "0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05)"
+                  : "none",
               }}
             >
               {(() => {
@@ -512,9 +729,11 @@ export default function CaseStudyLayout({
                       ? String(item.stat).trim()
                       : "";
 
+                /** Prefer the same label as the hovered timeline step so the panel always matches the row. */
                 const headlineText =
+                  (stepRow?.phase ? String(stepRow.phase).trim() : "") ||
                   (item.title && String(item.title).trim()) ||
-                  (stepRow?.phase ? String(stepRow.phase) : "");
+                  "";
 
                 const statLabelText =
                   useCountUp || hasStaticStat ? (item.statLabel || "").trim() : "";
@@ -528,12 +747,53 @@ export default function CaseStudyLayout({
 
                 const countUpScale = item.statEntranceScale !== false;
 
+                /** Optional media per step: `processDetails[i].image` or `process[i].image` — `{ src, type?: 'video', poster?, alt, caption?, zoom?, zoomOrigin?, maxHeight? }`. Video: `src` .mp4/.webm/.mov or `type: 'video'`; plays inline, muted, looped, autoplay (like stills—no controls). Optional `maxHeight` (CSS length, e.g. `min(300px, 40vh)`) caps size and centers wide/tall shots in the panel. */
+                const panelImage = item.image || stepRow?.image;
+                const panelImageSrc =
+                  panelImage && typeof panelImage.src === "string" && panelImage.src.trim() !== ""
+                    ? panelImage.src.trim()
+                    : null;
+                const panelIsVideo =
+                  panelImage?.type === "video" ||
+                  Boolean(panelImageSrc && /\.(mp4|webm|mov)$/i.test(panelImageSrc));
+                const panelImageAlt =
+                  typeof panelImage?.alt === "string"
+                    ? panelImage.alt
+                    : panelImageSrc
+                      ? `${headlineText || stepRow?.phase || "Process"} — supporting visual`
+                      : "";
+
+                /** Optional zoom > 1 crops in tighter (e.g. 1.5 ≈ 50% zoom in). Images only. */
+                const panelImageZoom =
+                  !panelIsVideo &&
+                  typeof panelImage?.zoom === "number" &&
+                  panelImage.zoom > 1
+                    ? panelImage.zoom
+                    : 1;
+                const zoomOrigin =
+                  typeof panelImage?.zoomOrigin === "string" && panelImage.zoomOrigin.trim() !== ""
+                    ? panelImage.zoomOrigin.trim()
+                    : "center center";
+                const panelVideoPoster =
+                  typeof panelImage?.poster === "string" && panelImage.poster.trim() !== ""
+                    ? panelImage.poster.trim()
+                    : undefined;
+                const panelMediaMaxHeight =
+                  typeof panelImage?.maxHeight === "string" && panelImage.maxHeight.trim() !== ""
+                    ? panelImage.maxHeight.trim()
+                    : null;
+
                 return (
                   <motion.div
                     key={activeStep}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    initial={{ opacity: 0, scale: 0.98, y: 6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 480,
+                      damping: 34,
+                      mass: 0.75,
+                    }}
                   >
                     {useCountUp ? (
                       <>
@@ -594,13 +854,15 @@ export default function CaseStudyLayout({
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: 0.18, ease: "easeOut" }}
                           style={{
+                            fontFamily: FONT.display,
                             fontSize: 20,
                             fontWeight: 700,
+                            fontStyle: "italic",
                             color: "rgba(255, 255, 255, 0.92)",
                             marginBottom: 12,
                           }}
                         >
-                          {item.title}
+                          {headlineText}
                         </motion.div>
                       </>
                     ) : hasStaticStat ? (
@@ -652,23 +914,140 @@ export default function CaseStudyLayout({
 
                     <motion.p
                       key={`detail-${activeStep}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{
-                        duration: 0.42,
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 32,
                         delay: detailDelay,
-                        ease: [0.22, 1, 0.36, 1],
                       }}
                       style={{
-                        fontSize: 14,
+                        fontFamily: FONT.body,
+                        fontSize: inline ? 16 : 15,
+                        fontWeight: 400,
                         lineHeight: 1.75,
-                        color: C.inkOnDarkSubtle,
+                        color: C.inkOnDarkMuted,
                         margin: 0,
-                        marginTop: 2,
+                        marginTop: 6,
+                        letterSpacing: "0.01em",
                       }}
                     >
                       {item.detail}
                     </motion.p>
+
+                    {panelImageSrc ? (
+                      <motion.figure
+                        key={`process-step-img-${activeStep}`}
+                        initial={{ opacity: 0, y: 14, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 340,
+                          damping: 30,
+                          delay: Math.min(detailDelay + 0.1, 2.5),
+                        }}
+                        style={{
+                          margin: 0,
+                          marginTop: 22,
+                          borderRadius: inline ? 16 : 14,
+                          overflow: "hidden",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          background: "rgba(0, 0, 0, 0.28)",
+                          boxShadow: "0 10px 32px rgba(0, 0, 0, 0.35)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            overflow: "hidden",
+                            lineHeight: 0,
+                            ...(panelIsVideo
+                              ? {
+                                  background: "rgba(0, 0, 0, 0.45)",
+                                }
+                              : panelImageZoom > 1
+                                ? {
+                                    aspectRatio: "16 / 10",
+                                    position: "relative",
+                                  }
+                                : {}),
+                          }}
+                        >
+                          {panelIsVideo ? (
+                            <video
+                              src={panelImageSrc}
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                              preload="auto"
+                              poster={panelVideoPoster}
+                              aria-label={panelImageAlt}
+                              style={{
+                                width: panelMediaMaxHeight ? "auto" : "100%",
+                                maxWidth: "100%",
+                                display: "block",
+                                verticalAlign: "middle",
+                                maxHeight: panelMediaMaxHeight || "min(420px, 52vh)",
+                                margin: "0 auto",
+                                background: "#0a0a0b",
+                              }}
+                            />
+                          ) : (
+                            <img
+                              src={panelImageSrc}
+                              alt={panelImageAlt}
+                              loading="lazy"
+                              decoding="async"
+                              style={{
+                                ...(panelImageZoom > 1
+                                  ? {
+                                      width: "100%",
+                                      height: "100%",
+                                      display: "block",
+                                      objectFit: "cover",
+                                      objectPosition: zoomOrigin,
+                                      transform: `scale(${panelImageZoom})`,
+                                      transformOrigin: zoomOrigin,
+                                    }
+                                  : panelMediaMaxHeight
+                                    ? {
+                                        width: "auto",
+                                        maxWidth: "100%",
+                                        maxHeight: panelMediaMaxHeight,
+                                        height: "auto",
+                                        display: "block",
+                                        margin: "0 auto",
+                                        verticalAlign: "middle",
+                                        objectFit: "contain",
+                                      }
+                                    : {
+                                        width: "100%",
+                                        height: "auto",
+                                        display: "block",
+                                        verticalAlign: "middle",
+                                      }),
+                              }}
+                            />
+                          )}
+                        </div>
+                        {panelImage.caption ? (
+                          <figcaption
+                            style={{
+                              fontFamily: FONT.body,
+                              fontSize: 13,
+                              lineHeight: 1.55,
+                              color: C.inkOnDarkSubtle,
+                              padding: "12px 14px 14px",
+                              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                              margin: 0,
+                            }}
+                          >
+                            {panelImage.caption}
+                          </figcaption>
+                        ) : null}
+                      </motion.figure>
+                    ) : null}
                   </motion.div>
                 );
               })()}

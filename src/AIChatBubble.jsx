@@ -9,24 +9,34 @@ const FONT_BODY = "'DM Sans', -apple-system, sans-serif";
 
 const PROMPTS = [
   {
-    prompt: "Build a portfolio website prototype",
-    response: "I'll create a React site with scroll animations and glass effects...",
+    prompt:
+      "We need to examine this bug — session drops after the magic link on cold start. Trace the Supabase client init and suggest where the race is.",
+    response:
+      "Likely gap between getSession() and onAuthStateChange. I’d await initialize() before rendering the stack, and gate navigation until INITIAL_SESSION fires...",
   },
   {
-    prompt: "Generate listing copy for 18812 N 90th Place",
-    response: "An Ode to Sonoran Light and Elevated Living...",
+    prompt:
+      "This list re-renders on every scroll tick. Keep the UX; tighten it with memo + stable callbacks so we’re not thrashing the map layer.",
+    response:
+      "Wrap the row in memo, hoist handlers with useCallback keyed on listing id, and move scroll position to a ref instead of lifting state each frame...",
   },
   {
-    prompt: "Design a brand identity system for TEM",
-    response: "Starting with the core positioning: technically dangerous...",
+    prompt:
+      "Wire the comps API into this screen — map the JSON to our PropertyContext shape, null-safe enrichment, and surface a clear empty state on 429.",
+    response:
+      "Added adapter layer: normalize keys, default missing beds/baths, exponential backoff on rate limit, and a single toast + retry CTA in the UI...",
   },
   {
-    prompt: "Pull market comps for Scottsdale 85255",
-    response: "Found 12 comparable sales within 0.5mi in the last 90 days...",
+    prompt:
+      "We need to fix this dealer note sync — voice capture saves locally but the CRM payload is missing customerId. Walk the handoff and patch the mapper.",
+    response:
+      "The dictation pipeline completes before roster lookup resolves. Queue the save until customerId is set, or include a temp key the server can reconcile...",
   },
   {
-    prompt: "Help me structure the beta outreach email",
-    response: "Lead with what you built, then ask for 10-15 minutes...",
+    prompt:
+      "Draft release notes for TestFlight 0.4 from this bullet list — keep it agent-facing, no marketing fluff.",
+    response:
+      "0.4 — Faster listing load, offline draft queue, Rentcast fallback when comps time out, crash fix on iOS 18 sheet dismissal...",
   },
 ];
 
