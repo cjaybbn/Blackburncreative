@@ -76,7 +76,7 @@ export const HOME_JSON_LD_GRAPH = {
       description:
         "Polytechnic TPS system rooted in TEM’s need for non-generic ASU branding: hex isometric grid, Mother Shape family, templates, solo career advisory board presentation.",
       url: "https://www.behance.net/gallery/249030461/TPS-Design-System-Proposal-Design-Agency",
-      image: `${SITE_ORIGIN}/MeSpeaking.jpg`,
+      image: `${SITE_ORIGIN}/work/BTS/TPS_MeSpeaking_BTS.jpg`,
       creator: { "@id": `${SITE_ORIGIN}/#person` },
     },
     {
@@ -85,7 +85,7 @@ export const HOME_JSON_LD_GRAPH = {
       name: "ASU design agency class — team collaboration",
       description:
         "Cohort photo from ASU’s application-only GIT agency studio, including TEDx Faurot Park and Southwest Label client work.",
-      image: `${SITE_ORIGIN}/TPSgrouppic.jpg`,
+      image: `${SITE_ORIGIN}/work/BTS/TPS_GROUP_BTS.jpg`,
       creator: { "@id": `${SITE_ORIGIN}/#person` },
     },
   ],

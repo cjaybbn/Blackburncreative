@@ -105,7 +105,7 @@ Data lives mainly in `SITE_DATA` at the top of `App.jsx`. Labels below show **se
 - **Grouping:** `workCategoryGroups` render in this order: **Design Agency** → **Entrepreneurial** → **Branding**. Each group has a title, short description, then filtered `professionalWork` rows.
 - **Design Agency — description:** Work from ASU’s GIT agency studio—you apply, they take a small cohort, and you’re on real client teams with deadlines and faculty critiques, not hypothetical briefs.
 - **Entrepreneurial — description:** Products I started and still run: talking to users, wiring the stack, fixing what breaks, and re-cutting copy when testers tell me I’m wrong.
-- **Branding — description:** Systems for my own apps plus client launches: AZHype (volleyball club through Cre8tive Influence—guidelines, social templates, collateral they still run today), and freelance marks for shops like Alara Aquatics and Accuracy Solutions.
+- **Branding — description:** Systems for my own apps plus client launches: AZHype (volleyball club through Cre8tive Influence—guidelines, social templates, collateral they still run today), and freelance marks for shops like Alara Aquatics.
 - **Accordion aria pattern:** Expand case study: {client} / Collapse case study: {client}
 - **Inline case study badge:** Case Study
 - **Close button (expanded panel):** Close
@@ -175,15 +175,6 @@ Data lives mainly in `SITE_DATA` at the top of `App.jsx`. Labels below show **se
 - role: Freelance Designer  
 - context: Family business · Branding  
 - description: Logo and brand collateral for my dad’s company—tight scope, fast turnaround, files ready for web and print vendors.  
-- tags: Logo, Freelance  
-- status: Completed  
-
-### Work list row — Accuracy Solutions *(branding)*
-
-- client: Accuracy Solutions  
-- role: Freelance Designer  
-- context: Family business · Branding  
-- description: Brand refresh and mockups for my uncle’s company—clear mark, simple usage notes, and export-ready assets.  
 - tags: Logo, Freelance  
 - status: Completed  
 
@@ -474,7 +465,7 @@ For each study: **name**, **status**, **description**, **stack** (comma-separate
 9. brand — CB Monogram — Personal brand mark. Continuous line form representing creativity as a connected process.
 10. brand — AZHype — Volleyball Club — Full identity for a funded volleyball club and training company—sole designer under Cre8tive Influence, live iteration with the owner, guidelines and launch collateral they still use.
 11. brand — Alara Aquatics — Freelance logo and brand collateral for my dad’s company—web- and print-ready exports. *(image path:* `/work/alara-aquatics-brand.jpg` *— add file or rely on placeholder on error)*
-12. brand — Accuracy Solutions — Freelance brand refresh and mockups for my uncle’s company—simple usage notes and vendor-ready files. *(image path:* `/work/accuracy-solutions-brand.jpg`*)*
+12. brand — SLP_MOCKUP — Mockup for Southwest Label and Print from the GIT agency semester; image `/work/Branding/SLP_MOCKUP.png`.
 13. print — Food Magazine Cover — Content driven design for a food magazine cover. Won second place in the 2024 Canon maglog competition. *(featured)*
 14. print — Marketing Collateral — Wine label design and mockup for local winery in northern Arizona.
 15. print — Editorial Layout — Magazine-style layout exploring long-form content design and typographic systems.

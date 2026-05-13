@@ -1005,7 +1005,7 @@ export default function CaseStudyLayout({
                                       width: "100%",
                                       height: "100%",
                                       display: "block",
-                                      objectFit: "cover",
+                                      objectFit: "contain",
                                       objectPosition: zoomOrigin,
                                       transform: `scale(${panelImageZoom})`,
                                       transformOrigin: zoomOrigin,

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import logoImg from "./logo.png";
@@ -14,7 +14,7 @@ import { SEO } from "./seoConstants.js";
  *
  * SETUP:
  * 1. Add this file as src/WorkGallery.jsx
- * 2. Place your images in the public/work/ folder
+ * 2. Place images under public/work/ (Branding, Photography, BTS, lightpaint) and reference as "/work/…"
  * 3. Update the WORK_ITEMS array below with your actual pieces
  * 4. See routing instructions at the bottom of this file
  */
@@ -43,57 +43,303 @@ const C = {
 const PAPER_NOISE =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
+function workGalleryIsVideoSrc(src) {
+  return typeof src === "string" && /\.(mp4|webm|mov)$/i.test(src.trim());
+}
+
+/** Auto-advance interval for multi-image gallery tiles and matching lightbox. */
+const WORK_GALLERY_CAROUSEL_MS = 4200;
+
+/** Masonry: space between columns and between stacked tiles (irregular grid, not edge-to-edge). */
+const WORK_GALLERY_MASONRY_GAP = 16;
+
+/** Image URLs for a work row: prefers `item.images` when set, else single `item.image`. Videos omitted. */
+function workGalleryImageSlides(item) {
+  if (Array.isArray(item?.images) && item.images.length > 0) {
+    return item.images.filter((s) => typeof s === "string" && s.trim() && !workGalleryIsVideoSrc(s));
+  }
+  if (typeof item?.image === "string" && item.image.trim() && !workGalleryIsVideoSrc(item.image)) {
+    return [item.image];
+  }
+  return [];
+}
+
+function workGalleryBasenameLabel(src) {
+  const base = typeof src === "string" ? src.replace(/^.*\//, "").replace(/\.[^.]+$/, "") : "";
+  return base.replace(/_/g, " ") || "Slide";
+}
+
+/** `[w,h]` from `item.aspectRatio` string (e.g. `"3/4"`). Lightbox frame uses this so `contain` fills the box without random gutters. */
+function workGalleryAspectRatioTuple(item) {
+  const raw = item?.aspectRatio;
+  if (typeof raw === "string" && raw.includes("/")) {
+    const parts = raw.split("/").map((s) => Number(String(s).trim()));
+    if (parts.length === 2 && parts.every((n) => Number.isFinite(n) && n > 0)) return parts;
+  }
+  return [4, 3];
+}
+
+/** Masonry tile: stacked fades + dots; pauses auto-advance while hovered. */
+function WorkGalleryCarouselTile({ slides, aspectRatio, isHovered, onSlideIndexChange }) {
+  const [idx, setIdx] = useState(0);
+  const slideKey = slides.join("|");
+
+  useEffect(() => {
+    setIdx(0);
+  }, [slideKey]);
+
+  useEffect(() => {
+    onSlideIndexChange(idx);
+  }, [idx, onSlideIndexChange]);
+
+  useEffect(() => {
+    if (slides.length <= 1) return undefined;
+    if (isHovered) return undefined;
+    const id = window.setInterval(() => {
+      setIdx((i) => (i + 1) % slides.length);
+    }, WORK_GALLERY_CAROUSEL_MS);
+    return () => window.clearInterval(id);
+  }, [slides.length, isHovered, slideKey]);
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio,
+        borderRadius: 0,
+        overflow: "hidden",
+        background: C.ink,
+      }}
+    >
+      {slides.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt={workGalleryBasenameLabel(src)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: i === idx ? 1 : 0,
+            transition: "opacity 0.55s ease",
+            pointerEvents: "none",
+            display: "block",
+          }}
+        />
+      ))}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          bottom: 10,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          gap: 5,
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      >
+        {slides.map((_, i) => (
+          <span
+            key={i}
+            style={{
+              width: i === idx ? 14 : 5,
+              height: 5,
+              borderRadius: 3,
+              background: i === idx ? C.accent : "rgba(255,255,255,0.45)",
+              boxShadow: "0 0 0 1px rgba(0,0,0,0.12)",
+              transition: "width 0.25s ease, background 0.25s ease",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Lightbox: large carousel with dots (click to jump) + auto-advance. */
+function WorkGalleryLightboxCarousel({ slides, startIndex, onActiveNaturalSize }) {
+  const [idx, setIdx] = useState(startIndex);
+  const slideKey = slides.join("|");
+  const activeRef = useRef(null);
+
+  const reportActive = useCallback(
+    (el) => {
+      if (!el || !onActiveNaturalSize) return;
+      const nw = el.naturalWidth;
+      const nh = el.naturalHeight;
+      if (nw > 0 && nh > 0) onActiveNaturalSize(nw, nh);
+    },
+    [onActiveNaturalSize],
+  );
+
+  useEffect(() => {
+    setIdx(Math.min(startIndex, Math.max(0, slides.length - 1)));
+  }, [startIndex, slideKey, slides.length]);
+
+  useEffect(() => {
+    if (slides.length <= 1) return undefined;
+    const id = window.setInterval(() => {
+      setIdx((i) => (i + 1) % slides.length);
+    }, WORK_GALLERY_CAROUSEL_MS);
+    return () => window.clearInterval(id);
+  }, [slides.length, slideKey]);
+
+  useEffect(() => {
+    const el = activeRef.current;
+    if (el?.complete && el.naturalWidth > 0) reportActive(el);
+  }, [idx, slideKey, reportActive]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        background: C.ink,
+      }}
+    >
+      <div style={{ position: "absolute", inset: 0 }}>
+        {slides.map((src, i) => (
+          <motion.img
+            key={src}
+            src={src}
+            alt={workGalleryBasenameLabel(src)}
+            ref={i === idx ? activeRef : undefined}
+            onLoad={(e) => {
+              if (i === idx) reportActive(e.currentTarget);
+            }}
+            initial={false}
+            animate={{
+              opacity: i === idx ? 1 : 0,
+            }}
+            transition={{ duration: 0.45 }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center",
+              display: "block",
+              pointerEvents: "none",
+              zIndex: i === idx ? 2 : 1,
+            }}
+          />
+        ))}
+      </div>
+      <div
+        role="tablist"
+        aria-label="Image slides"
+        style={{
+          position: "absolute",
+          bottom: 12,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          zIndex: 4,
+        }}
+      >
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            aria-selected={i === idx}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIdx(i);
+            }}
+            style={{
+              width: i === idx ? 22 : 8,
+              height: 8,
+              borderRadius: 4,
+              border: "none",
+              cursor: "pointer",
+              background: i === idx ? C.accent : "rgba(255,255,255,0.35)",
+              transition: "width 0.2s ease, background 0.2s ease",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Optional: paste the live Sun Devil Sitdown site here. `VITE_SUN_DEVIL_SITDOWN_URL` in `.env` overrides this when set. */
+const SUN_DEVIL_SITDOWN_URL_FALLBACK = "https://asugit402podcast.wordpress.com/";
+
+const SUN_DEVIL_SITDOWN_PROJECT_URL = (() => {
+  const fromEnv =
+    typeof import.meta !== "undefined" && import.meta.env?.VITE_SUN_DEVIL_SITDOWN_URL;
+  if (typeof fromEnv === "string" && fromEnv.trim()) return fromEnv.trim();
+  return typeof SUN_DEVIL_SITDOWN_URL_FALLBACK === "string"
+    ? SUN_DEVIL_SITDOWN_URL_FALLBACK.trim()
+    : "";
+})();
+
 // ─── YOUR WORK — UPDATE THESE WITH YOUR ACTUAL PIECES ─────────────────
-// Place images in public/work/ and reference as "/work/filename.jpg"
+// Paths use public/work/Photography, work/Branding, work/BTS — see folders on disk.
 const WORK_ITEMS = [
   // ── PHOTOGRAPHY ──
   {
     id: 1,
     category: "photography",
-    title: "Italy — Flickering Faith",
-    description: "Castel Nuovo above Naples during an ASU Italy trip—one frame from that series was shortlisted in the IPA awards.",
-    image: "/work/photo-1.jpg",   // Replace with your actual file
+    title: "IPA Italy Church",
+    description: "Photography · IPA Italy Church · JPG.",
+    image: "/work/Photography/IPA_ITALY_CHURCH.jpg",
     aspectRatio: "3/4",           // portrait
     featured: true,
   },
   {
     id: 2,
     category: "photography",
-    title: "Architectural Study",
-    description: "Exploring geometry and light in Italian architectural spaces. - Rome, Italy",
-    image: "/work/photo-3.jpg",
-    aspectRatio: "3/4",          // landscape
+    title: "Architecture Italy Basilica",
+    description: "Photography · Architecture Italy Basilica · JPG.",
+    image: "/work/Photography/ARCHITECTURE_ITALY_BASILICA.jpg",
+    aspectRatio: "3/4",
   },
   {
     id: 3,
     category: "photography",
-    title: "Subject Negatives",
-    description: "Applying negative space concepts to subjective candid photography.",
-    image: "/work/photo-4.jpg",
+    title: "Candid Architecture Figure",
+    description: "Photography · Candid Architecture Figure · JPG.",
+    image: "/work/Photography/CANDID_ARCHITECTURE_FIGURE.jpg",
     aspectRatio: "1/1",           // square
   },
   {
     id: 4,
     category: "photography",
-    title: "Automotive Detail",
-    description: "Natural-light car study; most of my automotive work lives in the lightpainting gallery—long exposure, tripod, and a light bar at meets with other shooters.",
-    image: "/work/Photo-6.jpg",
+    title: "Car ZL1 Landscape",
+    description: "Photography · Car ZL1 Landscape · JPG.",
+    image: "/work/Photography/CAR_ZL1_LANDSCAPE.jpg",
     aspectRatio: "21/9",
   },
   {
     id: 5,
     category: "photography",
-    title: "Architectural Composition",
-    description: "Candid captures — finding composition in everyday motion.",
-    image: "/work/Photo-5.jpg",
+    title: "Italy Beach Candid",
+    description: "Photography · Italy Beach Candid · JPG.",
+    image: "/work/Photography/ITALY_BEACH_CANDID.jpg",
     aspectRatio: "3/4",
   },
   {
     id: 6,
     category: "photography",
-    title: "Golden Hour",
-    description: "Natural light study — the last 20 minutes before sunset. Candid capture of a quiet evening in Tempe AZ.",
-    image: "/work/photo-2.jpg",
+    title: "Tempe Glowing Sunset Candid",
+    description: "Photography · Tempe Glowing Sunset Candid · JPG.",
+    image: "/work/Photography/TEMPE_GLOWING_SUNSET_CANDID.jpg",
     aspectRatio: "16/9",
   },
 
@@ -101,50 +347,62 @@ const WORK_ITEMS = [
   {
     id: 7,
     category: "brand",
-    title: "RealCopy — Brand System",
-    description: "Full brand identity for RealCopy including logo, color system, typography, and app icon design.",
-    image: "/work/RealCopy.png",
+    title: "RealCopy",
+    description: "Branding · RealCopy · PNG. Cycles RealCopy logo and RealCopy website files.",
+    images: [
+      "/work/Branding/REALCOPY_LOGO.png",
+      "/work/Branding/REALCOPY_WEBSITE.png",
+    ],
+    image: "/work/Branding/REALCOPY_LOGO.png",
     aspectRatio: "1/1",
     featured: true,
   },
   {
-    id: 8,
-    category: "brand",
-    title: "Desert Writes — Logo",
-    description: "Original branding for the marketing tool that became RealCopy. Wordmark + icon system.",
-    image: "/work/brand-2.jpg",
-    aspectRatio: "1/1",
-  },
-  {
     id: 9,
     category: "brand",
-    title: "CB Monogram",
-    description: "Personal brand mark. Continuous line form representing creativity as a connected process.",
-    image: "/work/cblogo.png",
+    title: "Personal Logo",
+    description: "Branding · Personal Logo · PNG.",
+    image: "/work/Branding/PERSONAL_LOGO.png",
     aspectRatio: "1/1",
   },
   {
     id: 10,
     category: "brand",
-    title: "AZHype — Volleyball Club",
-    description: "Full identity for a funded volleyball club and training company—sole designer under Cre8tive Influence, live iteration with the owner, guidelines and launch collateral they still use.",
-    image: "/work/azhype.jpg",
+    title: "AZHype Brand Guidelines",
+    description: "Branding · AZHype Brand Guidelines · JPG.",
+    image: "/work/Branding/AZHYPE_BRAND_GUIDLINES.jpg",
     aspectRatio: "4/3",
+  },
+  {
+    id: 19,
+    category: "brand",
+    title: "Sun Devil Sitdown Logo",
+    description:
+      "Branding · Sun Devil Sitdown Logo · PNG. WordPress site for the ASU GIT student podcast (Sun Devil Sit Down).",
+    image: "/work/Branding/SUNDEVILSITDOWN_LOGO.png",
+    aspectRatio: "1/1",
+    ...(SUN_DEVIL_SITDOWN_PROJECT_URL ? { projectUrl: SUN_DEVIL_SITDOWN_PROJECT_URL } : {}),
   },
   {
     id: 17,
     category: "brand",
-    title: "Alara Aquatics",
-    description: "Freelance logo and brand collateral for my dad’s company—web- and print-ready exports.",
-    image: "/Alara-dad-picture.png",
+    title: "Alara",
+    description: "BTS · Alara · PNG. Cycles Alara BTS and Alara video BTS files.",
+    images: ["/work/BTS/Alara_BTS.png", "/work/BTS/ALARA_VIDEO_BTS.png"],
+    image: "/work/BTS/Alara_BTS.png",
     aspectRatio: "1/1",
   },
   {
     id: 18,
     category: "brand",
-    title: "Accuracy Solutions",
-    description: "Freelance brand refresh and mockups for my uncle’s company—simple usage notes and vendor-ready files.",
-    image: "/work/accuracy-solutions-brand.jpg",
+    title: "SLP",
+    description: "Branding / BTS · SLP · PNG. Cycles SLP mockup, logo, and BTS files.",
+    images: [
+      "/work/Branding/SLP_MOCKUP.png",
+      "/work/Branding/SLP_LOGO.png",
+      "/work/BTS/SLP_BTS.png",
+    ],
+    image: "/work/Branding/SLP_MOCKUP.png",
     aspectRatio: "1/1",
   },
 
@@ -152,57 +410,81 @@ const WORK_ITEMS = [
   {
     id: 11,
     category: "print",
-    title: "Food Magazine Cover",
-    description: "Content driven design for a food magazine cover. Won second place in the 2024 Canon maglog competition.",
-    image: "/work/photo-7.png",
+    title: "Onepot Magazine Cover",
+    description: "Branding · Onepot Magazine Cover · PNG.",
+    image: "/work/Branding/ONEPOT_MAGAZINE_COVER.png",
     aspectRatio: "3/4",
     featured: true,
   },
   {
     id: 12,
     category: "print",
-    title: "Marketing Collateral",
-    description: "Wine label design and mockup for local winery in northern Arizona.",
-    image: "/work/photo-8.png",
+    title: "Wine Label Cre8tive",
+    description: "Branding · Wine Label Cre8tive · PNG.",
+    image: "/work/Branding/WINE_LABEL_CRE8TIVE.png",
     aspectRatio: "4/3",
   },
   {
     id: 13,
     category: "print",
-    title: "Editorial Layout",
-    description: "Magazine-style layout exploring long-form content design and typographic systems.",
-    image: "/work/print-3.jpg",
+    title: "Magazine Mockup",
+    description: "Branding · Magazine Mockup · PNG.",
+    image: "/work/Branding/MAGAZINE_MOCKUP.png",
     aspectRatio: "3/4",
   },
   {
     id: 14,
     category: "print",
-    title: "Packaging Concept",
-    description: "Product packaging exploration — balancing shelf presence with brand identity.",
-    image: "/work/print-4.jpg",
+    title: "Mashupposter Mockup",
+    description: "Branding · Mashupposter Mockup · PNG.",
+    image: "/work/Branding/MASHUPPOSTER_MOCKUP.png",
     aspectRatio: "1/1",
   },
   // ── CASE STUDIES ──
   {
     id: 15,
     category: "caseStudies",
-    title: "TEDx Faurot Park 2026",
-    description: "GIT agency cohort work: meetings and FigJam sessions, plus a repeatable event pattern I built from the logo branch (AI exploration, then hand-finished art).",
-    image: "/work/TedX.png",
+    title: "TEDX Cover",
+    description: "Branding · TEDX Cover · PNG. Case study opens in the Behance embed.",
+    image: "/work/Branding/TEDX_COVER.png",
     aspectRatio: "4/3",
     featured: true,
     isCaseStudy: true,
     embedUrl: "https://www.behance.net/embed/project/245479745?ilo0=1",
   },
   {
-    id: 16,
+    id: 22,
     category: "caseStudies",
-    title: "Coffee and Protein Branding Project",
-    description: "Placeholder description — add final case study summary here.",
-    image: "",
+    title: "Projo",
+    description:
+      "Case Studies · Projo · Behance embed. Cover image not wired in the gallery yet.",
     aspectRatio: "4/3",
     isCaseStudy: true,
     embedUrl: "https://www.behance.net/embed/project/223615507?ilo0=1",
+  },
+  {
+    id: 16,
+    category: "brand",
+    title: "Homecore Animation Hypothetical Business",
+    description: "Branding · Homecore Animation Hypothetical Business · MP4.",
+    image: "/work/Branding/HOMECORE_ANIMATION_HYPOTHETICAL_BUSINESS.mp4",
+    aspectRatio: "16/9",
+  },
+  {
+    id: 20,
+    category: "brand",
+    title: "TPS Animation Delivery",
+    description: "Branding · TPS Animation Delivery · MP4.",
+    image: "/work/Branding/TPS_ANIMATION_DELIVERY.mp4",
+    aspectRatio: "16/9",
+  },
+  {
+    id: 21,
+    category: "brand",
+    title: "TEDX Animation Delivery",
+    description: "Branding · TEDX Animation Delivery · MP4.",
+    image: "/work/Branding/TEDX_ANIMATION_DELIVERY.mp4",
+    aspectRatio: "16/9",
   },
 ];
 
@@ -239,7 +521,7 @@ const PlaceholderImage = ({ title, aspectRatio }) => (
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 0,
   }}>
     <div style={{
       textAlign: "center",
@@ -270,23 +552,31 @@ const PlaceholderImage = ({ title, aspectRatio }) => (
 const GalleryItem = ({ item, index, onOpen }) => {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const slideIdxRef = useRef(0);
+  const slides = useMemo(
+    () => workGalleryImageSlides(item),
+    [item.id, item.image, item.images],
+  );
+  const useCarousel = slides.length > 1;
+  const bumpSlide = useCallback((i) => {
+    slideIdxRef.current = i;
+  }, []);
 
   return (
     <Reveal delay={0.05 * (index % 6)}>
       <motion.div
-        layoutId={`gallery-${item.id}`}
-        onClick={() => onOpen(item)}
+        className="gallery-masonry-item"
+        onClick={() => onOpen(item, slideIdxRef.current)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
           cursor: "pointer",
-          borderRadius: 12,
+          borderRadius: 0,
           overflow: "hidden",
           position: "relative",
           breakInside: "avoid",
-          marginBottom: 16,
+          marginBottom: WORK_GALLERY_MASONRY_GAP,
         }}
-        whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Image or placeholder */}
@@ -295,8 +585,8 @@ const GalleryItem = ({ item, index, onOpen }) => {
             style={{
               width: "100%",
               aspectRatio: item.aspectRatio,
-              borderRadius: 12,
-              border: "1px solid rgba(0, 0, 0, 0.12)",
+              borderRadius: 0,
+              border: "none",
               background:
                 "linear-gradient(140deg, rgba(26,24,20,0.06) 0%, rgba(224,91,91,0.10) 52%, rgba(26,24,20,0.08) 100%)",
               display: "flex",
@@ -320,11 +610,11 @@ const GalleryItem = ({ item, index, onOpen }) => {
             </div>
             <div
               style={{
-                borderRadius: 8,
-                border: "1px solid rgba(0, 0, 0, 0.12)",
+                borderRadius: 0,
+                border: "none",
                 background: "rgba(255, 255, 255, 0.75)",
                 padding: "16px 14px",
-                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
+                boxShadow: "none",
               }}
             >
               <div
@@ -363,22 +653,62 @@ const GalleryItem = ({ item, index, onOpen }) => {
           </div>
         ) : imageError ? (
           <PlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
-        ) : (
-          <img
-            src={item.image}
-            alt={item.title}
-            onError={() => setImageError(true)}
+        ) : useCarousel ? (
+          <WorkGalleryCarouselTile
+            slides={slides}
+            aspectRatio={item.aspectRatio}
+            isHovered={isHovered}
+            onSlideIndexChange={bumpSlide}
+          />
+        ) : workGalleryIsVideoSrc(item.image) ? (
+          <div
             style={{
               width: "100%",
               aspectRatio: item.aspectRatio,
-              objectFit: "cover",
-              objectPosition: item.isCaseStudy ? "100% center" : "center",
-              display: "block",
-              borderRadius: 12,
-              transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
-              transform: isHovered ? "scale(1.03)" : "scale(1)",
+              borderRadius: 0,
+              background: C.ink,
+              overflow: "hidden",
             }}
-          />
+          >
+            <video
+              src={item.image}
+              muted
+              playsInline
+              loop
+              autoPlay
+              aria-label={item.title}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                display: "block",
+              }}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              aspectRatio: item.aspectRatio,
+              borderRadius: 0,
+              background: C.ink,
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={item.image}
+              alt={item.title}
+              onError={() => setImageError(true)}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                display: "block",
+              }}
+            />
+          </div>
         )}
 
         {/* Hover overlay */}
@@ -389,7 +719,7 @@ const GalleryItem = ({ item, index, onOpen }) => {
           style={{
             position: "absolute",
             inset: 0,
-            borderRadius: 12,
+            borderRadius: 0,
             background: "linear-gradient(to top, rgba(26, 24, 20, 0.8) 0%, rgba(26, 24, 20, 0.1) 50%, transparent 100%)",
             display: "flex",
             flexDirection: "column",
@@ -445,7 +775,7 @@ const GalleryItem = ({ item, index, onOpen }) => {
 };
 
 // ─── LIGHTBOX ─────────────────────────────────────────────────────────
-const Lightbox = ({ item, onClose }) => {
+const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
   const [imageError, setImageError] = useState(false);
   const [tilt, setTilt] = useState({ x: 0.5, y: 0.5, hovered: false });
   const [isFlipped, setIsFlipped] = useState(false);
@@ -453,6 +783,8 @@ const Lightbox = ({ item, onClose }) => {
   const tiltPendingRef = useRef(null);
   const rafIdRef = useRef(null);
   const isFlippedRef = useRef(false);
+  /** Pixel aspect from loaded media; tightens frame so `contain` does not sit in a wrongly tall box. */
+  const [lbNatural, setLbNatural] = useState(null);
 
   useEffect(() => {
     isFlippedRef.current = isFlipped;
@@ -465,9 +797,10 @@ const Lightbox = ({ item, onClose }) => {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  // Reset flip when opening a different item
+  // Reset flip + measured size when opening a different item
   useEffect(() => {
     setIsFlipped(false);
+    setLbNatural(null);
   }, [item?.id]);
 
   // Tilt only when NOT flipped; throttle to once per frame to avoid stutter
@@ -494,9 +827,29 @@ const Lightbox = ({ item, onClose }) => {
   const tiltX = (tilt.y - 0.5) * -10;
   const tiltY = (tilt.x - 0.5) * 10;
 
+  const reportLbNatural = useCallback((w, h) => {
+    if (typeof w === "number" && typeof h === "number" && w > 0 && h > 0) {
+      setLbNatural([w, h]);
+    }
+  }, []);
+
   if (!item) return null;
 
   const isPhotography = item.category === "photography";
+  const lbSlides = workGalleryImageSlides(item);
+  const lbMulti = lbSlides.length > 1;
+  const [arW, arH] = lbNatural ?? workGalleryAspectRatioTuple(item);
+  const lbHCap = "min(85vh, 900px)";
+  const lbMediaFrameStyle = {
+    width: `min(100%, calc(${lbHCap} * ${arW} / ${arH}))`,
+    aspectRatio: `${arW} / ${arH}`,
+    maxHeight: lbHCap,
+    background: C.ink,
+    position: "relative",
+    overflow: "hidden",
+    margin: "0 auto",
+    boxSizing: "border-box",
+  };
 
   return (
     <motion.div
@@ -515,7 +868,7 @@ const Lightbox = ({ item, onClose }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 40,
+        padding: "24px",
         cursor: "pointer",
       }}
     >
@@ -541,36 +894,45 @@ const Lightbox = ({ item, onClose }) => {
       </div>
 
       <motion.div
-        layoutId={`gallery-${item.id}`}
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: 900,
+          maxWidth: "min(1600px, calc(100vw - 48px))",
           width: "100%",
           display: "flex",
-          gap: 40,
-          alignItems: "flex-start",
+          gap: 24,
+          alignItems: "center",
           cursor: "default",
         }}
         className="lightbox-inner"
       >
-        {/* Image: case study embed / photography treatment / simple image */}
-        <div style={{ flex: "1 1 60%", maxHeight: "80vh" }}>
-          {item.isCaseStudy ? (
+        {item.isCaseStudy ? (
+        <div
+          style={{
+            flex: "1 1 62%",
+            minWidth: 0,
+            alignSelf: "stretch",
+            position: "relative",
+            overflow: "hidden",
+            minHeight: "min(540px, 70vh)",
+            maxHeight: "85vh",
+          }}
+        >
             <div
               style={{
                 width: "100%",
-                maxHeight: "80vh",
-                borderRadius: 12,
+                height: "100%",
+                minHeight: "min(540px, 70vh)",
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: 0,
                 overflow: "hidden",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                background: "rgba(255,255,255,0.02)",
-                boxShadow: "0 12px 36px rgba(0,0,0,0.25)",
+                border: "none",
+                background: "#111",
               }}
             >
               <iframe
                 src={item.embedUrl}
                 title={item.title}
-                height="540"
                 width="100%"
                 allowFullScreen
                 loading="lazy"
@@ -580,21 +942,37 @@ const Lightbox = ({ item, onClose }) => {
                 style={{
                   display: "block",
                   width: "100%",
-                  minHeight: "540px",
+                  flex: "1 1 auto",
+                  minHeight: "min(65vh, 720px)",
                   border: "none",
                   background: "#fff",
                 }}
               />
             </div>
-          ) : imageError ? (
+        </div>
+        ) : (
+          <div
+            className="lightbox-media-col"
+            style={{
+              flex: "1 1 62%",
+              minWidth: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              alignSelf: "center",
+            }}
+          >
+            <div className="lightbox-media-frame" style={lbMediaFrameStyle}>
+              {imageError ? (
             <PlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
-          ) : isPhotography ? (
-            <div style={{ perspective: "1200px", width: "100%", position: "relative" }}>
+              ) : isPhotography ? (
+            <div style={{ perspective: "1200px", width: "100%", height: "100%", position: "relative" }}>
               <div
                 onClick={() => setIsFlipped(!isFlipped)}
                 style={{
                   position: "relative",
                   width: "100%",
+                  height: "100%",
                   cursor: "pointer",
                   transformStyle: "preserve-3d",
                   transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -609,18 +987,22 @@ const Lightbox = ({ item, onClose }) => {
                   onMouseLeave={handleImageMouseLeave}
                   style={{
                     position: "relative",
+                    height: "100%",
                     backfaceVisibility: "hidden",
-                    borderRadius: 8,
-                    overflow: "visible",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: 0,
+                    overflow: "hidden",
+                    border: "none",
                     cursor: "pointer",
                   }}
                 >
                   <div
                     style={{
                       position: "relative",
+                      width: "100%",
+                      height: "100%",
                       overflow: "hidden",
-                      borderRadius: 8,
+                      borderRadius: 0,
+                      background: C.ink,
                       transformStyle: "preserve-3d",
                       transform: !isFlipped && tilt.hovered
                         ? `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.02)`
@@ -634,15 +1016,20 @@ const Lightbox = ({ item, onClose }) => {
                     <motion.img
                       src={item.image}
                       alt={item.title}
+                      onLoad={(e) => {
+                        const { naturalWidth: nw, naturalHeight: nh } = e.currentTarget;
+                        reportLbNatural(nw, nh);
+                      }}
                       onError={() => setImageError(true)}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.4, delay: 0.1 }}
                       style={{
                         width: "100%",
-                        maxHeight: "80vh",
+                        height: "100%",
                         objectFit: "contain",
-                        borderRadius: 8,
+                        objectPosition: "center",
+                        borderRadius: 0,
                         display: "block",
                       }}
                     />
@@ -665,10 +1052,8 @@ const Lightbox = ({ item, onClose }) => {
                       style={{
                         position: "absolute",
                         inset: 0,
-                        borderRadius: 8,
-                        pointerEvents: "none",
-                        zIndex: 1,
-                        background: !isFlipped && tilt.hovered
+                        borderRadius: 0,
+                        background: tilt.hovered && !isFlipped
                           ? `linear-gradient(${120 + tiltY * 4 + tiltX * 4}deg, transparent 30%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 55%, transparent 70%)`
                           : !isFlipped
                             ? "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%, rgba(255,255,255,0.03) 100%)"
@@ -689,7 +1074,7 @@ const Lightbox = ({ item, onClose }) => {
                     right: 0,
                     bottom: 0,
                     backfaceVisibility: "hidden",
-                    borderRadius: 8,
+                    borderRadius: 0,
                     overflow: "hidden",
                     transform: "rotateY(180deg)",
                     background: "#F2EDE4",
@@ -813,29 +1198,84 @@ const Lightbox = ({ item, onClose }) => {
                 </div>
               </div>
             </div>
+          ) : workGalleryIsVideoSrc(item.image) ? (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                background: "#000",
+              }}
+            >
+              <video
+                src={item.image}
+                controls
+                playsInline
+                loop
+                autoPlay
+                muted
+                aria-label={item.title}
+                onLoadedMetadata={(e) => {
+                  const v = e.currentTarget;
+                  reportLbNatural(v.videoWidth, v.videoHeight);
+                }}
+                onError={() => setImageError(true)}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  objectPosition: "center",
+                  display: "block",
+                }}
+              />
+            </div>
+          ) : lbMulti ? (
+            <WorkGalleryLightboxCarousel
+              slides={lbSlides}
+              startIndex={carouselStartIndex}
+              onActiveNaturalSize={reportLbNatural}
+            />
           ) : (
-            <div style={{ position: "relative", borderRadius: 8, overflow: "hidden" }}>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                background: C.ink,
+              }}
+            >
               <motion.img
                 src={item.image}
                 alt={item.title}
+                onLoad={(e) => {
+                  const { naturalWidth: nw, naturalHeight: nh } = e.currentTarget;
+                  reportLbNatural(nw, nh);
+                }}
                 onError={() => setImageError(true)}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
                 style={{
                   width: "100%",
-                  maxHeight: "80vh",
+                  height: "100%",
                   objectFit: "contain",
-                  borderRadius: 8,
+                  objectPosition: "center",
                   display: "block",
                 }}
               />
             </div>
-          )}
-        </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Info panel */}
         <motion.div
+          className="lightbox-info-col"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
@@ -871,6 +1311,23 @@ const Lightbox = ({ item, onClose }) => {
           }}>
             {item.description}
           </p>
+          {item.projectUrl ? (
+            <p style={{ margin: "14px 0 0", fontFamily: FONT.body, fontSize: 14 }}>
+              <a
+                href={item.projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  color: C.accent,
+                  textDecoration: "underline",
+                  textUnderlineOffset: 3,
+                }}
+              >
+                Visit Sun Devil Sitdown site
+              </a>
+            </p>
+          ) : null}
 
           {item.featured && (
             <div style={{
@@ -904,6 +1361,20 @@ const Lightbox = ({ item, onClose }) => {
 export default function WorkGallery() {
   const [activeFilter, setActiveFilter] = useState(CATEGORIES[0].id);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [lightboxCarouselIndex, setLightboxCarouselIndex] = useState(0);
+
+  const openGalleryItem = useCallback((item, carouselIndex = 0) => {
+    setLightboxCarouselIndex(
+      typeof carouselIndex === "number" && Number.isFinite(carouselIndex)
+        ? Math.max(0, Math.floor(carouselIndex))
+        : 0,
+    );
+    setSelectedItem(item);
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setSelectedItem(null);
+  }, []);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => { setLoaded(true); }, []);
@@ -929,13 +1400,31 @@ export default function WorkGallery() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::selection { background: rgba(224, 91, 91, 0.2); }
         @media (max-width: 768px) {
-          .masonry-grid { columns: 1 !important; }
-          .lightbox-inner { flex-direction: column !important; }
+          .masonry-grid { columns: 1 !important; column-gap: ${WORK_GALLERY_MASONRY_GAP}px !important; }
+          .lightbox-inner {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 16px !important;
+          }
+          .lightbox-media-col {
+            flex: 0 0 auto !important;
+            align-self: stretch !important;
+            width: 100% !important;
+          }
+          .lightbox-info-col {
+            flex: 0 1 auto !important;
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+        }
           .gallery-header-grid { flex-direction: column !important; gap: 20px !important; }
           .filter-tabs { overflow-x: auto !important; flex-wrap: nowrap !important; }
         }
         @media (min-width: 769px) and (max-width: 1024px) {
-          .masonry-grid { columns: 2 !important; }
+          .masonry-grid { columns: 2 !important; column-gap: ${WORK_GALLERY_MASONRY_GAP}px !important; }
+        }
+        .masonry-grid {
+          column-gap: ${WORK_GALLERY_MASONRY_GAP}px !important;
         }
       `}</style>
 
@@ -1094,7 +1583,7 @@ export default function WorkGallery() {
             className="masonry-grid"
             style={{
               columns: 3,
-              columnGap: 16,
+              columnGap: WORK_GALLERY_MASONRY_GAP,
             }}
           >
             {filtered.map((item, i) => (
@@ -1102,7 +1591,7 @@ export default function WorkGallery() {
                 key={item.id}
                 item={item}
                 index={i}
-                onOpen={setSelectedItem}
+                onOpen={openGalleryItem}
               />
             ))}
           </motion.div>
@@ -1183,7 +1672,11 @@ export default function WorkGallery() {
       {/* ── Lightbox ── */}
       <AnimatePresence>
         {selectedItem && (
-          <Lightbox item={selectedItem} onClose={() => setSelectedItem(null)} />
+          <Lightbox
+            item={selectedItem}
+            carouselStartIndex={lightboxCarouselIndex}
+            onClose={closeLightbox}
+          />
         )}
       </AnimatePresence>
     </div>

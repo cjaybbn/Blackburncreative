@@ -84,7 +84,7 @@ job("ASU GIT Agency — Designer", "Application-only cohort · Completed", [
 ]);
 job("Cre8tive Influence / freelance — Designer", "AZHype + additional clients", [
   "AZHype volleyball club: sole designer, live client iteration, guidelines + collateral still in market.",
-  "Freelance logos and brand packages (e.g., Alara Aquatics, Accuracy Solutions).",
+  "Freelance logos and brand packages (e.g., Alara Aquatics).",
 ]);
 
 section("Education");

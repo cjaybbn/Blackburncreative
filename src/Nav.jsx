@@ -573,7 +573,7 @@ export default function Nav() {
         onMouseLeave={handleNavMouseLeave}
         style={{
           position: "fixed",
-          top: 12,
+          top: pathname === "/lightpainting" ? 0 : 12,
           left: 0,
           right: 0,
           width: "100%",

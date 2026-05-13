@@ -103,7 +103,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
       id: "branding",
       title: "Branding",
       description:
-        "Systems for my own apps plus client launches: AZHype (volleyball club through Cre8tive Influence—guidelines, social templates, collateral they still run today), and freelance marks for shops like Alara Aquatics and Accuracy Solutions.",
+        "Systems for my own apps plus client launches: AZHype (volleyball club through Cre8tive Influence—guidelines, social templates, collateral they still run today), and freelance marks for shops like Alara Aquatics.",
     },
   ],
 
@@ -184,16 +184,6 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
       status: "Completed",
     },
     {
-      workCategory: "branding",
-      client: "Accuracy Solutions",
-      role: "Freelance Designer",
-      context: "Family business · Branding",
-      description:
-        "Brand refresh and mockups for my uncle’s company—clear mark, simple usage notes, and export-ready assets.",
-      tags: ["Logo", "Freelance"],
-      status: "Completed",
-    },
-    {
       workCategory: "agency",
       client: "Southwest Label & Print",
       role: "Lead Designer",
@@ -249,7 +239,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "One property at a time: big type, obvious copy actions, room to edit before anything ships to a listing.",
           omitMetric: true,
           image: {
-            src: "/RealCopy-Logo-design.png",
+            src: "/work/Branding/REALCOPY_LOGO.png",
             alt: "RealCopy logo and identity exploration",
             caption: "Early mark and UI language before the live product and marketing site.",
             maxHeight: "min(300px, 40vh)",
@@ -260,7 +250,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
           detail: "Widening beta only after repeated fixes on guardrails and source citations for numbers.",
           omitMetric: true,
           image: {
-            src: "/Realcopy-website-screenshot.png",
+            src: "/work/Branding/REALCOPY_WEBSITE.png",
             alt: "RealCopy marketing site and product preview",
             caption: "Public-facing site and beta flow—one address in, listing-ready copy and context out.",
           },
@@ -322,7 +312,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Voice capture with instant transcript, obvious edit/stop controls, and on-screen proof of what will sync so reps trust it over sticky notes.",
           omitMetric: true,
           image: {
-            src: "/Dealerdeck-Design.PNG",
+            src: "/work/Branding/DEALERDECK_APP_SCREENSHOT_DESIGN.PNG",
             alt: "DealerDeck voice capture and transcript UI",
             caption: "In-app capture: live transcript and structured handoff before anything hits the CRM.",
             maxHeight: "min(300px, 40vh)",
@@ -340,7 +330,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Pilot users are active; leadership buy-in is there; next milestone is dependable CRM integrations instead of one-off exports.",
           omitMetric: true,
           image: {
-            src: "/DealerDeck-Website-Screenshot.png",
+            src: "/work/Branding/DEALERDECK_WEBSITE_DESIGN.png",
             alt: "DealerDeck product website",
             caption: "Product surface for dealers—same story as the app, built for quick trust and sign-up.",
           },
@@ -352,6 +342,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
       status: "Case study",
       description:
         "Construction teams were trading folders of drone stills. BirdsEye is the boring-but-useful version: fly a grid, stitch an orthomosaic, host a zoomable map supers can open next to the trench.",
+      links: [{ label: "Site preview", href: "https://www.birdseyestart.com/" }],
       stack: ["Pix4D / ODM", "Ground control when needed", "QGIS", "Three.js / WebGL", "Python helpers"],
       process: [
         { phase: "Problem", detail: "Supers were screenshotting Google Earth or emailing JPEGs named “final_FINAL2” and still arguing about square footage." },
@@ -405,7 +396,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
         },
       ],
       heroAsideMedia: {
-        src: "/TPS-logo-example.png",
+        src: "/work/Branding/TPS_LOGO_EXAMPLE.png",
         alt: "TPS logo lockups and grid construction example",
         caption:
           "Logo construction and 6×6 grid snaps from the system spec—companion to the Mother Shape motion in the timeline.",
@@ -427,7 +418,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "TEM needed its own voice; without rules, every future class risked another mismatched flyer stack across Polytechnic.",
           omitMetric: true,
           image: {
-            src: "/TPS-Problem.png",
+            src: "/work/BTS/TPS_PROBLEM_BTS.png",
             alt: "TPS design system problem framing and context",
             caption: "Problem framing—why Polytechnic needed its own system instead of generic ASU defaults.",
             maxHeight: "min(300px, 40vh)",
@@ -439,9 +430,9 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Audited published comms, compared MIT-style systems, and ran team critiques in FigJam so priorities and file drops stayed visible.",
           omitMetric: true,
           image: {
-            src: "/Figjam-TPS-Screenshot.png",
-            alt: "FigJam board for TPS design system planning",
-            caption: "Research and alignment—async and live FigJam before locking the grid and marks.",
+            src: "/work/BTS/TPS_RESEARCH_BTS.png",
+            alt: "Behind the scenes during TPS design system research and benchmarking",
+            caption: "Research-phase BTS—auditing comms, benchmarks, and early FigJam alignment before locking the grid.",
           },
         },
         {
@@ -451,8 +442,8 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
           omitMetric: true,
           image: {
             type: "video",
-            src: "/TPS-Animation-video.mp4",
-            poster: "/TPS-picture.png",
+            src: "/work/Branding/TPS_ANIMATION_DELIVERY.mp4",
+            poster: "/work/Branding/TPS_LOGOS_ALLCOMBINED.png",
             alt: "Motion study for the TPS Mother Shape and grid system",
             caption: "Mother Shape motion study—paired with grid lockups in the spec (see logo construction stills in the Behance deck).",
           },
@@ -463,9 +454,9 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Packaged Figma libraries, signage specs, and production vectors—export presets so vendors and student makers don’t guess at trim or color.",
           omitMetric: true,
           image: {
-            src: "/TPS-Illustrator-screenshot.png",
-            alt: "TPS assets in Adobe Illustrator",
-            caption: "Illustrator production files and presets aligned to the shipped template bundle.",
+            src: "/work/BTS/TPS_BTS.png",
+            alt: "Behind the scenes on the TPS design system production push",
+            caption: "Production-phase BTS—templates and vendor-ready exports coming together.",
           },
         },
         {
@@ -474,7 +465,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Presented to the career advisory board and handed off versioned zips plus office hours so the system survives real use.",
           omitMetric: true,
           image: {
-            src: "/MeSpeaking.jpg",
+            src: "/work/BTS/TPS_MeSpeaking_BTS.jpg",
             alt: "Camden Blackburn presenting the new ASU Polytechnic campus design system to ASU faculty and career board members",
             caption:
               "Presenting the system to faculty and the career board—explaining how student work and official comms share the same grid.",
@@ -490,7 +481,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
       description:
         "2026 TEDx Faurot Park while I was in ASU’s GIT agency cohort. I joined client meetings, worked in shared FigJam boards, and iterated through faculty critiques like any studio engagement. My sharpest contribution is the event pattern system: starting from the branch detail in the approved logo, I used AI to explore vine-like structures, picked the strongest directions, then redrew everything into a repeatable asset volunteers can scale without breaking alignment—alongside programs, slides, and social templates.",
       heroAsideMedia: {
-        src: "/TPSgrouppic.jpg",
+        src: "/work/BTS/TPS_GROUP_BTS.jpg",
         alt: "ASU design agency class group photo with Camden Blackburn and project team peers",
         caption: "Agency cohort—the same studio that shipped TEDx and other client work that semester.",
         maxWidth: "min(280px, 100%)",
@@ -511,7 +502,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Organizers needed one visual language for print, stage, and feed—with volunteers editing files days before showtime.",
           omitMetric: true,
           image: {
-            src: "/TedX-Problem.png",
+            src: "/work/Branding/TEDX_PROBLEM_OLDDESIGN.png",
             alt: "TEDx Faurot Park problem and brief context",
             caption: "Brief and constraints—one system for print, stage, and feed before show week.",
             maxHeight: "min(300px, 40vh)",
@@ -523,9 +514,9 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Standing meetings, FigJam boards, and critiques with the cohort—layer names and folders so organizers always knew which file was current.",
           omitMetric: true,
           image: {
-            src: "/Figjam-TedX-Screenshot.png",
-            alt: "FigJam board for TEDx Faurot Park branding collaboration",
-            caption: "Cohort FigJam—feedback and exploration before locking print and social templates.",
+            src: "/work/BTS/TEDX_BTS.png",
+            alt: "Behind the scenes with the GIT agency cohort on TEDx Faurot Park",
+            caption: "Agency-studio BTS—meetings and critiques before locking print and social templates.",
           },
         },
         {
@@ -534,7 +525,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "AI drafts were references only—the shipping art is hand-tuned so tessellation and contrast hold on fabric and screens.",
           omitMetric: true,
           image: {
-            src: "/TedX-Pattern-image.png",
+            src: "/work/Branding/TEDX_PATTERN.png",
             alt: "TEDx Faurot Park repeatable pattern derived from the logo branch",
             caption: "Final pattern system—tessellates for programs, slides, and wayfinding without breaking the mark.",
           },
@@ -545,9 +536,9 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Two-color print defaults, legible social crops, and slide masters with safe zones so a volunteer can’t shove sponsor marks into the trim.",
           omitMetric: true,
           image: {
-            src: "/TedX-Design.png",
-            alt: "TEDx Faurot Park templates, slides, and print design",
-            caption: "Templates and masters—safe zones and type locks volunteers could ship under pressure.",
+            src: "/work/BTS/TEDX_Design_BTS.png",
+            alt: "Behind the scenes on TEDx print and template design",
+            caption: "Design-phase BTS—masters and safe zones under real deadline pressure.",
             maxHeight: "min(300px, 40vh)",
           },
         },
@@ -558,7 +549,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
           omitMetric: true,
           image: {
             type: "video",
-            src: "/TedX-delivery.mp4",
+            src: "/work/Branding/TEDX_ANIMATION_DELIVERY.mp4",
             alt: "TEDx Faurot Park delivered print and event materials",
             caption: "Shipped bundles—programs, promos, and day-of pieces ready for volunteers and sponsors.",
             maxHeight: "min(300px, 40vh)",
@@ -598,7 +589,7 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "New logo/lockups, simple color/type rules, and site structure by capability (labels, wide-format, fleet) instead of insider terms.",
           omitMetric: true,
           image: {
-            src: "/Southwestlabel-logo.png",
+            src: "/work/Branding/SLP_LOGO.png",
             alt: "Southwest Label & Print logo redesign",
             caption: "New mark and lockups—built to survive fleet graphics, stationery, and the shop floor.",
           },
@@ -609,9 +600,9 @@ AI is my most effective collaborator. I use it to handle the boilerplate and bri
             "Responsive site with service pages in estimator language; Illustrator specs call out real die lines and ink limits so sales doesn’t promise a foil the press can’t run.",
           omitMetric: true,
           image: {
-            src: "/Southwest-illustrator-screenshot.png",
-            alt: "Southwest Label print artwork in Illustrator",
-            caption: "Production files tied to real press capabilities—paired with the web rebuild in plain English.",
+            src: "/work/BTS/SLP_BTS.png",
+            alt: "Behind the scenes at Southwest Label & Print during the rebrand build",
+            caption: "Shop-floor BTS—production and web direction aligned to what the presses actually run.",
           },
         },
         {

@@ -14,85 +14,76 @@ const FONT = {
   mono: "'JetBrains Mono', monospace",
 };
 
-const C = {
-  bg: "rgba(42, 6, 17, 0.1)",
-  bgAlt: "rgba(42, 6, 17, 0.15)",
-  surface: "rgba(42, 6, 17, 0.08)",
-  surfaceDim: "rgba(42, 6, 17, 0.05)",
-  ink: "rgba(42, 6, 17, 0.95)",
-  inkSoft: "rgba(42, 6, 17, 0.75)",
-  inkMuted: "rgba(42, 6, 17, 0.6)",
-  inkFaint: "rgba(42, 6, 17, 0.4)",
-  accent: "#E05B5B",
-  accentDim: "rgba(224, 91, 91, 0.08)",
-  accentLight: "rgba(224, 91, 91, 0.15)",
-  rule: "rgba(42, 6, 17, 0.1)",
-  ruleStrong: "rgba(150, 150, 150, 0.2)",
-  darkBg: "#141416",
-  inkOnDark: "rgba(255, 255, 255, 0.95)",
-  inkOnDarkMuted: "rgba(255, 255, 255, 0.7)",
-  inkOnDarkFaint: "rgba(255, 255, 255, 0.5)",
-};
-
 // ─── LIGHTPAINT PHOTOS ───────────────────────────────────────────────────
-// Place images in `public/work/lightpaint` and reference them as `/work/lightpaint/<filename>`.
+// Place images in `public/work/lightpaint` (descriptive filenames) and reference as `/work/lightpaint/<filename>`.
 const LIGHTPAINT_PHOTOS = [
   {
     id: 1,
-    image: "/work/lightpaint/photo1.png",
-    title: "Blue Trace",
-    description: "Long exposure lightpainting on automotive subjects—one continuous handheld exposure.",
+    image: "/work/lightpaint/BLUE_S2K.jpg",
+    title: "Blue S2K",
+    description: "Lightpaint · Blue S2K · JPEG.",
     glowColor: "rgba(0, 150, 255, 0.4)",
     aspectRatio: "3/2",
   },
   {
     id: 2,
-    image: "/work/lightpaint/photo2.png",
-    title: "Red Line",
-    description: "Controlled red glow that threads through the silhouette for a clean, cinematic tail-light feel.",
+    image: "/work/lightpaint/RED_LOTUS.jpg",
+    title: "Red Lotus",
+    description: "Lightpaint · Red Lotus · JPEG.",
     glowColor: "rgba(255, 60, 30, 0.4)",
     aspectRatio: "16/9",
   },
   {
     id: 3,
-    image: "/work/lightpaint/photo3.png",
-    title: "Warm Orange Sweep",
-    description: "Handheld orange strokes that bloom into reflections across body panels.",
+    image: "/work/lightpaint/RED_CORVETTE.JPG",
+    title: "Red Corvette",
+    description: "Lightpaint · Red Corvette · JPEG.",
     glowColor: "rgba(255, 150, 0, 0.4)",
     aspectRatio: "4/3",
   },
   {
     id: 4,
-    image: "/work/lightpaint/photo4.JPG",
-    title: "Cyan Engine Notes",
-    description: "Cool cyan trails shaped around curves to emphasize form over noise.",
+    image: "/work/lightpaint/WHITE_JDM_NISSAN180SX.png",
+    title: "White JDM Nissan 180SX",
+    description: "Lightpaint · White JDM Nissan 180SX · PNG.",
     glowColor: "rgba(0, 220, 255, 0.4)",
     aspectRatio: "3/4",
   },
   {
     id: 5,
-    image: "/work/lightpaint/photo5.jpg",
-    title: "Violet Motion",
-    description: "Violet light ribbons that feel like motion captured in a single breath.",
+    image: "/work/lightpaint/RED_LOTUS_CLOSEUP.PNG",
+    title: "Red Lotus Closeup",
+    description: "Lightpaint · Red Lotus Closeup · PNG.",
     glowColor: "rgba(165, 90, 255, 0.4)",
     aspectRatio: "21/9",
   },
   {
     id: 6,
-    image: "/work/lightpaint/photo6.PNG",
-    title: "Green Pulse",
-    description: "A subtle green pulse that brightens the dark space without overpowering the car.",
+    image: "/work/lightpaint/GREEN_DATSUN.png",
+    title: "Green Datsun",
+    description: "Lightpaint · Green Datsun · PNG.",
     glowColor: "rgba(0, 220, 120, 0.4)",
     aspectRatio: "1/1",
   },
   {
     id: 7,
-    image: "/work/lightpaint/photo7.jpg",
-    title: "Electric Blue Fade",
-    description: "A deeper blue glow with softer falloff, tuned for ambient bloom in the shadows.",
+    image: "/work/lightpaint/BLUE_S2K_2.png",
+    title: "Blue S2K 2",
+    description: "Lightpaint · Blue S2K 2 · PNG.",
     glowColor: "rgba(0, 120, 255, 0.4)",
     aspectRatio: "16/9",
   },
+];
+
+/** Subtle horizontal nudge + tilt so the masonry reads less grid-perfect */
+const LIGHTPAINT_SCATTER = [
+  { x: -22, rot: -0.45 },
+  { x: 30, rot: 0.4 },
+  { x: -16, rot: 0.28 },
+  { x: 24, rot: -0.32 },
+  { x: -34, rot: 0.52 },
+  { x: 18, rot: -0.22 },
+  { x: -10, rot: 0.18 },
 ];
 
 const DARK_PAGE_BG = "#050507";
@@ -254,7 +245,6 @@ const Lightbox = ({ item, glowColor, onClose }) => {
           )}
         </div>
 
-        {/* Title + description */}
         <div style={{ textAlign: "center", maxWidth: 720, paddingBottom: 22 }}>
           <h2
             style={{
@@ -262,23 +252,25 @@ const Lightbox = ({ item, glowColor, onClose }) => {
               fontSize: 24,
               fontWeight: 400,
               fontStyle: "italic",
-              color: "rgba(255,255,255,0.85)",
+              color: "#ffffff",
               marginBottom: 10,
             }}
           >
             {item.title}
           </h2>
-          <p
-            style={{
-              fontFamily: FONT.body,
-              fontSize: 13,
-              lineHeight: 1.7,
-              color: "rgba(255,255,255,0.35)",
-              margin: 0,
-            }}
-          >
-            {item.description}
-          </p>
+          {item.description ? (
+            <p
+              style={{
+                fontFamily: FONT.body,
+                fontSize: 13,
+                lineHeight: 1.7,
+                color: "rgba(255,255,255,0.82)",
+                margin: 0,
+              }}
+            >
+              {item.description}
+            </p>
+          ) : null}
         </div>
       </div>
     </motion.div>
@@ -305,8 +297,9 @@ const LightpaintPlaceholderImage = ({ title, aspectRatio }) => (
   </div>
 );
 
-const LightpaintCard = ({ item, index, onOpen, canHover }) => {
+const LightpaintCard = ({ item, index, onOpen, canHover, scatter }) => {
   const [imageError, setImageError] = useState(false);
+  const { x = 0, rot = 0 } = scatter ?? {};
 
   return (
     <Reveal delay={0.05 * index}>
@@ -324,7 +317,8 @@ const LightpaintCard = ({ item, index, onOpen, canHover }) => {
           position: "relative",
           cursor: "pointer",
           breakInside: "avoid",
-          marginBottom: 28,
+          transform: `translateX(${x}px) rotate(${rot}deg)`,
+          transformOrigin: "center center",
         }}
       >
         <div
@@ -346,20 +340,23 @@ const LightpaintCard = ({ item, index, onOpen, canHover }) => {
             <LightpaintPlaceholderImage title={item.title} aspectRatio={item.aspectRatio} />
           </div>
         ) : (
-          <img
-            className="lightpaint-img"
-            src={item.image}
-            alt={item.title}
-            onError={() => setImageError(true)}
-            style={{
-              width: "100%",
-              aspectRatio: item.aspectRatio,
-              objectFit: "cover",
-              display: "block",
-              position: "relative",
-              zIndex: 1,
-            }}
-          />
+          <div style={{ position: "relative", zIndex: 1, background: "#0a0a0b", borderRadius: 8, overflow: "hidden" }}>
+            <img
+              className="lightpaint-img"
+              src={item.image}
+              alt={item.title}
+              onError={() => setImageError(true)}
+              style={{
+                width: "100%",
+                aspectRatio: item.aspectRatio,
+                objectFit: "contain",
+                objectPosition: "center",
+                display: "block",
+                position: "relative",
+                zIndex: 1,
+              }}
+            />
+          </div>
         )}
 
         {/* tiny preload hint for touch devices */}
@@ -427,7 +424,7 @@ export default function LightpaintGallery() {
     }
   }, []);
 
-  const gridMaxWidth = 1100;
+  const gridMaxWidth = 1240;
   const lightpaintPhotos = useMemo(() => LIGHTPAINT_PHOTOS, []);
 
   return (
@@ -505,9 +502,13 @@ export default function LightpaintGallery() {
           opacity: 0.3;
         }
 
+        .lightpaint-item {
+          margin-bottom: 72px;
+        }
+
         @media (max-width: 768px) {
           .lightpaint-masonry { columns: 1 !important; }
-          .lightpaint-item { margin-bottom: 28px; }
+          .lightpaint-item { margin-bottom: 56px; }
         }
 
         @media (hover: none) {
@@ -564,7 +565,7 @@ export default function LightpaintGallery() {
               width: "100%",
               height: enableParallax ? "112%" : "100%",
               minHeight: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               objectPosition: "center center",
               animation: "lightReveal 3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
               y: enableParallax ? parallaxY : 0,
@@ -652,11 +653,11 @@ export default function LightpaintGallery() {
             fontFamily: FONT.body,
             fontSize: 15,
             lineHeight: 1.65,
-            color: C.inkSoft,
+            color: "#ffffff",
             textAlign: "center",
           }}
         >
-          <p style={{ margin: 0 }}>
+          <p style={{ margin: 0, color: "rgba(255,255,255,0.92)" }}>
             I shoot car meets with other enthusiasts: tripod, long exposure, a light bar, and post work so the streaks read clean on body lines—not a filter stack, just deliberate technique.
           </p>
         </section>
@@ -666,18 +667,25 @@ export default function LightpaintGallery() {
           style={{
             maxWidth: gridMaxWidth,
             margin: "0 auto",
-            padding: "0 20px 90px",
+            padding: "32px 28px 120px",
           }}
         >
           <div
             className="lightpaint-masonry"
             style={{
               columns: 2,
-              columnGap: 28,
+              columnGap: 72,
             }}
           >
             {lightpaintPhotos.map((item, index) => (
-              <LightpaintCard key={item.id} item={item} index={index} onOpen={setSelected} canHover={canHover} />
+              <LightpaintCard
+                key={item.id}
+                item={item}
+                index={index}
+                onOpen={setSelected}
+                canHover={canHover}
+                scatter={LIGHTPAINT_SCATTER[index % LIGHTPAINT_SCATTER.length]}
+              />
             ))}
           </div>
         </div>
