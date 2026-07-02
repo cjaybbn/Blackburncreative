@@ -44,11 +44,16 @@ export default function AIChatBubble() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: false, amount: 0.2 });
 
+  // Reduced-motion users get one complete, static exchange instead of the typing loop.
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   const [displayedText, setDisplayedText] = useState("");
-  const [showResponse, setShowResponse] = useState(false);
+  const [showResponse, setShowResponse] = useState(prefersReduced);
   const [previousExchanges, setPreviousExchanges] = useState([]);
-  const [currentResponse, setCurrentResponse] = useState(null);
-  const [currentPromptText, setCurrentPromptText] = useState("");
+  const [currentResponse, setCurrentResponse] = useState(prefersReduced ? PROMPTS[0].response : null);
+  const [currentPromptText, setCurrentPromptText] = useState(prefersReduced ? PROMPTS[0].prompt : "");
   const [isThinking, setIsThinking] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
 
@@ -61,7 +66,7 @@ export default function AIChatBubble() {
   };
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || prefersReduced) return;
 
     const addTimeout = (fn, delay) => {
       const id = setTimeout(fn, delay);
@@ -123,12 +128,13 @@ export default function AIChatBubble() {
 
     runCycle();
     return () => clearTimeouts();
-  }, [inView]);
+  }, [inView, prefersReduced]);
 
   return (
     <div
       ref={ref}
       className="ai-chat-bubble"
+      aria-hidden="true"
       style={{ position: "relative", width: "100%", maxWidth: 360 }}
     >
       <div

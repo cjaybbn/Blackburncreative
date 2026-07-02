@@ -175,30 +175,54 @@ export default function GlowCanvas({
     const offCtx = offRef.current.getContext("2d");
     if (!ctx || !offCtx) return;
 
-    let delayDone = false;
-    const delayTimer = setTimeout(() => {
-      delayDone = true;
-      startTimeRef.current = performance.now();
-    }, startDelayMs);
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const loop = () => {
-      rafRef.current = requestAnimationFrame(loop);
-      if (!delayDone || !visibleRef.current) return;
-
-      const time = (performance.now() - (startTimeRef.current ?? performance.now())) / 1000;
+    const drawFrame = (time) => {
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
       draw(ctx, offCtx, w, h, time);
     };
 
-    rafRef.current = requestAnimationFrame(loop);
+    let delayDone = false;
+    const delayTimer = setTimeout(() => {
+      delayDone = true;
+      startTimeRef.current = performance.now();
+      // Reduced motion: paint a single static frame so the glow is present but does not animate.
+      if (prefersReduced) drawFrame(0);
+    }, startDelayMs);
+
+    // Pause the loop when the tab is backgrounded (no visual cost — nothing is on screen).
+    let hidden = document.hidden;
+    const onVisibility = () => { hidden = document.hidden; };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    let lastFrame = 0;
+    const loop = () => {
+      rafRef.current = requestAnimationFrame(loop);
+      if (!delayDone || !visibleRef.current || hidden) return;
+
+      const now = performance.now();
+      // Ambient (non-hovered) drift is slow; run it at ~30fps. Full rate on hover for responsiveness.
+      const minInterval = propsRef.current.isHovered ? 0 : 1000 / 30;
+      if (now - lastFrame < minInterval) return;
+      lastFrame = now;
+
+      drawFrame((now - (startTimeRef.current ?? now)) / 1000);
+    };
+
+    if (!prefersReduced) {
+      rafRef.current = requestAnimationFrame(loop);
+    }
 
     return () => {
       clearTimeout(delayTimer);
+      document.removeEventListener("visibilitychange", onVisibility);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [startDelayMs]);
+  }, [startDelayMs, draw]);
 
   return (
     <div

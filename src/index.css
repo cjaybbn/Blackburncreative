@@ -22,6 +22,37 @@ h3 {
   outline: none;
 }
 
+/* Skip link — hidden until keyboard-focused (WCAG 2.4.1 Bypass Blocks) */
+.skip-to-content {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  background: #141416;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 0 0 8px 8px;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Honor reduced-motion for CSS-driven animation/transition (JS loops check matchMedia separately) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* GlassButton: button materialize on load (3s) */
 @keyframes buttonMaterialize {
   0% { opacity: 0; transform: translateY(16px) scale(0.95); }

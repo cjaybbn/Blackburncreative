@@ -846,27 +846,37 @@ const MagneticGlassButton = memo(function MagneticGlassButton({ href, children }
   }));
 
   useEffect(() => {
-    const handleMove = (e) => {
+    let rafId = null;
+    let pending = null;
+    const process = () => {
+      rafId = null;
+      const p = pending;
       const el = wrapperRef.current;
-      if (!el) return;
+      if (!p || !el) return;
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
+      const dx = p.x - centerX;
+      const dy = p.y - centerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < MAGNETIC_RADIUS && distance > 0) {
         const strength = (1 - distance / MAGNETIC_RADIUS) * MAX_PULL;
-        const pullX = (dx / distance) * strength;
-        const pullY = (dy / distance) * strength;
-        magneticApi.start({ x: pullX, y: pullY });
+        magneticApi.start({ x: (dx / distance) * strength, y: (dy / distance) * strength });
       } else {
         magneticApi.start({ x: 0, y: 0 });
       }
     };
+    // Coalesce mousemove to at most one magnetic update per animation frame.
+    const handleMove = (e) => {
+      pending = { x: e.clientX, y: e.clientY };
+      if (rafId == null) rafId = requestAnimationFrame(process);
+    };
     window.addEventListener("mousemove", handleMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      if (rafId != null) cancelAnimationFrame(rafId);
+    };
   }, [magneticApi]);
 
   const updateMouseLocal = useCallback((x, y, rect) => {
@@ -1161,6 +1171,7 @@ export default function CamdenPortfolio() {
         path={SEO.home.path}
         jsonLd={HOME_JSON_LD_GRAPH}
       />
+      <a href="#main-content" className="skip-to-content">Skip to content</a>
       <SiteNav />
 
       <main id="main-content">

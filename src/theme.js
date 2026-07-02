@@ -7,7 +7,7 @@ export const C = {
   ink: "rgba(42, 6, 17, 0.96)",
   inkSoft: "rgba(42, 6, 17, 0.78)",
   inkMuted: "rgba(42, 6, 17, 0.68)",
-  inkFaint: "rgba(42, 6, 17, 0.55)",
+  inkFaint: "rgba(42, 6, 17, 0.62)",
   accent: "#E05B5B",
   accentDim: "rgba(224, 91, 91, 0.08)",
   accentLight: "rgba(224, 91, 91, 0.15)",

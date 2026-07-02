@@ -117,6 +117,8 @@ function WorkGalleryCarouselTile({ slides, aspectRatio, isHovered, onSlideIndexC
           key={src}
           src={src}
           alt={workGalleryBasenameLabel(src)}
+          loading="lazy"
+          decoding="async"
           style={{
             position: "absolute",
             inset: 0,
@@ -213,6 +215,8 @@ function WorkGalleryLightboxCarousel({ slides, startIndex, onActiveNaturalSize }
             key={src}
             src={src}
             alt={workGalleryBasenameLabel(src)}
+            loading="lazy"
+            decoding="async"
             ref={i === idx ? activeRef : undefined}
             onLoad={(e) => {
               if (i === idx) reportActive(e.currentTarget);
@@ -289,32 +293,35 @@ const SUN_DEVIL_SITDOWN_PROJECT_URL = (() => {
     : "";
 })();
 
-// ─── YOUR WORK — UPDATE THESE WITH YOUR ACTUAL PIECES ─────────────────
+// ─── WORK ITEMS ───────────────────────────────────────────────────────
 // Paths use public/work/Photography, work/Branding, work/BTS — see folders on disk.
+// Each item's `description` is visitor-facing copy (shown in the lightbox + hover).
 const WORK_ITEMS = [
   // ── PHOTOGRAPHY ──
   {
     id: 1,
     category: "photography",
     title: "IPA Italy Church",
-    description: "Photography · IPA Italy Church · JPG.",
+    description: "Shot on an ASU trip to Italy — one frame from this series was shortlisted in the International Photography Awards.",
     image: "/work/Photography/IPA_ITALY_CHURCH.jpg",
     aspectRatio: "3/4",           // portrait
     featured: true,
+    date: "Italy · Dec 2023",
   },
   {
     id: 2,
     category: "photography",
     title: "Architecture Italy Basilica",
-    description: "Photography · Architecture Italy Basilica · JPG.",
+    description: "A study of geometry and light inside an Italian basilica.",
     image: "/work/Photography/ARCHITECTURE_ITALY_BASILICA.jpg",
     aspectRatio: "3/4",
+    date: "Italy · Dec 2023",
   },
   {
     id: 3,
     category: "photography",
     title: "Candid Architecture Figure",
-    description: "Photography · Candid Architecture Figure · JPG.",
+    description: "A candid figure against hard architectural lines — finding composition in everyday motion.",
     image: "/work/Photography/CANDID_ARCHITECTURE_FIGURE.jpg",
     aspectRatio: "1/1",           // square
   },
@@ -322,7 +329,7 @@ const WORK_ITEMS = [
     id: 4,
     category: "photography",
     title: "Car ZL1 Landscape",
-    description: "Photography · Car ZL1 Landscape · JPG.",
+    description: "A natural-light automotive study — most of my car work lives in the lightpainting gallery.",
     image: "/work/Photography/CAR_ZL1_LANDSCAPE.jpg",
     aspectRatio: "21/9",
   },
@@ -330,15 +337,16 @@ const WORK_ITEMS = [
     id: 5,
     category: "photography",
     title: "Italy Beach Candid",
-    description: "Photography · Italy Beach Candid · JPG.",
+    description: "A candid frame from the Italy trip — a quiet moment by the water.",
     image: "/work/Photography/ITALY_BEACH_CANDID.jpg",
     aspectRatio: "3/4",
+    date: "Italy · Dec 2023",
   },
   {
     id: 6,
     category: "photography",
     title: "Tempe Glowing Sunset Candid",
-    description: "Photography · Tempe Glowing Sunset Candid · JPG.",
+    description: "Golden hour in Tempe, Arizona — the last twenty minutes of natural light.",
     image: "/work/Photography/TEMPE_GLOWING_SUNSET_CANDID.jpg",
     aspectRatio: "16/9",
   },
@@ -348,7 +356,7 @@ const WORK_ITEMS = [
     id: 7,
     category: "brand",
     title: "RealCopy",
-    description: "Branding · RealCopy · PNG. Cycles RealCopy logo and RealCopy website files.",
+    description: "Full brand identity for RealCopy — logo, color system, typography, and app icon — carried through to the marketing site.",
     images: [
       "/work/Branding/REALCOPY_LOGO.png",
       "/work/Branding/REALCOPY_WEBSITE.png",
@@ -361,7 +369,7 @@ const WORK_ITEMS = [
     id: 9,
     category: "brand",
     title: "Personal Logo",
-    description: "Branding · Personal Logo · PNG.",
+    description: "My personal brand mark — a continuous-line form that treats creativity as one connected process.",
     image: "/work/Branding/PERSONAL_LOGO.png",
     aspectRatio: "1/1",
   },
@@ -369,7 +377,7 @@ const WORK_ITEMS = [
     id: 10,
     category: "brand",
     title: "AZHype Brand Guidelines",
-    description: "Branding · AZHype Brand Guidelines · JPG.",
+    description: "Full identity for AZHype, a funded volleyball club — sole designer under Cre8tive Influence, with guidelines and launch collateral they still run today.",
     image: "/work/Branding/AZHYPE_BRAND_GUIDLINES.jpg",
     aspectRatio: "4/3",
   },
@@ -378,7 +386,7 @@ const WORK_ITEMS = [
     category: "brand",
     title: "Sun Devil Sitdown Logo",
     description:
-      "Branding · Sun Devil Sitdown Logo · PNG. WordPress site for the ASU GIT student podcast (Sun Devil Sit Down).",
+      "Logo and WordPress site for Sun Devil Sit Down, the ASU GIT student podcast.",
     image: "/work/Branding/SUNDEVILSITDOWN_LOGO.png",
     aspectRatio: "1/1",
     ...(SUN_DEVIL_SITDOWN_PROJECT_URL ? { projectUrl: SUN_DEVIL_SITDOWN_PROJECT_URL } : {}),
@@ -386,8 +394,8 @@ const WORK_ITEMS = [
   {
     id: 17,
     category: "brand",
-    title: "Alara",
-    description: "BTS · Alara · PNG. Cycles Alara BTS and Alara video BTS files.",
+    title: "Alara Aquatics",
+    description: "Logo and brand collateral for Alara Aquatics — behind-the-scenes from the shoot, with web- and print-ready exports.",
     images: ["/work/BTS/Alara_BTS.png", "/work/BTS/ALARA_VIDEO_BTS.png"],
     image: "/work/BTS/Alara_BTS.png",
     aspectRatio: "1/1",
@@ -395,8 +403,8 @@ const WORK_ITEMS = [
   {
     id: 18,
     category: "brand",
-    title: "SLP",
-    description: "Branding / BTS · SLP · PNG. Cycles SLP mockup, logo, and BTS files.",
+    title: "Southwest Label & Print",
+    description: "Brand mockup, logo, and process work for Southwest Label & Print, from the GIT agency semester.",
     images: [
       "/work/Branding/SLP_MOCKUP.png",
       "/work/Branding/SLP_LOGO.png",
@@ -410,8 +418,8 @@ const WORK_ITEMS = [
   {
     id: 11,
     category: "print",
-    title: "Onepot Magazine Cover",
-    description: "Branding · Onepot Magazine Cover · PNG.",
+    title: "One Pot — Magazine Cover",
+    description: "Content-driven cover for a food magazine — second place in the 2024 Canon Maglog competition.",
     image: "/work/Branding/ONEPOT_MAGAZINE_COVER.png",
     aspectRatio: "3/4",
     featured: true,
@@ -419,8 +427,8 @@ const WORK_ITEMS = [
   {
     id: 12,
     category: "print",
-    title: "Wine Label Cre8tive",
-    description: "Branding · Wine Label Cre8tive · PNG.",
+    title: "Wine Label — Cre8tive",
+    description: "Wine label design and mockup for a winery in northern Arizona, produced through Cre8tive Influence.",
     image: "/work/Branding/WINE_LABEL_CRE8TIVE.png",
     aspectRatio: "4/3",
   },
@@ -428,15 +436,15 @@ const WORK_ITEMS = [
     id: 13,
     category: "print",
     title: "Magazine Mockup",
-    description: "Branding · Magazine Mockup · PNG.",
+    description: "Editorial magazine layout — exploring long-form content design and typographic systems.",
     image: "/work/Branding/MAGAZINE_MOCKUP.png",
     aspectRatio: "3/4",
   },
   {
     id: 14,
     category: "print",
-    title: "Mashupposter Mockup",
-    description: "Branding · Mashupposter Mockup · PNG.",
+    title: "Mashup Poster",
+    description: "A type-and-image mashup poster — composition study balancing visual density with legibility.",
     image: "/work/Branding/MASHUPPOSTER_MOCKUP.png",
     aspectRatio: "1/1",
   },
@@ -444,8 +452,8 @@ const WORK_ITEMS = [
   {
     id: 15,
     category: "caseStudies",
-    title: "TEDX Cover",
-    description: "Branding · TEDX Cover · PNG. Case study opens in the Behance embed.",
+    title: "TEDx Faurot Park",
+    description: "Event brand built with the GIT agency cohort — a repeatable pattern grown from the logo's branch motif. Opens the full case study.",
     image: "/work/Branding/TEDX_COVER.png",
     aspectRatio: "4/3",
     featured: true,
@@ -456,8 +464,7 @@ const WORK_ITEMS = [
     id: 22,
     category: "caseStudies",
     title: "Projo",
-    description:
-      "Case Studies · Projo · Behance embed. Cover image not wired in the gallery yet.",
+    description: "Design case study — opens the full project on Behance.",
     aspectRatio: "4/3",
     isCaseStudy: true,
     embedUrl: "https://www.behance.net/embed/project/223615507?ilo0=1",
@@ -465,24 +472,24 @@ const WORK_ITEMS = [
   {
     id: 16,
     category: "brand",
-    title: "Homecore Animation Hypothetical Business",
-    description: "Branding · Homecore Animation Hypothetical Business · MP4.",
+    title: "Homecore — Brand Animation",
+    description: "Animated brand identity for Homecore, a self-directed concept business.",
     image: "/work/Branding/HOMECORE_ANIMATION_HYPOTHETICAL_BUSINESS.mp4",
     aspectRatio: "16/9",
   },
   {
     id: 20,
     category: "brand",
-    title: "TPS Animation Delivery",
-    description: "Branding · TPS Animation Delivery · MP4.",
+    title: "TPS — Animated Logo Delivery",
+    description: "Final animated logo delivery for the TPS brand package.",
     image: "/work/Branding/TPS_ANIMATION_DELIVERY.mp4",
     aspectRatio: "16/9",
   },
   {
     id: 21,
     category: "brand",
-    title: "TEDX Animation Delivery",
-    description: "Branding · TEDX Animation Delivery · MP4.",
+    title: "TEDx — Animated Logo Delivery",
+    description: "Final animated logo delivery for the TEDx Faurot Park event brand.",
     image: "/work/Branding/TEDX_ANIMATION_DELIVERY.mp4",
     aspectRatio: "16/9",
   },
@@ -566,7 +573,13 @@ const GalleryItem = ({ item, index, onOpen }) => {
     <Reveal delay={0.05 * (index % 6)}>
       <motion.div
         className="gallery-masonry-item"
+        role="button"
+        tabIndex={0}
+        aria-label={`Open ${item.title}`}
         onClick={() => onOpen(item, slideIdxRef.current)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(item, slideIdxRef.current); }
+        }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -676,6 +689,7 @@ const GalleryItem = ({ item, index, onOpen }) => {
               playsInline
               loop
               autoPlay
+              preload="metadata"
               aria-label={item.title}
               style={{
                 width: "100%",
@@ -699,6 +713,8 @@ const GalleryItem = ({ item, index, onOpen }) => {
             <img
               src={item.image}
               alt={item.title}
+              loading="lazy"
+              decoding="async"
               onError={() => setImageError(true)}
               style={{
                 width: "100%",
@@ -783,6 +799,7 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
   const tiltPendingRef = useRef(null);
   const rafIdRef = useRef(null);
   const isFlippedRef = useRef(false);
+  const closeBtnRef = useRef(null);
   /** Pixel aspect from loaded media; tightens frame so `contain` does not sit in a wrongly tall box. */
   const [lbNatural, setLbNatural] = useState(null);
 
@@ -796,6 +813,15 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
+
+  // Move focus into the dialog on open; restore it to the trigger on close.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeBtnRef.current?.focus();
+    return () => {
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
 
   // Reset flip + measured size when opening a different item
   useEffect(() => {
@@ -858,6 +884,9 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={item?.title ? `${item.title} — enlarged view` : "Enlarged work view"}
       style={{
         position: "fixed",
         inset: 0,
@@ -873,25 +902,31 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
       }}
     >
       {/* Close button */}
-      <div style={{
-        position: "absolute",
-        top: 24,
-        right: 28,
-        width: 40,
-        height: 40,
-        borderRadius: "50%",
-        background: "rgba(255,255,255,0.08)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        zIndex: 2,
-      }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round">
+      <button
+        type="button"
+        ref={closeBtnRef}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        aria-label="Close enlarged view"
+        style={{
+          position: "absolute",
+          top: 24,
+          right: 28,
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 2,
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
-      </div>
+      </button>
 
       <motion.div
         onClick={(e) => e.stopPropagation()}
@@ -1146,9 +1181,11 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
                     <div style={{ transform: "rotate(-2.2deg)", marginLeft: 4 }}>
                       {item.backNote || item.description?.slice(0, 60) + (item.description?.length > 60 ? "…" : "")}
                     </div>
-                    <div style={{ transform: "rotate(-1deg)", marginTop: 4 }}>
-                      Dec. 2023
-                    </div>
+                    {item.date && (
+                      <div style={{ transform: "rotate(-1deg)", marginTop: 4 }}>
+                        {item.date}
+                      </div>
+                    )}
                   </div>
                   {/* Smudge near text */}
                   <div
@@ -1179,7 +1216,7 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    PRINT NO. 001
+                    PRINT NO. {String(item.id).padStart(3, "0")}
                   </div>
                   {/* Click to flip back hint */}
                   <div
@@ -1216,6 +1253,7 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
                 loop
                 autoPlay
                 muted
+                preload="metadata"
                 aria-label={item.title}
                 onLoadedMetadata={(e) => {
                   const v = e.currentTarget;
@@ -1251,6 +1289,7 @@ const Lightbox = ({ item, onClose, carouselStartIndex = 0 }) => {
               <motion.img
                 src={item.image}
                 alt={item.title}
+                decoding="async"
                 onLoad={(e) => {
                   const { naturalWidth: nw, naturalHeight: nh } = e.currentTarget;
                   reportLbNatural(nw, nh);

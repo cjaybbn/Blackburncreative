@@ -232,7 +232,9 @@ function NavLink({
           style={layeredLabelStyle}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && scrollTo(id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); scrollTo(id); }
+          }}
         >
           {label}
         </span>
@@ -333,12 +335,19 @@ export default function Nav() {
 
     updateScrollSection();
     const t = setTimeout(updateScrollSection, 150);
-    window.addEventListener("scroll", updateScrollSection, { passive: true });
-    window.addEventListener("resize", updateScrollSection);
+    // Coalesce scroll/resize work into one layout read per frame.
+    let rafId = null;
+    const onScroll = () => {
+      if (rafId == null)
+        rafId = requestAnimationFrame(() => { rafId = null; updateScrollSection(); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
       clearTimeout(t);
-      window.removeEventListener("scroll", updateScrollSection);
-      window.removeEventListener("resize", updateScrollSection);
+      if (rafId != null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, [pathname]);
 
@@ -373,12 +382,19 @@ export default function Nav() {
 
     checkOverlap();
     const t = setTimeout(checkOverlap, 100);
-    window.addEventListener("scroll", checkOverlap, { passive: true });
-    window.addEventListener("resize", checkOverlap);
+    // Coalesce scroll/resize work into one layout read per frame.
+    let rafId = null;
+    const onScroll = () => {
+      if (rafId == null)
+        rafId = requestAnimationFrame(() => { rafId = null; checkOverlap(); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
       clearTimeout(t);
-      window.removeEventListener("scroll", checkOverlap);
-      window.removeEventListener("resize", checkOverlap);
+      if (rafId != null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, [pathname]);
 
@@ -592,8 +608,10 @@ export default function Nav() {
             inset: 0,
             borderRadius: 50,
             background: navOverDark ? glassFallbackDark : glassFallbackLight,
-            backdropFilter: "blur(32px) saturate(1.35)",
-            WebkitBackdropFilter: "blur(32px) saturate(1.35)",
+            // Blur intentionally omitted: the LiquidGlassContainer above paints the
+            // frosted blur; this layer only provides the opaque fallback surface for
+            // browsers without backdrop-filter support. A second blur here was occluded
+            // and doubled the full-viewport compositing cost on the fixed nav.
             boxShadow: navOverDark
               ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 36px rgba(0,0,0,0.42)"
               : "inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 32px rgba(0,0,0,0.08)",
@@ -705,7 +723,10 @@ export default function Nav() {
                   }}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && goHomeTop()}
+                  aria-label="Blackburn Creative — home"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goHomeTop(); }
+                  }}
                 >
                   <img
                     src={logoImg}
@@ -748,7 +769,8 @@ export default function Nav() {
                 </div>
 
                 {/* Mobile hamburger */}
-                <div
+                <button
+                  type="button"
                   className="mobile-nav-toggle"
                   onClick={() => setMenuOpen(!menuOpen)}
                   style={{
@@ -760,8 +782,13 @@ export default function Nav() {
                     justifyContent: "center",
                     flexDirection: "column",
                     gap: 5,
+                    padding: 0,
+                    border: "none",
+                    background: "transparent",
                   }}
                   aria-label={menuOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={menuOpen}
+                  aria-controls="mobile-nav-menu"
                 >
                   <div
                     style={{
@@ -792,7 +819,7 @@ export default function Nav() {
                       transform: menuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
                     }}
                   />
-                </div>
+                </button>
             </>
           </div>
         </LiquidGlassContainer>
@@ -801,6 +828,10 @@ export default function Nav() {
 
       {menuOpen && (
         <div
+          id="mobile-nav-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
           style={{
             position: "fixed",
             top: 0,

@@ -21,7 +21,7 @@ const LIGHTPAINT_PHOTOS = [
     id: 1,
     image: "/work/lightpaint/BLUE_S2K.jpg",
     title: "Blue S2K",
-    description: "Lightpaint · Blue S2K · JPEG.",
+    description: "Long-exposure light study on a Honda S2000 — a light bar worked along the body line in one continuous pass.",
     glowColor: "rgba(0, 150, 255, 0.4)",
     aspectRatio: "3/2",
   },
@@ -29,7 +29,7 @@ const LIGHTPAINT_PHOTOS = [
     id: 2,
     image: "/work/lightpaint/RED_LOTUS.jpg",
     title: "Red Lotus",
-    description: "Lightpaint · Red Lotus · JPEG.",
+    description: "Red light traced along a Lotus at a night meet — tripod, long exposure, a single pass.",
     glowColor: "rgba(255, 60, 30, 0.4)",
     aspectRatio: "16/9",
   },
@@ -37,7 +37,7 @@ const LIGHTPAINT_PHOTOS = [
     id: 3,
     image: "/work/lightpaint/RED_CORVETTE.JPG",
     title: "Red Corvette",
-    description: "Lightpaint · Red Corvette · JPEG.",
+    description: "A warm light sweep across a Corvette — streaks shaped to follow the panels.",
     glowColor: "rgba(255, 150, 0, 0.4)",
     aspectRatio: "4/3",
   },
@@ -45,7 +45,7 @@ const LIGHTPAINT_PHOTOS = [
     id: 4,
     image: "/work/lightpaint/WHITE_JDM_NISSAN180SX.png",
     title: "White JDM Nissan 180SX",
-    description: "Lightpaint · White JDM Nissan 180SX · PNG.",
+    description: "Cool-toned study on a Nissan 180SX — cyan light threaded through the silhouette.",
     glowColor: "rgba(0, 220, 255, 0.4)",
     aspectRatio: "3/4",
   },
@@ -53,7 +53,7 @@ const LIGHTPAINT_PHOTOS = [
     id: 5,
     image: "/work/lightpaint/RED_LOTUS_CLOSEUP.PNG",
     title: "Red Lotus Closeup",
-    description: "Lightpaint · Red Lotus Closeup · PNG.",
+    description: "A close detail from the Lotus set — violet light picking out a single line of the body.",
     glowColor: "rgba(165, 90, 255, 0.4)",
     aspectRatio: "21/9",
   },
@@ -61,15 +61,15 @@ const LIGHTPAINT_PHOTOS = [
     id: 6,
     image: "/work/lightpaint/GREEN_DATSUN.png",
     title: "Green Datsun",
-    description: "Lightpaint · Green Datsun · PNG.",
+    description: "A green light pulse over a classic Datsun — long exposure at a night meet.",
     glowColor: "rgba(0, 220, 120, 0.4)",
     aspectRatio: "1/1",
   },
   {
     id: 7,
     image: "/work/lightpaint/BLUE_S2K_2.png",
-    title: "Blue S2K 2",
-    description: "Lightpaint · Blue S2K 2 · PNG.",
+    title: "Blue S2K — Rear Quarter",
+    description: "A second frame from the S2000 set — a cleaner blue trace along the rear quarter.",
     glowColor: "rgba(0, 120, 255, 0.4)",
     aspectRatio: "16/9",
   },
@@ -169,7 +169,9 @@ const Lightbox = ({ item, glowColor, onClose }) => {
             e.stopPropagation();
             onClose();
           }}
-          onKeyDown={(e) => e.key === "Enter" && onClose()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClose(); }
+          }}
           style={{
             position: "fixed",
             top: 18,
@@ -230,6 +232,7 @@ const Lightbox = ({ item, glowColor, onClose }) => {
             <motion.img
               src={item.image}
               alt={item.title}
+              decoding="async"
               onError={() => setImageError(true)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -310,7 +313,9 @@ const LightpaintCard = ({ item, index, onOpen, canHover, scatter }) => {
         tabIndex={0}
         role="button"
         aria-label={`Open lightbox: ${item.title}`}
-        onKeyDown={(e) => e.key === "Enter" && onOpen(item)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(item); }
+        }}
         style={{
           borderRadius: 8,
           overflow: "hidden",
@@ -345,6 +350,8 @@ const LightpaintCard = ({ item, index, onOpen, canHover, scatter }) => {
               className="lightpaint-img"
               src={item.image}
               alt={item.title}
+              loading="lazy"
+              decoding="async"
               onError={() => setImageError(true)}
               style={{
                 width: "100%",
@@ -558,6 +565,7 @@ export default function LightpaintGallery() {
           <motion.img
             src="/work/lightpaint/header.jpg"
             alt="Lightpainting gear"
+            decoding="async"
             style={{
               position: "absolute",
               top: 0,
