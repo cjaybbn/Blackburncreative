@@ -6,8 +6,12 @@
  * Control Center glass over a wallpaper.
  *
  * Palette derived from CB coral (#E05B5B) plus complementary tones.
- * Orb drift is driven by CSS keyframe animations (orbDrift1-4 in index.css)
- * to avoid continuous React state updates from a requestAnimationFrame loop.
+ *
+ * Perf: the orbs are STATIC. They sit behind ~5 SVG "liquid glass" filters
+ * (4 hero buttons + nav) that re-sample their backdrop every frame it changes.
+ * Slowly drifting the orbs forced all of those filters to recomposite 60x/sec —
+ * cheap on a phone, brutal on a large desktop display. Holding the orbs still
+ * lets the browser cache the filtered result. Keep them static.
  */
 
 export default function HeroBackground() {
@@ -36,8 +40,6 @@ export default function HeroBackground() {
         background: "radial-gradient(ellipse at center, rgba(224, 91, 91, 0.55) 0%, rgba(224, 91, 91, 0.2) 40%, transparent 70%)",
         filter: "blur(60px)",
         pointerEvents: "none",
-        animation: "orbDrift1 84s ease-in-out infinite",
-        willChange: "transform",
       }} />
 
       {/* Orb 2 — Soft peach/apricot */}
@@ -50,8 +52,6 @@ export default function HeroBackground() {
         background: "radial-gradient(ellipse at center, rgba(245, 166, 120, 0.5) 0%, rgba(245, 166, 120, 0.15) 45%, transparent 70%)",
         filter: "blur(55px)",
         pointerEvents: "none",
-        animation: "orbDrift2 70s ease-in-out infinite",
-        willChange: "transform",
       }} />
 
       {/* Orb 3 — Dusty rose / mauve */}
@@ -64,8 +64,6 @@ export default function HeroBackground() {
         background: "radial-gradient(ellipse at center, rgba(200, 130, 155, 0.45) 0%, rgba(200, 130, 155, 0.1) 45%, transparent 70%)",
         filter: "blur(50px)",
         pointerEvents: "none",
-        animation: "orbDrift3 92s ease-in-out infinite",
-        willChange: "transform",
       }} />
 
       {/* Orb 4 — Cool lavender (contrast) */}
@@ -78,8 +76,6 @@ export default function HeroBackground() {
         background: "radial-gradient(ellipse at center, rgba(160, 140, 200, 0.3) 0%, rgba(160, 140, 200, 0.08) 45%, transparent 70%)",
         filter: "blur(45px)",
         pointerEvents: "none",
-        animation: "orbDrift4 104s ease-in-out infinite",
-        willChange: "transform",
       }} />
 
       {/* Orb 5 — Warm highlight (top, static) */}
@@ -104,8 +100,6 @@ export default function HeroBackground() {
         background: "radial-gradient(ellipse at center, rgba(200, 70, 70, 0.3) 0%, transparent 60%)",
         filter: "blur(50px)",
         pointerEvents: "none",
-        animation: "orbDrift1 84s ease-in-out infinite reverse",
-        willChange: "transform",
       }} />
 
       {/* Note: a full-viewport backdrop-filter blur used to sit here to "blend"
