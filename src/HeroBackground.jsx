@@ -108,21 +108,18 @@ export default function HeroBackground() {
         willChange: "transform",
       }} />
 
-      {/* Soft overall blur to blend everything smoothly */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
-        pointerEvents: "none",
-      }} />
+      {/* Note: a full-viewport backdrop-filter blur used to sit here to "blend"
+          the orbs. It forced the compositor to re-blur the entire moving orb
+          field every frame (major hero jank) for a ~2px effect that the orbs'
+          own 45–60px blur already provides. Removed intentionally. */}
 
       {/* Very subtle noise for texture (barely visible) */}
       <div style={{
         position: "absolute",
         inset: 0,
-        opacity: 0.03,
-        mixBlendMode: "multiply",
+        // Plain low-opacity overlay (no mix-blend-mode): a blend mode here would
+        // force a full-viewport recomposite every time the orbs below move.
+        opacity: 0.025,
         pointerEvents: "none",
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`,
         backgroundSize: "128px 128px",

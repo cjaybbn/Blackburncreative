@@ -29,6 +29,7 @@ export default function GlowCanvas({
   const lastTimeRef = useRef(0);
   const hoverLerpRef = useRef(0);
   const visibleRef = useRef(true);
+  const restingDrawnRef = useRef(false);
   const noiseRef = useRef(null);
   const propsRef = useRef({ mouseX, mouseY, isHovered, seed });
   propsRef.current = { mouseX, mouseY, isHovered, seed };
@@ -145,6 +146,8 @@ export default function GlowCanvas({
       }
       offRef.current.width = w2;
       offRef.current.height = h2;
+      // Resizing clears the canvas — force the idle loop to repaint one resting frame.
+      restingDrawnRef.current = false;
     };
 
     resize();
@@ -204,8 +207,21 @@ export default function GlowCanvas({
       rafRef.current = requestAnimationFrame(loop);
       if (!delayDone || !visibleRef.current || hidden) return;
 
+      // Only run the per-pixel noise while hovered (or while the hover transition
+      // is still settling). When idle, paint one resting frame and stop the heavy
+      // work — this is what was pinning the CPU on the hero with 3 glass buttons.
+      const active = propsRef.current.isHovered || hoverLerpRef.current > 0.001;
+      if (!active) {
+        if (!restingDrawnRef.current) {
+          drawFrame((performance.now() - (startTimeRef.current ?? performance.now())) / 1000);
+          restingDrawnRef.current = true;
+        }
+        return;
+      }
+      restingDrawnRef.current = false;
+
       const now = performance.now();
-      // Ambient (non-hovered) drift is slow; run it at ~30fps. Full rate on hover for responsiveness.
+      // Full rate on hover; ~30fps while the hover transition settles.
       const minInterval = propsRef.current.isHovered ? 0 : 1000 / 30;
       if (now - lastFrame < minInterval) return;
       lastFrame = now;
